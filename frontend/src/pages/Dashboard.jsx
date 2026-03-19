@@ -62,7 +62,7 @@ export default function Dashboard() {
         fetchProfile();
     }, [user]);
 
-    // Simulated live data
+    // Simulated live data mixed with REAL telemetry
     const [liveData, setLiveData] = useState({
         temp: 26.0,
         moisture: 31,
@@ -73,20 +73,59 @@ export default function Dashboard() {
         ph: 6.2
     });
 
+    // 1. Fetch Real Weather Data (Temp, Humidity, Wind)
     useEffect(() => {
-        const interval = setInterval(() => {
-            setLiveData(prev => ({
-                temp: +(prev.temp + (Math.random() > 0.5 ? 0.1 : -0.1)).toFixed(1),
-                moisture: Math.max(20, Math.min(45, prev.moisture + (Math.floor(Math.random() * 3) - 1))),
-                irrigationUsage: Math.max(60, Math.min(95, prev.irrigationUsage + (Math.floor(Math.random() * 3) - 1))),
-                humidity: Math.max(50, Math.min(80, prev.humidity + (Math.floor(Math.random() * 3) - 1))),
-                wind: +(Math.max(5, Math.min(20, prev.wind + (Math.random() > 0.5 ? 0.3 : -0.3)))).toFixed(1),
-                soilTemp: prev.soilTemp + (Math.random() > 0.8 ? (Math.random() > 0.5 ? 1 : -1) : 0),
-                ph: +(prev.ph + (Math.random() > 0.8 ? (Math.random() > 0.5 ? 0.1 : -0.1) : 0)).toFixed(1)
-            }));
-        }, 3500);
+        const fetchWeather = async () => {
+            try {
+                const API_KEY = "e5c8c35726d52c53ed66735380eae2e9";
+                const url = `https://api.openweathermap.org/data/2.5/weather?q=Pune&appid=${API_KEY}&units=metric`;
+                const response = await fetch(url);
+                const data = await response.json();
+                
+                if (data.main) {
+                    setLiveData(prev => ({
+                        ...prev,
+                        temp: data.main.temp,
+                        humidity: data.main.humidity,
+                        wind: data.wind.speed,
+                        soilTemp: Math.round(data.main.temp - 2) // Approximate soil temp
+                    }));
+                }
+            } catch (err) {
+                console.error("Weather sync failed:", err);
+            }
+        };
+
+        fetchWeather();
+        const interval = setInterval(fetchWeather, 300000); // Poll every 5 mins
         return () => clearInterval(interval);
     }, []);
+
+    // 2. Fetch Real Sensor Data (Moisture, pH)
+    useEffect(() => {
+        const fetchTelemetry = async () => {
+            if (!user) return;
+            const { data, error } = await supabase
+                .from('sensor_data')
+                .select('*')
+                .eq('farmer_id', 'GLOBAL_AI_SEED')
+                .order('created_at', { ascending: false })
+                .limit(1);
+
+            if (data && data.length > 0) {
+                const latest = data[0];
+                setLiveData(prev => ({
+                    ...prev,
+                    moisture: latest.moisture || prev.moisture,
+                    ph: latest.ph || prev.ph
+                }));
+            }
+        };
+
+        fetchTelemetry();
+        const interval = setInterval(fetchTelemetry, 10000); // Poll every 10 seconds
+        return () => clearInterval(interval);
+    }, [user]);
 
     return (
         <div className="min-h-screen bg-transparent text-nature-700 font-sans p-2">
@@ -130,7 +169,7 @@ export default function Dashboard() {
             </div>
 
             {/* Quick Links */}
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 mb-6">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
                 <Link to="/app/map" className="bg-white/80 backdrop-blur-md rounded-2xl border border-nature-200 p-4 shadow-sm hover:shadow-md transition flex flex-col items-center justify-center gap-2 group">
                     <div className="w-10 h-10 rounded-full bg-blue-50 flex items-center justify-center border border-blue-100 group-hover:bg-blue-100 transition">
                         <MapIcon className="w-5 h-5 text-blue-500" />
@@ -155,12 +194,7 @@ export default function Dashboard() {
                     </div>
                     <span className="text-sm font-bold text-nature-800 text-center">{t('Alerts')}</span>
                 </Link>
-                <Link to="/app/simulation" className="bg-white/80 backdrop-blur-md rounded-2xl border border-nature-200 p-4 shadow-sm hover:shadow-md transition flex flex-col items-center justify-center gap-2 group">
-                    <div className="w-10 h-10 rounded-full bg-emerald-50 flex items-center justify-center border border-emerald-100 group-hover:bg-emerald-100 transition">
-                        <Activity className="w-5 h-5 text-emerald-500" />
-                    </div>
-                    <span className="text-sm font-bold text-nature-800 text-center">{t('Simulation')}</span>
-                </Link>
+
             </div>
 
             {/* Main Grid Layout */}
