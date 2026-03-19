@@ -1,0 +1,43 @@
+@import "tailwindcss";
+
+@theme {
+  --color-nature-50: #f2f8f5;
+  --color-nature-100: #e1efe6;
+  --color-nature-200: #c3dfd2;
+  --color-nature-300: #9bc6b5;
+  --color-nature-400: #6da793;
+  --color-nature-500: #4e8d77;
+  --color-nature-600: #3e705f;
+  --color-nature-700: #335a4d;
+  --color-nature-800: #2b4a41;
+  --color-nature-900: #243d36;
+  --color-nature-950: #13211e;
+
+  --color-earth-50: #fcf9f2;
+  --color-earth-100: #f6f0dd;
+  --color-earth-200: #ecdec0;
+  --color-earth-300: #dfc599;
+  --color-earth-400: #d0a66d;
+  --color-earth-500: #c38d4e;
+  --color-earth-600: #b47340;
+  --color-earth-700: #965a38;
+  --color-earth-800: #7a4a32;
+  --color-earth-900: #643d2c;
+  --color-earth-950: #382015;
+}
+
+@layer utilities {
+  .glass-panel {
+    @apply bg-white/60 backdrop-blur-lg border border-white/50 shadow-xl;
+  }
+}
+
+@layer base {
+  body {
+    background: linear-gradient(135deg, var(--color-nature-50) 0%, #e0ece6 100%);
+    background-attachment: fixed;
+    color: var(--color-nature-900);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+}
