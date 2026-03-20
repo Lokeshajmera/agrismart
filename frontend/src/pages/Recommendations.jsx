@@ -9,7 +9,7 @@ import { useAlerts } from '../context/AlertsContext';
 const CATEGORY_ORDER = ['Irrigation', 'Heat Management', 'Pest & Disease', 'Drone Mission', 'Water Conservation', 'Crop Management'];
 
 export default function Recommendations() {
-    const { recs, weatherData: weather, loading, lastUpdated, refresh } = useAlerts();
+    const { recs = [], weatherData: weather, loading, lastUpdated, refresh } = useAlerts();
     const [refreshing, setRefreshing] = useState(false);
     const [dismissed, setDismissed] = useState(new Set());
 
@@ -85,7 +85,7 @@ export default function Recommendations() {
             )}
 
             {/* Empty */}
-            {!loading && visible.length === 0 && (
+            {!loading && visible?.length === 0 && (
                 <div className="flex flex-col items-center justify-center py-20 text-nature-400 gap-3">
                     <div className="w-16 h-16 rounded-full bg-green-50 border border-green-200 flex items-center justify-center">
                         <CheckCircle className="w-8 h-8 text-green-500" />
@@ -99,7 +99,7 @@ export default function Recommendations() {
             )}
 
             {/* Suggestion Cards — no action buttons, pure advisory */}
-            {!loading && sorted.length > 0 && (
+            {!loading && sorted?.length > 0 && (
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                     {sorted.map(rec => {
                         const p = PRIORITY_STYLE[rec.priority];

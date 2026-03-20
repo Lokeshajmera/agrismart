@@ -48,7 +48,7 @@ export default function Dashboard() {
     const { user } = useAuth();
     const [profile, setProfile] = useState({ name: 'Farmer', farmer_id: '---' });
     const { isOnline } = useOfflineStore();
-    const { alerts } = useAlerts();
+    const { alerts, recs = [] } = useAlerts();
 
     useEffect(() => {
         const fetchProfile = async () => {
