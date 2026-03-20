@@ -41,12 +41,14 @@ import { useAuth } from '../context/AuthContext';
 import { supabase } from '../supabaseClient';
 import { useLiveTranslation } from '../hooks/useLiveTranslation';
 import { useOfflineStore } from '../store/useOfflineStore';
+import { useAlerts } from '../context/AlertsContext';
 
 export default function Dashboard() {
     const { tLive: t } = useLiveTranslation();
     const { user } = useAuth();
     const [profile, setProfile] = useState({ name: 'Farmer', farmer_id: '---' });
     const { isOnline } = useOfflineStore();
+    const { alerts } = useAlerts();
 
     useEffect(() => {
         const fetchProfile = async () => {
@@ -277,7 +279,7 @@ export default function Dashboard() {
                         </div>
                     </div>
 
-                    {/* Alerts Widget */}
+                        {/* Alerts Widget */}
                     <Link to="/app/alerts" className="bg-white/80 backdrop-blur-md rounded-2xl border border-nature-200 shadow-md hover:shadow-lg transition flex flex-col group cursor-pointer overflow-hidden max-h-[260px]">
                         <div className="px-5 py-4 border-b border-nature-100 flex justify-between items-center group-hover:bg-nature-50/50 rounded-t-2xl transition">
                             <h3 className="text-base font-bold text-nature-900 flex items-center gap-2">
@@ -286,42 +288,21 @@ export default function Dashboard() {
                             <ChevronRight className="w-4 h-4 text-nature-400 group-hover:text-nature-700 group-hover:translate-x-1 transition-transform" />
                         </div>
                         <div className="p-3 space-y-2 max-h-[220px] overflow-y-auto custom-scrollbar">
-                            <div className="bg-red-50/50 border border-red-100 rounded-xl p-3 flex gap-3 hover:bg-red-50 transition">
-                                <div className="mt-0.5 shrink-0 w-8 h-8 rounded-full bg-red-100 flex items-center justify-center border border-red-200">
-                                    <AlertTriangle className="w-4 h-4 text-red-500" />
-                                </div>
-                                <div className="flex-1">
-                                    <div className="flex justify-between items-start">
-                                        <h4 className="text-sm font-semibold text-nature-900">{t('Soil moisture dropping critically low')}</h4>
-                                        <span className="text-[10px] text-nature-500">Apr 30, 2024</span>
+                            {alerts.length === 0 ? (
+                                <div className="flex items-center justify-center py-6 text-nature-400 text-sm">No active alerts — all clear ✅</div>
+                            ) : alerts.slice(0, 3).map(alert => (
+                                <div key={alert.id} className={`${alert.bg} border ${alert.border} rounded-xl p-3 flex gap-3 hover:opacity-90 transition`}>
+                                    <div className={`mt-0.5 shrink-0 w-8 h-8 rounded-full ${alert.bg} flex items-center justify-center border ${alert.border}`}>
+                                        <AlertTriangle className={`w-4 h-4 ${alert.color}`} />
                                     </div>
-                                    <p className="text-[11px] text-nature-600 leading-tight mt-1">{t('System recommends immediate irrigation in Zone C.')}</p>
-                                </div>
-                            </div>
-                            <div className="bg-orange-50/50 border border-orange-100 rounded-xl p-3 flex gap-3 hover:bg-orange-50 transition">
-                                <div className="mt-0.5 shrink-0 w-8 h-8 rounded-full bg-orange-100 flex items-center justify-center border border-orange-200">
-                                    <Bug className="w-4 h-4 text-orange-500" />
-                                </div>
-                                <div className="flex-1">
-                                    <div className="flex justify-between items-start">
-                                        <h4 className="text-sm font-semibold text-nature-900">{t('Pesticide application needed')}</h4>
-                                        <span className="text-[10px] text-nature-500">Apr 30, 2024</span>
+                                    <div className="flex-1">
+                                        <div className="flex justify-between items-start">
+                                            <h4 className="text-sm font-semibold text-nature-900">{alert.title}</h4>
+                                        </div>
+                                        <p className="text-[11px] text-nature-600 leading-tight mt-1 line-clamp-2">{alert.msg}</p>
                                     </div>
-                                    <p className="text-[11px] text-nature-600 leading-tight mt-1">{t('Drone scan detected early rust in North fields.')}</p>
                                 </div>
-                            </div>
-                            <div className="bg-green-50/50 border border-green-100 rounded-xl p-3 flex gap-3 hover:bg-green-50 transition">
-                                <div className="mt-0.5 shrink-0 w-8 h-8 rounded-full bg-green-100 flex items-center justify-center border border-green-200">
-                                    <ShieldAlert className="w-4 h-4 text-green-600" />
-                                </div>
-                                <div className="flex-1">
-                                    <div className="flex justify-between items-start">
-                                        <h4 className="text-sm font-semibold text-nature-900">{t('Diseased crop area clearing')}</h4>
-                                        <span className="text-[10px] text-nature-500">Apr 28, 2024</span>
-                                    </div>
-                                    <p className="text-[11px] text-nature-600 leading-tight mt-1">{t('Treatment has shown 40% improvement in sector A.')}</p>
-                                </div>
-                            </div>
+                            ))}
                         </div>
                     </Link>
 

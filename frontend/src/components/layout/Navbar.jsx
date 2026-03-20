@@ -4,6 +4,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { supabase } from '../../supabaseClient';
 import { useLiveTranslation } from '../../hooks/useLiveTranslation';
+import { useAlerts } from '../../context/AlertsContext';
 import axios from 'axios';
 import { toast } from 'react-hot-toast';
 
@@ -11,6 +12,7 @@ export default function Navbar({ setIsMobileMenuOpen }) {
     const { tLive: t, i18n } = useLiveTranslation();
     const { user } = useAuth();
     const navigate = useNavigate();
+    const { unreadCount } = useAlerts();
     const [showProfileMenu, setShowProfileMenu] = useState(false);
     const [showNotifications, setShowNotifications] = useState(false);
     const [showLangMenu, setShowLangMenu] = useState(false);
@@ -224,10 +226,11 @@ export default function Navbar({ setIsMobileMenuOpen }) {
                 <Link to="/app/alerts" className="relative flex items-center gap-2 bg-red-50 text-red-600 px-3 py-1.5 rounded-lg border border-red-200 hover:bg-red-100 transition-colors shadow-sm cursor-pointer group" title="Active Alerts">
                     <AlertTriangle className="w-4 h-4 group-hover:scale-110 transition-transform" />
                     <span className="font-bold text-sm hidden sm:inline">Alerts</span>
-                    <span className="absolute -top-1 -right-1 flex h-3 w-3">
-                        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
-                        <span className="relative inline-flex rounded-full h-3 w-3 bg-red-500 border border-white"></span>
-                    </span>
+                    {unreadCount > 0 && (
+                        <span className="absolute -top-1.5 -right-1.5 flex items-center justify-center min-w-[18px] h-[18px] px-1 rounded-full bg-red-500 border-2 border-white shadow text-white text-[10px] font-bold">
+                            {unreadCount > 9 ? '9+' : unreadCount}
+                        </span>
+                    )}
                 </Link>
 
                 <div className="relative ml-2" ref={menuRef}>

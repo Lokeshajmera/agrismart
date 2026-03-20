@@ -1,5 +1,6 @@
 import React from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { AlertsProvider } from './context/AlertsContext';
 import AppLayout from './components/layout/AppLayout';
 import OfflineBanner from './components/OfflineBanner';
 import Dashboard from './pages/Dashboard';
@@ -28,7 +29,7 @@ import SimulationMode from './pages/SimulationMode';
 
 function App() {
   return (
-    <>
+    <AlertsProvider>
       <OfflineBanner />
       <BrowserRouter>
         <Routes>
@@ -70,7 +71,7 @@ function App() {
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </BrowserRouter>
-    </>
+    </AlertsProvider>
   );
 }
 
