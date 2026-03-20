@@ -30,6 +30,13 @@
   .glass-panel {
     @apply bg-white/60 backdrop-blur-lg border border-white/50 shadow-xl;
   }
+  .scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
 }
 
 @layer base {

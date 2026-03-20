@@ -12,7 +12,8 @@ import {
     Landmark,
     MessageSquare,
     Lightbulb,
-    ShieldCheck
+    ShieldCheck,
+    Sparkles
 } from 'lucide-react';
 import clsx from 'clsx';
 import { useLiveTranslation } from '../../hooks/useLiveTranslation';
@@ -43,6 +44,7 @@ export default function Sidebar({ isMobileMenuOpen, setIsMobileMenuOpen }) {
         { icon: MapIcon, label: t('Farm Overview'), path: '/app/map' },
         { icon: Droplets, label: t('Irrigation Control'), path: '/app/irrigation' },
         { icon: BrainCircuit, label: t('Drone Missions'), path: '/app/insights' },
+        { icon: Sparkles, label: t('Recommendations'), path: '/app/recommendations' },
         { icon: Landmark, label: t('Govt Schemes'), path: '/app/schemes' },
         { icon: BellRing, label: t('Alerts'), path: '/app/alerts' },
         { icon: MessageSquare, label: t('Complaints'), path: '/app/complaint' },
@@ -77,7 +79,7 @@ export default function Sidebar({ isMobileMenuOpen, setIsMobileMenuOpen }) {
                     </div>
                 </div>
 
-                <div className="flex-1 overflow-y-auto py-4">
+                <div className="flex-1 overflow-y-auto scrollbar-hide py-4">
                     <div className="px-3 space-y-1">
                         {navItems.map((item) => (
                             <NavLink
