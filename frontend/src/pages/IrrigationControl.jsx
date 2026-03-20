@@ -180,7 +180,7 @@ export default function IrrigationControl() {
         }
 
         setAlerts(prev => JSON.stringify(prev) === JSON.stringify(newAlerts) ? prev : newAlerts);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [currentData, systemAuto, weather, historicalData.length]);
 
     // Simulation Loop Restored
@@ -208,6 +208,7 @@ export default function IrrigationControl() {
         const start = Math.max(0, currentIndex - 19);
         return historicalData.slice(start, currentIndex + 1).map((d) => ({
             ...d,
+            moisture_b: d.moisture_b || Math.max(0, d.moisture * 0.85), // Area 2 simulated securely
             time: new Date(d.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
         }));
     }, [historicalData, currentIndex]);
@@ -386,8 +387,8 @@ export default function IrrigationControl() {
                                             animate={{ opacity: 1, y: 0 }}
                                             exit={{ opacity: 0, scale: 0.95 }}
                                             className={`p-4 rounded-xl border flex items-start gap-3 transition-all ${alert.type === 'error' ? 'bg-red-50 border-red-100/50 text-red-800' :
-                                                    alert.type === 'warning' ? 'bg-orange-50 border-orange-100/50 text-orange-800' :
-                                                        'bg-green-50 border-green-100/50 text-green-800'
+                                                alert.type === 'warning' ? 'bg-orange-50 border-orange-100/50 text-orange-800' :
+                                                    'bg-green-50 border-green-100/50 text-green-800'
                                                 }`}
                                         >
                                             <alert.icon className="w-4 h-4 shrink-0 mt-0.5" />
@@ -431,7 +432,6 @@ export default function IrrigationControl() {
                             <Legend iconType="circle" />
                             <Line type="monotone" dataKey="moisture" name={t('Area 1 Moisture')} stroke="#3B82F6" strokeWidth={3} dot={false} />
                             <Line type="monotone" dataKey="moisture_b" name={t('Area 2 Moisture')} stroke="#10B981" strokeWidth={3} dot={false} />
-                            <Line type="monotone" dataKey="ph" name={t('Soil pH')} stroke="#F59E0B" strokeWidth={2} dot={false} strokeDasharray="5 5" />
                         </LineChart>
                     </ResponsiveContainer>
                 </div>
