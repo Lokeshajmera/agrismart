@@ -26,10 +26,8 @@ export default function IrrigationControl() {
         { id: 2, name: t('Area 2 (South Section)'), status: 'closed', type: 'secondary' },
     ]);
 
-    // Simulation State
-    const [historicalData, setHistoricalData] = useState([]);
-    const [currentIndex, setCurrentIndex] = useState(0);
-    const [isSimulating, setIsSimulating] = useState(false);
+    // Live Data State
+    const [liveData, setLiveData] = useState([]);
     const [isLoading, setIsLoading] = useState(true);
     const [alerts, setAlerts] = useState([]);
 
@@ -37,40 +35,30 @@ export default function IrrigationControl() {
     const [weather, setWeather] = useState({ temp: 28, humidity: 60, rain: 0, city: 'Pune' });
     const API_KEY = "e5c8c35726d52c53ed66735380eae2e9";
 
-    const simulationInterval = useRef(null);
-    const fetchedRef = useRef(false);
-
-    // 1. Fetch History for Simulation
+    // 1. Fetch Live Stream
     useEffect(() => {
-        const fetchHistory = async () => {
-            if (fetchedRef.current) return;
-            fetchedRef.current = true;
-            setIsLoading(true);
+        const fetchLiveStream = async () => {
+            if (liveData.length === 0) setIsLoading(true);
             try {
-                // Read from GLOBAL_AI_SEED to ensure we have the massive dataset
-                const farmerId = 'GLOBAL_AI_SEED';
-
                 const { data } = await supabase
                     .from('sensor_data')
                     .select('*')
-                    .eq('farmer_id', farmerId)
-                    .order('created_at', { ascending: true })
-                    .limit(100);
+                    .order('id', { ascending: false })
+                    .limit(20);
 
                 if (data && data.length > 0) {
-                    setHistoricalData(data);
-                } else {
-                    toast.error(t('No AI dataset found. Seed data first.'));
+                    setLiveData(data.reverse()); // Set chronologically left to right
                 }
             } catch (err) {
-                console.error('Error fetching history:', err);
-                fetchedRef.current = false;
+                console.error('Error fetching stream:', err);
             } finally {
                 setIsLoading(false);
             }
         };
-        fetchHistory();
-    }, []);
+        fetchLiveStream();
+        const interval = setInterval(fetchLiveStream, 8000); // 8 second live polling
+        return () => clearInterval(interval);
+    }, [liveData.length]);
 
     // 2. Fetch Live Weather Intelligence
     useEffect(() => {
@@ -98,13 +86,18 @@ export default function IrrigationControl() {
     }, [weather.city]);
 
     const currentData = useMemo(() => {
-        if (historicalData.length === 0) return { moisture: 36, moisture_b: 40, temperature: 28, water_level: 80, ph: 6.5 };
-        const data = historicalData[currentIndex];
+        if (liveData.length === 0) return { moisture: 36, moisture_b: 40, temperature: 28, water_level: 80, ph: 6.5 };
+        const data = liveData[liveData.length - 1]; // Absolute latest row
         return {
             ...data,
-            moisture_b: data.moisture_b || (data.moisture + (Math.random() * 20 - 10))
+            moisture: data.soil1 ?? 36, // Explicit ESP32 schema translation
+            moisture_b: data.soil2 ?? 40, // Second hardware sensor (Area 2)
+            temperature: data.temp1 ?? 28, // Hardware temp sensor
+            humidity: data.hum1 ?? 60, // Hardware hum sensor
+            water_level: data.water_level ?? 80, // Fallback purely (no ESP32 equivalent yet)
+            ph: data.ph ?? 6.5 // Fallback purely
         };
-    }, [historicalData, currentIndex]);
+    }, [liveData]);
 
     // 3. AI NATIVE ALGORITHM
     const predictWaterLiters = (m, t, h, r, ph) => {
@@ -121,7 +114,7 @@ export default function IrrigationControl() {
 
     // 4. ML Logic Engine & Precise Thresholds Requested
     useEffect(() => {
-        if (!currentData || historicalData.length === 0) return;
+        if (!currentData || liveData.length === 0) return;
 
         let newAlerts = [];
         let { moisture, moisture_b, water_level, ph } = currentData;
@@ -181,19 +174,7 @@ export default function IrrigationControl() {
 
         setAlerts(prev => JSON.stringify(prev) === JSON.stringify(newAlerts) ? prev : newAlerts);
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [currentData, systemAuto, weather, historicalData.length]);
-
-    // Simulation Loop Restored
-    useEffect(() => {
-        if (isSimulating && historicalData.length > 0) {
-            simulationInterval.current = setInterval(() => {
-                setCurrentIndex(prev => (prev + 1) % historicalData.length);
-            }, 3000);
-        } else {
-            clearInterval(simulationInterval.current);
-        }
-        return () => clearInterval(simulationInterval.current);
-    }, [isSimulating, historicalData.length]);
+    }, [currentData, systemAuto, weather, liveData.length]);
 
     const toggleValve = (id) => {
         if (systemAuto) {
@@ -204,64 +185,39 @@ export default function IrrigationControl() {
     };
 
     const chartData = useMemo(() => {
-        if (historicalData.length === 0) return [];
-        const start = Math.max(0, currentIndex - 19);
-        return historicalData.slice(start, currentIndex + 1).map((d) => ({
+        if (liveData.length === 0) return [];
+        return liveData.map((d) => ({
             ...d,
-            moisture_b: d.moisture_b || Math.max(0, d.moisture * 0.85), // Area 2 simulated securely
-            time: new Date(d.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+            moisture: d.soil1 ?? 0,
+            moisture_b: d.soil2 ?? 0,
+            time: new Date(d.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })
         }));
-    }, [historicalData, currentIndex]);
+    }, [liveData]);
 
     return (
         <div className="space-y-6 animate-in fade-in duration-500 max-w-7xl mx-auto p-4">
-            {/* The Back button link has been purposefully removed per requirements. */}
 
-            {/* Restored Simulation Toolbar */}
-            <div className={`p-4 rounded-2xl border transition-all flex flex-col md:flex-row items-center justify-between gap-4 ${isSimulating ? 'bg-blue-600 border-blue-400 shadow-lg text-white' : 'bg-white border-nature-200'}`}>
-                <div className="flex items-center gap-3">
-                    <div className={`p-2 rounded-lg ${isSimulating ? 'bg-white/20' : 'bg-nature-100'}`}>
-                        <Play className={`w-5 h-5 ${isSimulating ? 'text-white' : 'text-nature-600'}`} />
-                    </div>
-                    <div>
-                        <h4 className={`text-sm font-bold ${isSimulating ? 'text-white' : 'text-nature-900'}`}>{t('Historical Simulation')}</h4>
-                        <p className={`text-xs ${isSimulating ? 'text-blue-100' : 'text-nature-50'}`}>
-                            {isSimulating ? `${t('Replaying sensor data index')}: ${currentIndex}` : t('Data replay is paused. Toggle to test your auto-logic.')}
-                        </p>
-                    </div>
+            <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 bg-white p-6 rounded-3xl border border-nature-200 shadow-sm">
+                <div>
+                    <h1 className="text-2xl font-bold text-nature-900 tracking-tight flex items-center gap-2">
+                        <Activity className="w-6 h-6 text-earth-500 animate-pulse" /> Live Irrigation Control
+                    </h1>
+                    <p className="text-nature-500 mt-1">{t('Synchronize manual overrides with automated real-time thresholds.')}</p>
                 </div>
                 <div className="flex items-center gap-3 w-full md:w-auto">
-                    {historicalData.length > 0 ? (
-                        <button
-                            onClick={() => setIsSimulating(!isSimulating)}
-                            className={`flex-1 md:flex-none px-6 py-2 rounded-xl font-bold flex items-center justify-center gap-2 transition-all ${isSimulating ? 'bg-white text-blue-600 hover:bg-blue-50 shadow-md' : 'bg-nature-900 text-white hover:bg-black'}`}
-                        >
-                            {isSimulating ? <Pause className="w-4 h-4" /> : <Play className="w-4 h-4" />}
-                            {isSimulating ? t('Pause Replay') : t('Start Replay')}
-                        </button>
-                    ) : (
-                        <button
-                            className="flex-1 md:flex-none px-6 py-2 bg-gray-400 text-white rounded-xl font-bold transition-all shadow-md flex items-center justify-center gap-2 cursor-not-allowed"
-                        >
-                            <RefreshCcw className="w-4 h-4" />
-                            Loading Data...
-                        </button>
+                    <button
+                        onClick={() => setSystemAuto(!systemAuto)}
+                        className={`flex-1 md:flex-none px-6 py-2.5 rounded-xl text-sm font-bold flex items-center justify-center gap-2 transition-all shadow-sm border ${systemAuto ? 'bg-blue-500 text-white border-blue-600 hover:bg-blue-600' : 'bg-white text-nature-700 border-nature-200 hover:bg-nature-50'}`}
+                    >
+                        <Settings2 className="w-4 h-4" />
+                        {systemAuto ? t('Auto Mode Active') : t('Manual Mode Active')}
+                    </button>
+                    {liveData.length === 0 && (
+                        <div className="flex items-center gap-2 text-nature-500">
+                            <RefreshCcw className="w-4 h-4 animate-spin-slow" /> <span className="font-bold text-xs">SYNCING</span>
+                        </div>
                     )}
                 </div>
-            </div>
-
-            <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-                <div>
-                    <h1 className="text-2xl font-bold text-nature-900 tracking-tight">{t('Irrigation Control Center')}</h1>
-                    <p className="text-nature-500 mt-1">{t('Synchronize manual overrides with automated threshold logic.')}</p>
-                </div>
-                <button
-                    onClick={() => setSystemAuto(!systemAuto)}
-                    className={`px-6 py-2.5 rounded-xl text-sm font-bold flex items-center gap-2 transition-all shadow-sm border ${systemAuto ? 'bg-blue-500 text-white border-blue-600 hover:bg-blue-600' : 'bg-white text-nature-700 border-nature-200 hover:bg-nature-50'}`}
-                >
-                    <Settings2 className="w-4 h-4" />
-                    {systemAuto ? t('Auto Mode Active') : t('Manual Mode Active')}
-                </button>
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start">
@@ -354,7 +310,7 @@ export default function IrrigationControl() {
                                         <div>
                                             <h4 className="font-bold text-nature-900 text-base">{valve.name}</h4>
                                             <div className="flex items-center gap-3 mt-1">
-                                                <p className="text-xs text-nature-500">{t('Soil Moisture')}: <span className={`font-bold ${(valve.id === 1 ? currentData.moisture : currentData.moisture_b) < 30 ? 'text-red-500' : 'text-nature-700'}`}>{(valve.id === 1 ? currentData.moisture : currentData.moisture_b).toFixed(1)}%</span></p>
+                                                <p className="text-xs text-nature-500">{t('Soil Moisture')}: <span className={`font-bold ${(Number(valve.id === 1 ? currentData.moisture : currentData.moisture_b) || 0) < 30 ? 'text-red-500' : 'text-nature-700'}`}>{(Number(valve.id === 1 ? currentData.moisture : currentData.moisture_b) || 0).toFixed(1)}%</span></p>
                                                 <span className={`w-1.5 h-1.5 rounded-full ${valve.status === 'open' ? 'bg-blue-500' : 'bg-gray-300'}`}></span>
                                                 <p className="text-[10px] text-nature-400 uppercase font-bold tracking-widest">{valve.status === 'open' ? t('Irrigating') : t('Idle')}</p>
                                             </div>
@@ -416,11 +372,7 @@ export default function IrrigationControl() {
                         </div>
                         <h3 className="text-xl font-bold text-nature-900">{t('Telemetry Trends')}</h3>
                     </div>
-                    {isSimulating && (
-                        <div className="flex items-center gap-2 text-[10px] font-bold text-orange-600 bg-orange-50 px-3 py-1.5 rounded-full border border-orange-100 uppercase animate-pulse">
-                            {t('Live Replay Active')}
-                        </div>
-                    )}
+
                 </div>
                 <div className="h-[350px] w-full">
                     <ResponsiveContainer width="100%" height="100%">

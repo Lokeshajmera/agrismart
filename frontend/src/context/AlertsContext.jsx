@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import { Cloud, CloudRain, Thermometer, Wind, Zap, Droplets, Sun } from 'lucide-react';
+import { supabase } from '../supabaseClient';
 
 const WEATHER_API_KEY = 'e5c8c35726d52c53ed66735380eae2e9';
 const CITY = 'Pune';
