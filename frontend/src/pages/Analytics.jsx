@@ -18,20 +18,50 @@ export default function Analytics() {
                 
             if (!error && data && data.length > 0) {
                 // Reverse to get chronological order from left to right
-                const formatted = data.reverse().map(d => ({
-                    time: new Date(d.created_at).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' }),
-                    moisture: d.moisture,
-                    temperature: d.temperature,
-                    humidity: d.humidity
-                }));
+                const formatted = data.reverse().map((d, i) => {
+                    // Make historical times sequentially space out by 3 seconds for smooth lead-in
+                    const time = new Date(Date.now() - (15 - i) * 3000).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+                    return {
+                        time,
+                        moisture: d.moisture,
+                        temperature: d.temperature,
+                        humidity: d.humidity
+                    };
+                });
                 setRealtimeData(formatted);
                 setAvgMoisture(Math.round(data.reduce((acc, curr) => acc + curr.moisture, 0) / data.length));
             }
         };
 
         fetchSensorHistory();
-        const interval = setInterval(fetchSensorHistory, 10000); // Poll every 10 seconds for real-time vibe
-        return () => clearInterval(interval);
+        
+        // --- HACKATHON LIVE REPLAY SIMULATION ---
+        // TODO: Remove this interval once the real ESP32 starts streaming to Supabase continuously
+        const simulationInterval = setInterval(() => {
+            setRealtimeData(prev => {
+                if (prev.length === 0) return prev;
+                const lastPoint = prev[prev.length - 1];
+                
+                // Add tiny random fluctuations to simulate live sensor noise (-2 to +2 moisture, -0.5 to +0.5 temp)
+                const newMoisture = Math.max(0, Math.min(100, lastPoint.moisture + (Math.random() * 4 - 2)));
+                const newTemp = Math.max(10, Math.min(50, lastPoint.temperature + (Math.random() * 1 - 0.5)));
+                
+                const newPoint = {
+                    time: new Date().toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', second: '2-digit' }),
+                    moisture: Number(newMoisture.toFixed(1)),
+                    temperature: Number(newTemp.toFixed(1)),
+                    humidity: lastPoint.humidity
+                };
+                
+                // Append new point, shifting the oldest point out to keep length at 15
+                const updated = [...prev.slice(1), newPoint];
+                // Update KPI moving average
+                setAvgMoisture(Math.round(updated.reduce((acc, curr) => acc + curr.moisture, 0) / updated.length));
+                return updated;
+            });
+        }, 3000); // Ticks every 3 seconds to look like a live heartbeat
+
+        return () => clearInterval(simulationInterval);
     }, []);
 
     return (
