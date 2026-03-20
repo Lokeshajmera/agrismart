@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import {
     AlertTriangle, Info, CheckCircle, Clock, CloudRain,
     Thermometer, Wind, Zap, Droplets, Sun, RefreshCw, BellOff
@@ -31,6 +31,13 @@ function timeAgo(date) {
 
 export default function AlertsNotifications() {
     const { alerts, loading, lastUpdated, markAllRead, refresh } = useAlerts();
+    const [refreshing, setRefreshing] = useState(false);
+
+    const handleRefresh = async () => {
+        setRefreshing(true);
+        await refresh();
+        setTimeout(() => setRefreshing(false), 1000); // min 1s so spinner is visible
+    };
 
     return (
         <div className="max-w-4xl mx-auto space-y-6 animate-in fade-in duration-500">
@@ -50,16 +57,22 @@ export default function AlertsNotifications() {
                 </div>
                 <div className="flex items-center gap-2">
                     <button
-                        onClick={refresh}
-                        className="flex items-center gap-1.5 text-sm font-medium text-nature-600 bg-nature-100 hover:bg-nature-200 px-3 py-2 rounded-lg transition-colors"
+                        onClick={handleRefresh}
+                        disabled={refreshing}
+                        className={`flex items-center gap-1.5 text-sm font-medium px-3 py-2 rounded-lg transition-all cursor-pointer border ${
+                            refreshing
+                                ? 'bg-earth-50 text-earth-600 border-earth-300 scale-95'
+                                : 'text-nature-600 bg-nature-100 hover:bg-green-100 hover:text-green-700 hover:border-green-300 active:scale-95 border-nature-200'
+                        }`}
                         title="Refresh now"
                     >
-                        <RefreshCw className="w-4 h-4" /> Refresh
+                        <RefreshCw className={`w-4 h-4 ${refreshing ? 'animate-spin' : ''}`} />
+                        {refreshing ? 'Refreshing...' : 'Refresh'}
                     </button>
                     {alerts.length > 0 && (
                         <button
                             onClick={markAllRead}
-                            className="flex items-center gap-1.5 text-sm font-medium text-white bg-earth-600 hover:bg-earth-700 px-4 py-2 rounded-lg transition-colors shadow-sm"
+                            className="flex items-center gap-1.5 text-sm font-medium text-white bg-earth-600 hover:bg-earth-700 active:scale-95 px-4 py-2 rounded-lg transition-all shadow-sm cursor-pointer"
                         >
                             <CheckCircle className="w-4 h-4" /> Mark all as read
                         </button>
