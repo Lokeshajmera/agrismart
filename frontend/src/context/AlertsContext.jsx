@@ -215,18 +215,18 @@ function generateAlerts(current, forecast) {
 
 function generateRecommendations(weather, forecast, soilMoisture) {
     const recs = [];
-    const temp      = weather?.main?.temp       ?? 28;
-    const humidity  = weather?.main?.humidity   ?? 60;
-    const wind      = weather?.wind?.speed      ?? 5;
+    const temp = weather?.main?.temp ?? 28;
+    const humidity = weather?.main?.humidity ?? 60;
+    const wind = weather?.wind?.speed ?? 5;
     const weatherId = weather?.weather?.[0]?.id ?? 800;
 
-    const next36h   = forecast?.list?.slice(0, 12) ?? [];
-    const rainSoon  = next36h.find(i => i.weather?.[0]?.id >= 300 && i.weather?.[0]?.id <= 531);
-    const heatSoon  = next36h.find(i => i.main?.temp >= 35);
+    const next36h = forecast?.list?.slice(0, 12) ?? [];
+    const rainSoon = next36h.find(i => i.weather?.[0]?.id >= 300 && i.weather?.[0]?.id <= 531);
+    const heatSoon = next36h.find(i => i.main?.temp >= 35);
     const stormSoon = next36h.find(i => i.weather?.[0]?.id >= 200 && i.weather?.[0]?.id <= 232);
     const isRaining = weatherId >= 300 && weatherId <= 531;
-    const isStorm   = weatherId >= 200 && weatherId <= 232;
-    const moisture  = soilMoisture ?? 45;
+    const isStorm = weatherId >= 200 && weatherId <= 232;
+    const moisture = soilMoisture ?? 45;
 
     // ── 1. IRRIGATION ──────────────────────────────────────────────────────
     if (isRaining || isStorm) {
@@ -446,21 +446,7 @@ export function AlertsProvider({ children }) {
             setRecs(generateRecommendations(current, forecast, moisture));
             setLastUpdated(new Date());
         } catch (err) {
-            console.error('Alerts fetch failed, using fallback data:', err);
-            
-            // FALLBACK DATA in case OpenWeatherMap API limit is reached or offline
-            const fallbackCurrent = {
-                main: { temp: 36.5, humidity: 21 },
-                wind: { speed: 12.5 },
-                weather: [{ id: 800, description: 'clear sky' }]
-            };
-            const fallbackForecast = { list: [] }; // No immediate rain/storms forecast
-            const fallbackMoisture = 22; // Trigger urgent irrigation
-            
-            setWeatherData(fallbackCurrent);
-            setAlerts(generateAlerts(fallbackCurrent, fallbackForecast));
-            setRecs(generateRecommendations(fallbackCurrent, fallbackForecast, fallbackMoisture));
-            setLastUpdated(new Date());
+            console.error('Alerts fetch failed:', err);
         } finally {
             setLoading(false);
         }
