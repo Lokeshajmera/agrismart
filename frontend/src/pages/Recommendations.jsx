@@ -4,265 +4,25 @@ import {
     Wheat, IndianRupee, RefreshCw, CheckCircle,
     Clock, TrendingDown, Leaf, Sparkles
 } from 'lucide-react';
-import { supabase } from '../supabaseClient';
-import { useAuth } from '../context/AuthContext';
-
-const WEATHER_API_KEY = 'e5c8c35726d52c53ed66735380eae2e9';
-const CITY = 'Pune';
-
-const PRIORITY_STYLE = {
-    high:   { label: 'High Priority',   bg: 'bg-red-100',    text: 'text-red-700',    dot: 'bg-red-500'    },
-    medium: { label: 'Medium Priority', bg: 'bg-orange-100', text: 'text-orange-700', dot: 'bg-orange-400' },
-    low:    { label: 'Low Priority',    bg: 'bg-green-100',  text: 'text-green-700',  dot: 'bg-green-500'  },
-};
-
-function generateRecommendations(weather, forecast, soilMoisture) {
-    const recs = [];
-    const temp      = weather?.main?.temp       ?? 28;
-    const humidity  = weather?.main?.humidity   ?? 60;
-    const wind      = weather?.wind?.speed      ?? 5;
-    const weatherId = weather?.weather?.[0]?.id ?? 800;
-
-    const next36h   = forecast?.list?.slice(0, 12) ?? [];
-    const rainSoon  = next36h.find(i => i.weather?.[0]?.id >= 300 && i.weather?.[0]?.id <= 531);
-    const heatSoon  = next36h.find(i => i.main?.temp >= 35);
-    const stormSoon = next36h.find(i => i.weather?.[0]?.id >= 200 && i.weather?.[0]?.id <= 232);
-    const isRaining = weatherId >= 300 && weatherId <= 531;
-    const isStorm   = weatherId >= 200 && weatherId <= 232;
-    const moisture  = soilMoisture ?? 45;
-
-    // ── 1. IRRIGATION ──────────────────────────────────────────────────────
-    if (isRaining || isStorm) {
-        recs.push({
-            id: 'irr_pause', category: 'Irrigation',
-            icon: Droplets, iconColor: 'text-blue-500', iconBg: 'bg-blue-50', priority: 'high',
-            title: 'Pause All Irrigation Immediately',
-            reason: `Active ${isStorm ? 'thunderstorm' : 'rainfall'} detected. Running irrigation now wastes water and risks waterlogging root zones.`,
-            tip: 'Resume once rainfall totals are known and soil absorption is assessed.'
-        });
-    } else if (rainSoon) {
-        const hrs = Math.round((new Date(rainSoon.dt * 1000) - Date.now()) / 3600000);
-        recs.push({
-            id: 'irr_reduce_rain', category: 'Irrigation',
-            icon: CloudRain, iconColor: 'text-blue-500', iconBg: 'bg-blue-50', priority: 'high',
-            title: `Suspend Irrigation — Rain Expected in ~${hrs}h`,
-            reason: `Forecast shows rainfall in ~${hrs} hours. Irrigating now could cause overwatering and nutrient runoff.`,
-            tip: 'Reassess soil moisture after the rain event before resuming your schedule.'
-        });
-    } else if (moisture < 25) {
-        recs.push({
-            id: 'irr_urgent', category: 'Irrigation',
-            icon: Droplets, iconColor: 'text-red-500', iconBg: 'bg-red-50', priority: 'high',
-            title: 'Urgent: Increase Irrigation — Critically Low Moisture',
-            reason: `Soil moisture is critically low at ${moisture}%. Crops are at immediate risk of wilting and yield loss.`,
-            tip: 'Target 45–60% soil moisture. Irrigate during early morning (5–7 AM) to minimise evaporation.'
-        });
-    } else if (moisture < 40) {
-        recs.push({
-            id: 'irr_increase', category: 'Irrigation',
-            icon: Droplets, iconColor: 'text-orange-500', iconBg: 'bg-orange-50', priority: 'medium',
-            title: 'Increase Irrigation Frequency',
-            reason: `Soil moisture at ${moisture}% is below the optimal range (40–65%). Consider increasing watering cycles by 15–20 minutes.`,
-            tip: 'Early morning irrigation (5–7 AM) minimises evaporation losses and maximises plant uptake.'
-        });
-    } else if (moisture > 75) {
-        recs.push({
-            id: 'irr_reduce', category: 'Irrigation',
-            icon: TrendingDown, iconColor: 'text-blue-500', iconBg: 'bg-blue-50', priority: 'medium',
-            title: 'Reduce Irrigation — Soil is Saturated',
-            reason: `Soil moisture is high at ${moisture}%. Over-irrigation promotes root rot and washes away nutrients. Reduce watering by ~30%.`,
-            tip: 'Well-drained soils absorb 10–20mm/hr. Watch for surface pooling as a sign of over-watering.'
-        });
-    } else {
-        recs.push({
-            id: 'irr_ok', category: 'Irrigation',
-            icon: Droplets, iconColor: 'text-green-500', iconBg: 'bg-green-50', priority: 'low',
-            title: 'Irrigation Schedule is Optimal',
-            reason: `Soil moisture at ${moisture}% is within the ideal range (40–65%). Maintain your current watering schedule.`,
-            tip: 'Continue monitoring daily — adjust if temperature exceeds 35°C or moisture drops below 40%.'
-        });
-    }
-
-    // ── 2. HEAT MANAGEMENT ─────────────────────────────────────────────────
-    if (temp >= 38) {
-        recs.push({
-            id: 'heat_extreme', category: 'Heat Management',
-            icon: Thermometer, iconColor: 'text-red-600', iconBg: 'bg-red-50', priority: 'high',
-            title: 'Extreme Heat — Emergency Crop Protection Needed',
-            reason: `Temperature is dangerously high at ${temp.toFixed(1)}°C. Risk of crop burn, flower drop, and accelerated water loss from soil.`,
-            tip: 'Avoid all field operations between 11 AM–3 PM. Light irrigation at midday can help cool the crop canopy.'
-        });
-    } else if (temp >= 35 || heatSoon) {
-        const heatTemp = heatSoon ? heatSoon.main.temp.toFixed(1) : temp.toFixed(1);
-        recs.push({
-            id: 'heat_warning', category: 'Heat Management',
-            icon: Thermometer, iconColor: 'text-orange-500', iconBg: 'bg-orange-50', priority: 'medium',
-            title: 'Schedule Early Morning Irrigation for Heat Wave',
-            reason: `Temperature ${heatSoon ? 'forecast to reach' : 'at'} ${heatTemp}°C. Shift irrigation to 5–7 AM to maximise plant uptake before heat peaks.`,
-            tip: 'During heat waves, plants need 20–25% more water to compensate for high evapotranspiration rates.'
-        });
-    }
-
-    // ── 3. PEST & DISEASE ──────────────────────────────────────────────────
-    if (humidity > 80 && temp > 22) {
-        recs.push({
-            id: 'pest_fungal', category: 'Pest & Disease',
-            icon: Bug, iconColor: 'text-purple-600', iconBg: 'bg-purple-50', priority: 'high',
-            title: 'High Fungal Disease Risk — Act Now',
-            reason: `Humidity at ${humidity}% combined with ${temp.toFixed(1)}°C creates ideal conditions for blight, mildew, and rust in crops.`,
-            tip: 'Apply copper-based fungicide in early morning hours. Drone spray provides most even coverage at low wind conditions.'
-        });
-    } else if (humidity > 65 && temp > 25) {
-        recs.push({
-            id: 'pest_scout', category: 'Pest & Disease',
-            icon: Bug, iconColor: 'text-orange-500', iconBg: 'bg-orange-50', priority: 'medium',
-            title: 'Scout Fields for Early Pest Activity',
-            reason: `Current conditions (${humidity}% humidity, ${temp.toFixed(1)}°C) favour aphid and whitefly activity. Early detection prevents large infestations.`,
-            tip: 'Pay special attention to leaf undersides and new growth tips during your field walk.'
-        });
-    }
-
-    if (temp >= 35 && humidity < 40) {
-        recs.push({
-            id: 'pest_spider', category: 'Pest & Disease',
-            icon: Bug, iconColor: 'text-red-500', iconBg: 'bg-red-50', priority: 'medium',
-            title: 'Spider Mite Activity Likely in Dry Heat',
-            reason: `Hot (${temp.toFixed(1)}°C) and dry (${humidity}% humidity) conditions accelerate spider mite reproduction. Inspect crops immediately.`,
-            tip: 'Neem oil spray (0.5%) is an effective eco-friendly option. Focus on the underside of lower leaves.'
-        });
-    }
-
-    // ── 4. DRONE MISSION ──────────────────────────────────────────────────
-    if (isStorm || stormSoon) {
-        recs.push({
-            id: 'drone_ground', category: 'Drone Mission',
-            icon: Plane, iconColor: 'text-red-500', iconBg: 'bg-red-50', priority: 'high',
-            title: 'Ground All Drone Missions — Storm Warning',
-            reason: `${isStorm ? 'Active thunderstorm' : 'Thunderstorm forecast soon'} — flying drones risks equipment damage and loss of data.`,
-            tip: 'Drones can resume 30 minutes after storm clears and wind drops below 7 m/s.'
-        });
-    } else if (wind > 10) {
-        recs.push({
-            id: 'drone_wind', category: 'Drone Mission',
-            icon: Wind, iconColor: 'text-orange-500', iconBg: 'bg-orange-50', priority: 'medium',
-            title: 'Delay Drone Launch — Wind Speed Too High',
-            reason: `Wind at ${wind.toFixed(1)} m/s exceeds safe operation threshold (7 m/s). Mapping accuracy and spray precision will be compromised.`,
-            tip: 'Optimal drone conditions: wind < 7 m/s, clean visibility, no precipitation.'
-        });
-    } else if (rainSoon) {
-        const hrs = Math.round((new Date(rainSoon.dt * 1000) - Date.now()) / 3600000);
-        recs.push({
-            id: 'drone_prerain', category: 'Drone Mission',
-            icon: Plane, iconColor: 'text-blue-500', iconBg: 'bg-blue-50', priority: 'medium',
-            title: `Complete Drone Missions Before Rain (~${hrs}h away)`,
-            reason: `Rain expected in ~${hrs}h. Complete any pending spray or NDVI mapping missions now to avoid a 24–48h delay.`,
-            tip: 'Pre-rain field scanning helps identify drainage problem areas before they become issues.'
-        });
-    } else {
-        recs.push({
-            id: 'drone_ok', category: 'Drone Mission',
-            icon: Plane, iconColor: 'text-green-500', iconBg: 'bg-green-50', priority: 'low',
-            title: 'Good Window for Drone Operations',
-            reason: `Wind at ${wind.toFixed(1)} m/s and clear conditions provide a good flight window for NDVI scanning and field surveys.`,
-            tip: 'Early morning missions (6–9 AM) yield the best NDVI accuracy due to lower solar angle and calmer air.'
-        });
-    }
-
-    // ── 5. WATER CONSERVATION ─────────────────────────────────────────────
-    if (humidity < 35) {
-        recs.push({
-            id: 'water_mulch', category: 'Water Conservation',
-            icon: IndianRupee, iconColor: 'text-green-600', iconBg: 'bg-green-50', priority: 'medium',
-            title: 'Apply Mulch to Prevent Moisture Loss',
-            reason: `Low humidity at ${humidity}% causes soil moisture to evaporate 2–3× faster than normal. Mulching can cut water needs by up to 40%.`,
-            tip: 'Apply 5–8 cm of dry straw or crop residue around plant bases for best effect.'
-        });
-    } else {
-        recs.push({
-            id: 'water_save', category: 'Water Conservation',
-            icon: IndianRupee, iconColor: 'text-green-600', iconBg: 'bg-green-50', priority: 'low',
-            title: 'Optimise Irrigation Timing for Water Savings',
-            reason: 'Irrigating during early morning (before 8 AM) instead of afternoon can reduce water evaporation losses by 20–30%.',
-            tip: 'Under PM Krishi Sinchayee Yojana, irrigation efficiency equipment is subsidised up to 55% for small farmers.'
-        });
-    }
-
-    // ── 6. SEASONAL CROP MANAGEMENT (Maharashtra) ─────────────────────────
-    const month = new Date().getMonth() + 1;
-    let season = month >= 6 && month <= 10 ? 'kharif' : (month >= 11 || month <= 3 ? 'rabi' : 'summer');
-
-    const seasonal = {
-        kharif: {
-            title: 'Kharif Season — Apply Nitrogen Top Dressing',
-            reason: 'This is the critical vegetative growth stage for paddy, cotton, and soybean. A nitrogen top-dressing (Urea ~26 kg/ha) supports leafy growth and yield.',
-            tip: 'Apply fertiliser 1–2 days after irrigation when soil has good moisture for optimal absorption.'
-        },
-        rabi: {
-            title: 'Rabi Season — Monitor for Wheat Rust',
-            reason: 'Rabi wheat and chickpea are susceptible to yellow and stem rust during cool humid periods. Inspect flag leaves weekly.',
-            tip: 'If rust is found on >5% of leaves, apply Propiconazole 25 EC @ 0.1% immediately.'
-        },
-        summer: {
-            title: 'Summer Crops — Increase Watering Frequency',
-            reason: 'Summer vegetables (bitter gourd, okra) need shorter, more frequent irrigation cycles to cope with heat and rapid transpiration.',
-            tip: 'Light irrigation every alternate day is better than heavy watering every 3–4 days in summer.'
-        }
-    }[season];
-
-    recs.push({
-        id: 'seasonal', category: 'Crop Management',
-        icon: Wheat, iconColor: 'text-yellow-600', iconBg: 'bg-yellow-50', priority: 'medium',
-        ...seasonal
-    });
-
-    return recs;
-}
+import { useAlerts } from '../context/AlertsContext';
 
 const CATEGORY_ORDER = ['Irrigation', 'Heat Management', 'Pest & Disease', 'Drone Mission', 'Water Conservation', 'Crop Management'];
 
 export default function Recommendations() {
-    const { user } = useAuth();
-    const [recs, setRecs] = useState([]);
-    const [loading, setLoading] = useState(true);
+    const { recs, weatherData: weather, loading, lastUpdated, refresh } = useAlerts();
     const [refreshing, setRefreshing] = useState(false);
-    const [lastUpdated, setLastUpdated] = useState(null);
     const [dismissed, setDismissed] = useState(new Set());
-    const [weather, setWeather] = useState(null);
 
-    const fetchData = async () => {
-        try {
-            const [wRes, fRes] = await Promise.all([
-                fetch(`https://api.openweathermap.org/data/2.5/weather?q=${CITY}&appid=${WEATHER_API_KEY}&units=metric`),
-                fetch(`https://api.openweathermap.org/data/2.5/forecast?q=${CITY}&appid=${WEATHER_API_KEY}&units=metric`),
-            ]);
-            const w = await wRes.json();
-            const f = await fRes.json();
-            setWeather(w);
-
-            let moisture = 45;
-            const { data } = await supabase
-                .from('sensor_data')
-                .select('moisture')
-                .eq('farmer_id', 'GLOBAL_AI_SEED')
-                .order('created_at', { ascending: false })
-                .limit(1);
-            if (data && data.length > 0 && data[0].moisture) moisture = data[0].moisture;
-
-            setRecs(generateRecommendations(w, f, moisture));
-            setLastUpdated(new Date());
-        } catch (err) {
-            console.error('Recommendations fetch failed:', err);
-        } finally {
-            setLoading(false);
-        }
+    const PRIORITY_STYLE = {
+        high:   { label: 'High Priority',   bg: 'bg-red-100',    text: 'text-red-700',    dot: 'bg-red-500'    },
+        medium: { label: 'Medium Priority', bg: 'bg-orange-100', text: 'text-orange-700', dot: 'bg-orange-400' },
+        low:    { label: 'Low Priority',    bg: 'bg-green-100',  text: 'text-green-700',  dot: 'bg-green-500'  },
     };
-
-    useEffect(() => { fetchData(); }, [user]);
 
     const handleRefresh = async () => {
         setRefreshing(true);
         setDismissed(new Set());
-        await fetchData();
+        await refresh();
         setTimeout(() => setRefreshing(false), 800);
     };
 
@@ -364,10 +124,9 @@ export default function Recommendations() {
                                         </span>
                                         <button
                                             onClick={() => dismiss(rec.id)}
-                                            className="text-nature-300 hover:text-nature-500 transition-colors cursor-pointer text-lg leading-none"
-                                            title="Dismiss"
+                                            className="text-[11px] font-semibold text-nature-400 hover:text-nature-600 hover:bg-nature-100 border border-nature-200 hover:border-nature-300 px-2.5 py-1 rounded-full transition-all cursor-pointer"
                                         >
-                                            ×
+                                            Got it ✓
                                         </button>
                                     </div>
                                 </div>

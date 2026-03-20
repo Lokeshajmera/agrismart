@@ -423,25 +423,23 @@ export default function Dashboard() {
                             </h3>
                             <ChevronRight className="w-4 h-4 text-nature-400 group-hover:text-nature-700 group-hover:translate-x-1 transition-transform" />
                         </div>
-                        <div className="p-3 space-y-2">
-                            <div className="bg-blue-50/50 border border-blue-100 rounded-xl p-3 flex gap-3 hover:bg-blue-50 transition cursor-pointer group">
-                                <div className="mt-0.5 shrink-0 w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 group-hover:scale-110 transition-transform">
-                                    <Droplets className="w-4 h-4" />
-                                </div>
-                                <div>
-                                    <h4 className="text-sm font-semibold text-nature-900">{t('Optimize irrigation in area 3')}</h4>
-                                    <p className="text-[11px] text-nature-600 leading-tight mt-1">{t('Save up to 300L of water with adjusted schedules.')}</p>
-                                </div>
-                            </div>
-                            <div className="bg-orange-50/50 border border-orange-100 rounded-xl p-3 flex gap-3 hover:bg-orange-50 transition cursor-pointer group">
-                                <div className="mt-0.5 shrink-0 w-8 h-8 rounded-full bg-orange-100 flex items-center justify-center text-orange-600 group-hover:scale-110 transition-transform">
-                                    <AlertTriangle className="w-4 h-4" />
-                                </div>
-                                <div>
-                                    <h4 className="text-sm font-semibold text-nature-900">{t('Apply Nitrogen Fertilizer')}</h4>
-                                    <p className="text-[11px] text-nature-600 leading-tight mt-1">{t('Soil pH changes suggests nitrogen deficiency.')}</p>
-                                </div>
-                            </div>
+                        <div className="p-3 space-y-2 max-h-[220px] overflow-y-auto custom-scrollbar">
+                            {recs.length === 0 ? (
+                                <div className="flex items-center justify-center py-6 text-nature-400 text-sm">No recommendations available.</div>
+                            ) : recs.slice(0, 3).map(rec => {
+                                const Icon = rec.icon;
+                                return (
+                                    <div key={rec.id} className={`${rec.iconBg} border border-nature-100/50 rounded-xl p-3 flex gap-3 hover:opacity-90 transition cursor-pointer group`}>
+                                        <div className={`mt-0.5 shrink-0 w-8 h-8 rounded-full ${rec.iconBg} border border-nature-200/50 flex items-center justify-center ${rec.iconColor} group-hover:scale-110 transition-transform`}>
+                                            <Icon className="w-4 h-4" />
+                                        </div>
+                                        <div>
+                                            <h4 className="text-sm font-semibold text-nature-900 leading-tight">{rec.title}</h4>
+                                            <p className="text-[11px] text-nature-600 leading-tight mt-1 line-clamp-2">{rec.reason}</p>
+                                        </div>
+                                    </div>
+                                );
+                            })}
                         </div>
                     </Link>
 
