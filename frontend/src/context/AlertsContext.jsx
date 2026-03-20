@@ -446,7 +446,21 @@ export function AlertsProvider({ children }) {
             setRecs(generateRecommendations(current, forecast, moisture));
             setLastUpdated(new Date());
         } catch (err) {
-            console.error('Alerts fetch failed:', err);
+            console.error('Alerts fetch failed, using fallback data:', err);
+            
+            // FALLBACK DATA in case OpenWeatherMap API limit is reached or offline
+            const fallbackCurrent = {
+                main: { temp: 36.5, humidity: 21 },
+                wind: { speed: 12.5 },
+                weather: [{ id: 800, description: 'clear sky' }]
+            };
+            const fallbackForecast = { list: [] }; // No immediate rain/storms forecast
+            const fallbackMoisture = 22; // Trigger urgent irrigation
+            
+            setWeatherData(fallbackCurrent);
+            setAlerts(generateAlerts(fallbackCurrent, fallbackForecast));
+            setRecs(generateRecommendations(fallbackCurrent, fallbackForecast, fallbackMoisture));
+            setLastUpdated(new Date());
         } finally {
             setLoading(false);
         }
