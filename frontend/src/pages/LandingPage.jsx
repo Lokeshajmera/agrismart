@@ -38,9 +38,6 @@ export default function LandingPage() {
                         <Link to="/signup" className="w-full sm:w-auto px-8 py-3 rounded-lg bg-nature-800 text-white font-medium hover:bg-nature-900 transition-colors flex items-center justify-center gap-2">
                             Start Farm Setup <ArrowRight className="w-4 h-4" />
                         </Link>
-                        <Link to="/app/dashboard" className="w-full sm:w-auto px-8 py-3 rounded-lg bg-white border border-nature-200 text-nature-800 font-medium hover:bg-nature-50 transition-colors">
-                            View Live Demo
-                        </Link>
                     </div>
                 </div>
             </section>

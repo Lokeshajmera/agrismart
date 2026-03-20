@@ -73,7 +73,7 @@ export default function Navbar({ setIsMobileMenuOpen }) {
 
     const handleLogout = async () => {
         await supabase.auth.signOut();
-        navigate('/login');
+        navigate('/');
     };
 
     const handleSearch = (e) => {

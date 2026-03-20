@@ -162,9 +162,7 @@ export default function Dashboard() {
                     <Link to="/app/map" className="p-2 bg-white rounded-lg border border-nature-200 hover:bg-nature-50 cursor-pointer transition shadow-sm">
                         <MapPin className="w-5 h-5 text-nature-500 hover:text-earth-500" />
                     </Link>
-                    <button className="flex items-center gap-2 bg-earth-50 text-earth-600 font-bold px-4 py-1.5 rounded-lg border border-earth-200 hover:bg-earth-100 transition whitespace-nowrap cursor-pointer shadow-sm">
-                        {t('Submit').toUpperCase()} <ChevronDown className="w-4 h-4" />
-                    </button>
+
                 </div>
             </div>
 
