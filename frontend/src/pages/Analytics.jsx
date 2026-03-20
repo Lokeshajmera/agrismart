@@ -3,6 +3,7 @@ import { AreaChart, Area, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip,
 import { TrendingDown, Droplets, Leaf, Activity, Play, Pause, RefreshCcw, Database } from 'lucide-react';
 import { supabase } from '../supabaseClient';
 import { useAuth } from '../context/AuthContext';
+import AnalyticsReport from '../components/AnalyticsReport';
 
 export default function Analytics() {
     const { user } = useAuth();
@@ -60,7 +61,7 @@ export default function Analytics() {
                 <div className="flex items-center gap-3 w-full md:w-auto p-2 bg-nature-50 rounded-2xl border border-nature-200">
                     {liveData.length === 0 ? (
                         <div className="px-6 py-2 bg-nature-100 text-nature-600 rounded-xl font-bold flex items-center justify-center gap-2">
-                             <RefreshCcw className="w-4 h-4 animate-spin-slow" /> Loading Data...
+                            <RefreshCcw className="w-4 h-4 animate-spin-slow" /> Loading Data...
                         </div>
                     ) : (
                         <div className="px-4 py-2 bg-blue-50 border border-blue-100 text-blue-700 rounded-xl font-bold flex items-center justify-center gap-2">
@@ -173,6 +174,9 @@ export default function Analytics() {
                 </div>
 
             </div>
+            
+            {/* Downloadable Analytics Report Module */}
+            <AnalyticsReport />
         </div>
     );
 }
