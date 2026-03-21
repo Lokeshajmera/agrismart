@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
-import { Cloud, CloudRain, Thermometer, Wind, Zap, Droplets, Sun } from 'lucide-react';
+import { Cloud, CloudRain, Thermometer, Wind, Zap, Droplets, Sun, TrendingDown, Bug, Plane, IndianRupee, Wheat, Leaf } from 'lucide-react';
 import { supabase } from '../supabaseClient';
 
 const WEATHER_API_KEY = 'e5c8c35726d52c53ed66735380eae2e9';
@@ -196,21 +196,6 @@ function generateAlerts(current, forecast) {
         }
     }
 
-    // ── Good conditions ────────────────────────────────────────────────────
-    if (alerts.length === 0) {
-        alerts.push({
-            id: 'all_clear',
-            type: 'success',
-            title: 'All Clear — Ideal Conditions',
-            msg: `Temperature ${temp?.toFixed(1) ?? '--'}°C, Humidity ${humidity ?? '--'}%, Wind ${windSpeed?.toFixed(1) ?? '--'} m/s. Conditions are optimal for farming operations.`,
-            time: now,
-            icon: 'sun',
-            color: 'text-green-600',
-            bg: 'bg-green-50',
-            border: 'border-green-200',
-        });
-    }
-
     return alerts;
 }
 
@@ -228,6 +213,17 @@ function generateRecommendations(weather, forecast, soilMoisture) {
     const isRaining = weatherId >= 300 && weatherId <= 531;
     const isStorm = weatherId >= 200 && weatherId <= 232;
     const moisture = soilMoisture ?? 45;
+
+    // ── 0. GENERAL FARMING CONDITIONS ──────────────────────────────────────
+    if (!isStorm && temp < 35 && temp > 15 && wind < 10) {
+        recs.push({
+            id: 'general_optimal', category: 'General',
+            icon: Leaf, iconColor: 'text-green-600', iconBg: 'bg-green-50', priority: 'low',
+            title: 'Suitable Farming Conditions',
+            reason: `Current weather (${temp.toFixed(1)}°C) and environment are highly suitable for all general farming operations.`,
+            tip: 'Excellent time for sowing, manual harvesting, or field walk.'
+        });
+    }
 
     // ── 1. IRRIGATION ──────────────────────────────────────────────────────
     if (isRaining || isStorm) {
