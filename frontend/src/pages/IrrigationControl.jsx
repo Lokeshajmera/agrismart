@@ -292,7 +292,7 @@ export default function IrrigationControl() {
                             <div
                                 key={valve.id}
                                 onClick={() => toggleValve(valve.id)}
-                                className={`p-6 rounded-2xl border transition-all cursor-pointer group ${valve.status === 'open' ? 'border-blue-400 bg-blue-50 shadow-md ring-2 ring-blue-500/10' : 'border-nature-100 dark:border-nature-700/50 bg-white dark:bg-nature-950 hover:border-nature-300'}`}
+                                className={`p-6 rounded-2xl border transition-all cursor-pointer group ${valve.status === 'open' ? 'border-blue-400 dark:border-blue-800/50 bg-blue-50 dark:bg-blue-900/30 shadow-md ring-2 ring-blue-500/10' : 'border-nature-100 dark:border-nature-700/50 bg-white dark:bg-nature-950 hover:border-nature-300 dark:hover:border-nature-700'}`}
                             >
                                 <div className="flex justify-between items-center">
                                     <div className="flex gap-4 items-center">
@@ -319,7 +319,7 @@ export default function IrrigationControl() {
                     {/* System Alerts */}
                     <div className="mt-2 border-t border-nature-100 dark:border-nature-700/50 pt-8">
                         <div className="flex items-center gap-3 mb-4">
-                            <div className="p-2 bg-red-50 rounded-lg text-red-600">
+                            <div className="p-2 bg-red-50 dark:bg-red-950/50 rounded-lg text-red-600 dark:text-red-400">
                                 <AlertCircle className="w-4 h-4" />
                             </div>
                             <h3 className="text-sm font-bold text-nature-900 dark:text-white uppercase tracking-widest">{t('Intelligence Alerts')}</h3>
@@ -334,9 +334,9 @@ export default function IrrigationControl() {
                                             initial={{ opacity: 0, y: 10 }}
                                             animate={{ opacity: 1, y: 0 }}
                                             exit={{ opacity: 0, scale: 0.95 }}
-                                            className={`p-4 rounded-xl border flex items-start gap-3 transition-all ${alert.type === 'error' ? 'bg-red-50 border-red-100/50 text-red-800' :
-                                                alert.type === 'warning' ? 'bg-orange-50 border-orange-100/50 text-orange-800' :
-                                                    'bg-green-50 border-green-100/50 text-green-800'
+                                            className={`p-4 rounded-xl border flex items-start gap-3 transition-all ${alert.type === 'error' ? 'bg-red-50 dark:bg-red-950/30 border-red-100/50 dark:border-red-900/50 text-red-800 dark:text-red-400' :
+                                                alert.type === 'warning' ? 'bg-orange-50 dark:bg-orange-950/30 border-orange-100/50 dark:border-orange-900/50 text-orange-800 dark:text-orange-400' :
+                                                    'bg-green-50 dark:bg-green-950/30 border-green-100/50 dark:border-green-900/50 text-green-800 dark:text-green-400'
                                                 }`}
                                         >
                                             <alert.icon className="w-4 h-4 shrink-0 mt-0.5" />
