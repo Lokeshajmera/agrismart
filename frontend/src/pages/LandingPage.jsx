@@ -4,15 +4,15 @@ import { Sprout, BarChart3, Droplets, Map, Brain, Shield, ArrowRight } from 'luc
 
 export default function LandingPage() {
     return (
-        <div className="min-h-screen bg-nature-50 font-sans text-nature-900 scroll-smooth">
+        <div className="min-h-screen bg-nature-50 dark:bg-nature-900 font-sans text-nature-900 dark:text-white scroll-smooth">
             {/* Navbar Minimal for Landing Page */}
-            <nav className="fixed top-0 left-0 right-0 h-16 bg-white/80 backdrop-blur-md border-b border-nature-200 z-50 px-4 md:px-8 flex justify-between items-center">
+            <nav className="fixed top-0 left-0 right-0 h-16 bg-white dark:bg-nature-950/80 backdrop-blur-md border-b border-nature-200 dark:border-nature-800 z-50 px-4 md:px-8 flex justify-between items-center">
                 <div className="flex items-center gap-2 text-xl font-bold">
                     <Sprout className="w-6 h-6 text-earth-500" />
                     <span>Agri<span className="text-earth-500">Smart</span></span>
                 </div>
                 <div className="flex items-center gap-4">
-                    <Link to="/login" className="text-sm font-medium text-nature-700 hover:text-earth-600 transition-colors">Login</Link>
+                    <Link to="/login" className="text-sm font-medium text-nature-700 dark:text-nature-200 hover:text-earth-600 transition-colors">Login</Link>
                     <Link to="/signup" className="text-sm font-medium bg-earth-500 text-white px-4 py-2 rounded-lg hover:bg-earth-600 transition-colors shadow-sm">Get Started</Link>
                 </div>
             </nav>
@@ -24,7 +24,7 @@ export default function LandingPage() {
                 <div className="absolute bottom-0 left-0 -ml-20 -mb-20 w-96 h-96 rounded-full bg-nature-300/50 blur-3xl opacity-50"></div>
 
                 <div className="max-w-5xl mx-auto text-center relative z-10">
-                    <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-nature-100 text-nature-700 text-sm font-medium mb-6 animate-fade-in-up">
+                    <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-nature-100 dark:bg-nature-800 text-nature-700 dark:text-nature-200 text-sm font-medium mb-6 animate-fade-in-up">
                         <span className="w-2 h-2 rounded-full bg-earth-500 animate-pulse"></span>
                         AI-Powered Precision Agriculture
                     </div>
@@ -43,7 +43,7 @@ export default function LandingPage() {
             </section>
 
             {/* Stats/Impact */}
-            <section className="py-12 bg-white border-y border-nature-200">
+            <section className="py-12 bg-white dark:bg-nature-950 border-y border-nature-200 dark:border-nature-800">
                 <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
                         <div>
@@ -82,8 +82,8 @@ export default function LandingPage() {
                         { icon: Shield, title: 'Disease Alerts', desc: 'Get instant notifications for weather anomalies, crop heat stress, and pest risks.' },
                         { icon: Sprout, title: 'Soil Memory Models', desc: 'Advanced AI that learns your soil\'s water retention rate over time to optimize watering.' }
                     ].map((feat, i) => (
-                        <div key={i} className="bg-white p-6 rounded-2xl border border-nature-200 shadow-sm hover:shadow-md transition-shadow">
-                            <div className="w-12 h-12 rounded-xl bg-nature-50 flex items-center justify-center mb-4 text-earth-600">
+                        <div key={i} className="bg-white dark:bg-nature-950 p-6 rounded-2xl border border-nature-200 dark:border-nature-800 shadow-sm hover:shadow-md transition-shadow">
+                            <div className="w-12 h-12 rounded-xl bg-nature-50 dark:bg-nature-900 flex items-center justify-center mb-4 text-earth-600">
                                 <feat.icon className="w-6 h-6" />
                             </div>
                             <h3 className="text-lg font-bold mb-2">{feat.title}</h3>

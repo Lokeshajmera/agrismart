@@ -118,7 +118,7 @@ export default function GovernmentSchemes() {
             {/* Header & Controls */}
             <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-4 mb-8">
                 <div>
-                    <h1 className="text-2xl font-bold text-nature-900 tracking-tight flex items-center gap-2">
+                    <h1 className="text-2xl font-bold text-nature-900 dark:text-white tracking-tight flex items-center gap-2">
                         <Landmark className="w-7 h-7 text-earth-500" />
                         {lang === 'en' ? 'Government Schemes & Support' : 'सरकारी योजनाएं एवं सहायता'}
                     </h1>
@@ -131,7 +131,7 @@ export default function GovernmentSchemes() {
 
                 <button
                     onClick={() => setLang(lang === 'en' ? 'hi' : 'en')}
-                    className="flex items-center gap-2 bg-nature-100 text-nature-800 px-4 py-2 rounded-lg text-sm font-bold border border-nature-200 hover:bg-nature-200 transition-colors"
+                    className="flex items-center gap-2 bg-nature-100 dark:bg-nature-800 text-nature-800 dark:text-nature-100 px-4 py-2 rounded-lg text-sm font-bold border border-nature-200 dark:border-nature-800 hover:bg-nature-200 transition-colors"
                 >
                     <Languages className="w-4 h-4" />
                     {lang === 'en' ? 'हिंदी में पढ़ें' : 'Read in English'}
@@ -140,9 +140,9 @@ export default function GovernmentSchemes() {
 
             {/* AI Recommendation Banner */}
             <div className="bg-gradient-to-r from-earth-600 to-earth-500 rounded-2xl p-6 text-white shadow-lg relative overflow-hidden group">
-                <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full blur-3xl -mr-20 -mt-20"></div>
+                <div className="absolute top-0 right-0 w-64 h-64 bg-white dark:bg-nature-950/10 rounded-full blur-3xl -mr-20 -mt-20"></div>
                 <div className="relative z-10 flex flex-col md:flex-row gap-6 items-start md:items-center">
-                    <div className="p-3 bg-white/20 rounded-xl backdrop-blur-sm shrink-0">
+                    <div className="p-3 bg-white dark:bg-nature-950/20 rounded-xl backdrop-blur-sm shrink-0">
                         <Sparkles className="w-8 h-8 text-earth-100" />
                     </div>
                     <div className="flex-1">
@@ -160,7 +160,7 @@ export default function GovernmentSchemes() {
                     </div>
                     <button
                         onClick={() => setExpandedId('pmksy')}
-                        className="bg-white text-earth-700 px-6 py-2.5 rounded-lg text-sm font-extrabold hover:bg-earth-50 transition-colors shrink-0 shadow-sm"
+                        className="bg-white dark:bg-nature-950 text-earth-700 px-6 py-2.5 rounded-lg text-sm font-extrabold hover:bg-earth-50 transition-colors shrink-0 shadow-sm"
                     >
                         {lang === 'en' ? 'View Eligibility' : 'पात्रता देखें'}
                     </button>
@@ -168,7 +168,7 @@ export default function GovernmentSchemes() {
             </div>
 
             {/* Search & Filters */}
-            <div className="flex flex-col md:flex-row gap-4 bg-white p-4 rounded-xl border border-nature-200 shadow-sm mt-8">
+            <div className="flex flex-col md:flex-row gap-4 bg-white dark:bg-nature-950 p-4 rounded-xl border border-nature-200 dark:border-nature-800 shadow-sm mt-8">
                 <div className="relative flex-1">
                     <Search className="w-5 h-5 text-nature-400 absolute left-3 top-1/2 -translate-y-1/2" />
                     <input
@@ -182,7 +182,7 @@ export default function GovernmentSchemes() {
                 <div className="flex items-center gap-2">
                     <Filter className="w-5 h-5 text-nature-500 hidden md:block" />
                     <select
-                        className="border border-nature-300 rounded-lg px-4 py-2 text-sm focus:outline-none focus:border-earth-500 focus:ring-1 focus:ring-earth-500 bg-white min-w-[180px]"
+                        className="border border-nature-300 rounded-lg px-4 py-2 text-sm focus:outline-none focus:border-earth-500 focus:ring-1 focus:ring-earth-500 bg-white dark:bg-nature-950 min-w-[180px]"
                         value={category}
                         onChange={(e) => setCategory(e.target.value)}
                     >
@@ -199,18 +199,18 @@ export default function GovernmentSchemes() {
                 {filteredSchemes.map((scheme) => {
                     const isExpanded = expandedId === scheme.id;
                     return (
-                        <div key={scheme.id} className={`bg-white rounded-2xl border transition-all duration-300 overflow-hidden ${isExpanded ? 'border-earth-500 shadow-md' : 'border-nature-200 shadow-sm hover:border-earth-300'}`}>
+                        <div key={scheme.id} className={`bg-white dark:bg-nature-950 rounded-2xl border transition-all duration-300 overflow-hidden ${isExpanded ? 'border-earth-500 shadow-md' : 'border-nature-200 dark:border-nature-800 shadow-sm hover:border-earth-300'}`}>
 
                             {/* Card Header (Clickable) */}
                             <div
                                 className="p-5 md:p-6 cursor-pointer flex items-start md:items-center gap-4 group"
                                 onClick={() => setExpandedId(isExpanded ? null : scheme.id)}
                             >
-                                <div className={`p-3 rounded-xl transition-colors ${isExpanded ? 'bg-earth-100 text-earth-600' : 'bg-nature-100 text-nature-600 group-hover:bg-nature-200'}`}>
+                                <div className={`p-3 rounded-xl transition-colors ${isExpanded ? 'bg-earth-100 text-earth-600' : 'bg-nature-100 dark:bg-nature-800 text-nature-600 group-hover:bg-nature-200'}`}>
                                     <scheme.icon className="w-6 h-6" />
                                 </div>
                                 <div className="flex-1 pr-4">
-                                    <h3 className={`text-lg font-bold transition-colors ${isExpanded ? 'text-earth-700' : 'text-nature-900 group-hover:text-earth-600'}`}>
+                                    <h3 className={`text-lg font-bold transition-colors ${isExpanded ? 'text-earth-700' : 'text-nature-900 dark:text-white group-hover:text-earth-600'}`}>
                                         {scheme[lang].title}
                                     </h3>
                                     <p className="text-sm text-nature-600 mt-1 line-clamp-1">
@@ -224,29 +224,29 @@ export default function GovernmentSchemes() {
 
                             {/* Expanded Details */}
                             {isExpanded && (
-                                <div className="px-6 pb-6 pt-2 border-t border-nature-100 animate-in slide-in-from-top-2 bg-nature-50/50">
-                                    <p className="text-nature-700 leading-relaxed mb-6">
+                                <div className="px-6 pb-6 pt-2 border-t border-nature-100 dark:border-nature-700/50 animate-in slide-in-from-top-2 bg-nature-50 dark:bg-nature-900/50">
+                                    <p className="text-nature-700 dark:text-nature-200 leading-relaxed mb-6">
                                         {scheme[lang].desc}
                                     </p>
 
                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
                                         <div className="space-y-2">
                                             <p className="text-xs font-bold text-earth-600 uppercase tracking-wider">{lang === 'en' ? 'Key Benefits' : 'प्रमुख लाभ'}</p>
-                                            <p className="text-sm text-nature-800 bg-white p-3 rounded-lg border border-nature-200">{scheme[lang].benefits}</p>
+                                            <p className="text-sm text-nature-800 dark:text-nature-100 bg-white dark:bg-nature-950 p-3 rounded-lg border border-nature-200 dark:border-nature-800">{scheme[lang].benefits}</p>
                                         </div>
                                         <div className="space-y-2">
                                             <p className="text-xs font-bold text-earth-600 uppercase tracking-wider">{lang === 'en' ? 'Eligibility' : 'पात्रता'}</p>
-                                            <p className="text-sm text-nature-800 bg-white p-3 rounded-lg border border-nature-200">{scheme[lang].eligibility}</p>
+                                            <p className="text-sm text-nature-800 dark:text-nature-100 bg-white dark:bg-nature-950 p-3 rounded-lg border border-nature-200 dark:border-nature-800">{scheme[lang].eligibility}</p>
                                         </div>
                                         <div className="space-y-2 md:col-span-2">
                                             <p className="text-xs font-bold text-earth-600 uppercase tracking-wider">{lang === 'en' ? 'Required Documents' : 'आवश्यक दस्तावेज़'}</p>
-                                            <p className="text-sm text-nature-800 bg-white p-3 rounded-lg border border-nature-200">{scheme[lang].docs}</p>
+                                            <p className="text-sm text-nature-800 dark:text-nature-100 bg-white dark:bg-nature-950 p-3 rounded-lg border border-nature-200 dark:border-nature-800">{scheme[lang].docs}</p>
                                         </div>
                                     </div>
 
-                                    <div className="flex flex-col sm:flex-row items-center justify-between gap-4 pt-4 border-t border-nature-200">
+                                    <div className="flex flex-col sm:flex-row items-center justify-between gap-4 pt-4 border-t border-nature-200 dark:border-nature-800">
                                         <p className="text-sm text-nature-600">
-                                            <span className="font-medium text-nature-900">{lang === 'en' ? 'How to Apply: ' : 'आवेदन कैसे करें: '}</span>
+                                            <span className="font-medium text-nature-900 dark:text-white">{lang === 'en' ? 'How to Apply: ' : 'आवेदन कैसे करें: '}</span>
                                             {scheme[lang].apply}
                                         </p>
                                         <a
@@ -266,7 +266,7 @@ export default function GovernmentSchemes() {
                 })}
 
                 {filteredSchemes.length === 0 && (
-                    <div className="text-center py-12 bg-white rounded-2xl border border-nature-200">
+                    <div className="text-center py-12 bg-white dark:bg-nature-950 rounded-2xl border border-nature-200 dark:border-nature-800">
                         <Landmark className="w-12 h-12 text-nature-300 mx-auto mb-3" />
                         <p className="text-nature-600 font-medium">{lang === 'en' ? 'No schemes found matching your search.' : 'आपकी खोज से मेल खाने वाली कोई योजना नहीं मिली।'}</p>
                     </div>

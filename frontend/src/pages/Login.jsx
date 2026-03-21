@@ -58,27 +58,27 @@ export default function Login() {
   };
 
   return (
-    <div className="min-h-screen bg-nature-50 flex flex-col justify-center sm:px-6 lg:px-8">
+    <div className="min-h-screen bg-nature-50 dark:bg-nature-900 flex flex-col justify-center sm:px-6 lg:px-8">
       <div className="sm:mx-auto sm:w-full sm:max-w-md">
         <div className="flex justify-center mb-6">
-          <Link to="/" className="flex items-center gap-2 text-2xl font-bold text-nature-900">
+          <Link to="/" className="flex items-center gap-2 text-2xl font-bold text-nature-900 dark:text-white">
             <Sprout className="w-8 h-8 text-earth-500" />
             <span>Agri<span className="text-earth-500">Smart</span></span>
           </Link>
         </div>
-        <h2 className="text-center text-3xl font-extrabold text-nature-900">
+        <h2 className="text-center text-3xl font-extrabold text-nature-900 dark:text-white">
           Sign in to your account
         </h2>
       </div>
 
       <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
-        <div className="bg-white py-8 px-4 shadow-sm border border-nature-200 sm:rounded-xl sm:px-10">
+        <div className="bg-white dark:bg-nature-950 py-8 px-4 shadow-sm border border-nature-200 dark:border-nature-800 sm:rounded-xl sm:px-10">
           
-          <div className="flex bg-nature-100 rounded-lg p-1 mb-8">
+          <div className="flex bg-nature-100 dark:bg-nature-800 rounded-lg p-1 mb-8">
             <button
               onClick={() => setActiveTab('password')}
               className={`flex-1 py-2 text-sm font-medium rounded-md transition-colors ${
-                activeTab === 'password' ? 'bg-white text-nature-900 shadow-sm' : 'text-nature-600 hover:text-nature-900'
+                activeTab === 'password' ? 'bg-white dark:bg-nature-950 text-nature-900 dark:text-white shadow-sm' : 'text-nature-600 hover:text-nature-900 dark:text-white'
               }`}
             >
               Password
@@ -86,7 +86,7 @@ export default function Login() {
             <button
               onClick={() => setActiveTab('email-otp')}
               className={`flex-1 py-2 text-sm font-medium rounded-md transition-colors ${
-                activeTab === 'email-otp' ? 'bg-white text-nature-900 shadow-sm' : 'text-nature-600 hover:text-nature-900'
+                activeTab === 'email-otp' ? 'bg-white dark:bg-nature-950 text-nature-900 dark:text-white shadow-sm' : 'text-nature-600 hover:text-nature-900 dark:text-white'
               }`}
             >
               Email OTP
@@ -95,7 +95,7 @@ export default function Login() {
 
           <form className="space-y-6" onSubmit={handleLogin}>
             <div>
-              <label className="block text-sm font-medium text-nature-700">Email address</label>
+              <label className="block text-sm font-medium text-nature-700 dark:text-nature-200">Email address</label>
               <div className="mt-1 relative">
                 <Mail className="absolute left-3 top-2.5 h-4 w-4 text-nature-400" />
                 <input 
@@ -111,7 +111,7 @@ export default function Login() {
 
             {activeTab === 'password' && (
               <div>
-                <label className="block text-sm font-medium text-nature-700">Password</label>
+                <label className="block text-sm font-medium text-nature-700 dark:text-nature-200">Password</label>
                 <div className="mt-1 relative">
                   <Lock className="absolute left-3 top-2.5 h-4 w-4 text-nature-400" />
                   <input 

@@ -106,10 +106,10 @@ export default function Profile() {
 
   return (
     <div className="max-w-3xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
-      <div className="bg-white shadow rounded-lg overflow-hidden">
-        <div className="px-4 py-5 sm:px-6 bg-nature-50 border-b border-nature-200 flex justify-between items-center">
+      <div className="bg-white dark:bg-nature-950 shadow rounded-lg overflow-hidden">
+        <div className="px-4 py-5 sm:px-6 bg-nature-50 dark:bg-nature-900 border-b border-nature-200 dark:border-nature-800 flex justify-between items-center">
           <div>
-            <h3 className="text-lg leading-6 font-medium text-nature-900">
+            <h3 className="text-lg leading-6 font-medium text-nature-900 dark:text-white">
               {isProfileComplete ? 'Farmer Profile' : 'Complete Your Profile'}
             </h3>
             <p className="mt-1 max-w-2xl text-sm text-nature-500">
@@ -139,24 +139,24 @@ export default function Profile() {
 
           <form onSubmit={handleSave} className="space-y-6">
             <div>
-              <label className="block text-sm font-medium text-nature-700">Email (from secure login)</label>
+              <label className="block text-sm font-medium text-nature-700 dark:text-nature-200">Email (from secure login)</label>
               <div className="mt-1 flex rounded-md shadow-sm">
-                <span className="inline-flex items-center px-3 rounded-l-md border border-r-0 border-nature-300 bg-nature-50 text-nature-500 sm:text-sm">
+                <span className="inline-flex items-center px-3 rounded-l-md border border-r-0 border-nature-300 bg-nature-50 dark:bg-nature-900 text-nature-500 sm:text-sm">
                   <Mail className="h-4 w-4" />
                 </span>
                 <input
                   type="email"
                   disabled
                   value={user.email || 'N/A (Phone Login)'}
-                  className="flex-1 min-w-0 block w-full px-3 py-2 rounded-none rounded-r-md border border-nature-300 bg-nature-50 text-gray-500 sm:text-sm"
+                  className="flex-1 min-w-0 block w-full px-3 py-2 rounded-none rounded-r-md border border-nature-300 bg-nature-50 dark:bg-nature-900 text-gray-500 sm:text-sm"
                 />
               </div>
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-nature-700">Full Name</label>
+              <label className="block text-sm font-medium text-nature-700 dark:text-nature-200">Full Name</label>
               <div className="mt-1 flex rounded-md shadow-sm">
-                <span className="inline-flex items-center px-3 rounded-l-md border border-r-0 border-nature-300 bg-nature-50 text-nature-500 sm:text-sm">
+                <span className="inline-flex items-center px-3 rounded-l-md border border-r-0 border-nature-300 bg-nature-50 dark:bg-nature-900 text-nature-500 sm:text-sm">
                   <User className="h-4 w-4" />
                 </span>
                 <input
@@ -171,9 +171,9 @@ export default function Profile() {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-nature-700">Mobile Number</label>
+              <label className="block text-sm font-medium text-nature-700 dark:text-nature-200">Mobile Number</label>
               <div className="mt-1 flex rounded-md shadow-sm">
-                <span className="inline-flex items-center px-3 rounded-l-md border border-r-0 border-nature-300 bg-nature-50 text-nature-500 sm:text-sm">
+                <span className="inline-flex items-center px-3 rounded-l-md border border-r-0 border-nature-300 bg-nature-50 dark:bg-nature-900 text-nature-500 sm:text-sm">
                   <Phone className="h-4 w-4" />
                 </span>
                 <input

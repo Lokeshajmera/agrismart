@@ -8,7 +8,7 @@ export function cn(...inputs) {
 
 export function Card({ className, children, ...props }) {
     return (
-        <div className={cn("bg-white/70 backdrop-blur-md border text-nature-900 border-white/50 rounded-2xl shadow-lg hover:shadow-xl hover:-translate-y-1 transition-all duration-300", className)} {...props}>
+        <div className={cn("bg-white dark:bg-nature-950/70 backdrop-blur-md border text-nature-900 dark:text-white border-white/50 rounded-2xl shadow-lg hover:shadow-xl hover:-translate-y-1 transition-all duration-300", className)} {...props}>
             {children}
         </div>
     );

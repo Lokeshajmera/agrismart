@@ -148,10 +148,10 @@ export default function AnalyticsReport() {
     };
 
     return (
-        <div className="bg-white p-6 rounded-2xl shadow-sm border border-nature-200 mt-8 mb-8 relative">
+        <div className="bg-white dark:bg-nature-950 p-6 rounded-2xl shadow-sm border border-nature-200 dark:border-nature-800 mt-8 mb-8 relative">
             <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
                 <div>
-                    <h2 className="text-xl font-bold text-nature-900 flex items-center gap-2">
+                    <h2 className="text-xl font-bold text-nature-900 dark:text-white flex items-center gap-2">
                         <FileText className="w-6 h-6 text-green-600" />
                         Downloadable Analytics Report
                     </h2>
@@ -159,12 +159,12 @@ export default function AnalyticsReport() {
                 </div>
 
                 <div className="flex flex-wrap items-center gap-3">
-                    <div className="flex bg-nature-50 rounded-lg p-1 border border-nature-200">
+                    <div className="flex bg-nature-50 dark:bg-nature-900 rounded-lg p-1 border border-nature-200 dark:border-nature-800">
                         {['1h', '1d', '7d', 'custom'].map((range) => (
                             <button
                                 key={range}
                                 onClick={() => setTimeRange(range)}
-                                className={`px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${timeRange === range ? 'bg-white shadow text-green-700' : 'text-nature-600 hover:text-green-600'}`}
+                                className={`px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${timeRange === range ? 'bg-white dark:bg-nature-950 shadow text-green-700' : 'text-nature-600 hover:text-green-600'}`}
                             >
                                 {range === '1h' ? 'Last 1 Hour' : range === '1d' ? 'Last 1 Day' : range === '7d' ? 'Last 7 Days' : 'Custom'}
                             </button>
@@ -173,9 +173,9 @@ export default function AnalyticsReport() {
 
                     {timeRange === 'custom' && (
                         <div className="flex items-center gap-2">
-                            <input type="date" value={startDate} onChange={(e) => setStartDate(e.target.value)} className="text-sm border border-nature-200 rounded-md px-2 py-1.5 focus:outline-none focus:border-green-500" />
+                            <input type="date" value={startDate} onChange={(e) => setStartDate(e.target.value)} className="text-sm border border-nature-200 dark:border-nature-800 rounded-md px-2 py-1.5 focus:outline-none focus:border-green-500" />
                             <span className="text-nature-400">-</span>
-                            <input type="date" value={endDate} onChange={(e) => setEndDate(e.target.value)} className="text-sm border border-nature-200 rounded-md px-2 py-1.5 focus:outline-none focus:border-green-500" />
+                            <input type="date" value={endDate} onChange={(e) => setEndDate(e.target.value)} className="text-sm border border-nature-200 dark:border-nature-800 rounded-md px-2 py-1.5 focus:outline-none focus:border-green-500" />
                         </div>
                     )}
 
@@ -192,19 +192,19 @@ export default function AnalyticsReport() {
             </div>
 
             {isLoading ? (
-                <div className="h-64 flex flex-col items-center justify-center border-2 border-dashed border-nature-200 rounded-xl">
+                <div className="h-64 flex flex-col items-center justify-center border-2 border-dashed border-nature-200 dark:border-nature-800 rounded-xl">
                     <Loader2 className="w-8 h-8 text-green-500 animate-spin mb-2" />
                     <p className="text-nature-500 font-medium">Querying selected range...</p>
                 </div>
             ) : !metrics ? (
-                <div className="h-64 flex flex-col items-center justify-center border-2 border-dashed border-nature-200 rounded-xl bg-nature-50/50">
+                <div className="h-64 flex flex-col items-center justify-center border-2 border-dashed border-nature-200 dark:border-nature-800 rounded-xl bg-nature-50 dark:bg-nature-900/50">
                     <Filter className="w-8 h-8 text-nature-400 mb-2" />
-                    <p className="text-nature-900 font-bold">No data available for selected range</p>
+                    <p className="text-nature-900 dark:text-white font-bold">No data available for selected range</p>
                     <p className="text-nature-500 text-sm">Try widening your time window or selecting a different date.</p>
                 </div>
             ) : (
-                <div className="bg-white border-2 border-nature-200 rounded-xl overflow-hidden relative">
-                    <div ref={reportRef} className="p-8 bg-white" style={{ minWidth: '800px' }}>
+                <div className="bg-white dark:bg-nature-950 border-2 border-nature-200 dark:border-nature-800 rounded-xl overflow-hidden relative">
+                    <div ref={reportRef} className="p-8 bg-white dark:bg-nature-950" style={{ minWidth: '800px' }}>
                         
                         <div className="border-b-2 border-green-600 pb-4 mb-6 flex justify-between items-end">
                             <div>
@@ -214,40 +214,40 @@ export default function AnalyticsReport() {
                                 <p className="text-nature-500 font-medium">Smart Irrigation Platform</p>
                             </div>
                             <div className="text-right">
-                                <h2 className="text-xl font-bold text-nature-900">Farm Analytics Report</h2>
+                                <h2 className="text-xl font-bold text-nature-900 dark:text-white">Farm Analytics Report</h2>
                                 <p className="text-nature-500 text-sm">Generated: {new Date().toLocaleString()}</p>
                             </div>
                         </div>
 
-                        <div className="bg-nature-50 p-4 rounded-lg border border-nature-200 mb-6 flex justify-between">
+                        <div className="bg-nature-50 dark:bg-nature-900 p-4 rounded-lg border border-nature-200 dark:border-nature-800 mb-6 flex justify-between">
                             <div>
                                 <p className="text-xs text-nature-500 uppercase font-bold tracking-wider mb-1">Account Holder</p>
-                                <p className="font-bold text-nature-900">{user?.user_metadata?.name || 'Registered User'}</p>
+                                <p className="font-bold text-nature-900 dark:text-white">{user?.user_metadata?.name || 'Registered User'}</p>
                                 <p className="text-sm text-nature-600">{user?.email}</p>
                             </div>
                             <div className="text-right">
                                 <p className="text-xs text-nature-500 uppercase font-bold tracking-wider mb-1">Assigned Telemetry Array</p>
-                                <p className="font-mono bg-white px-2 py-1 rounded text-sm border font-bold text-nature-700">{farmerId || 'GLOBAL'}</p>
+                                <p className="font-mono bg-white dark:bg-nature-950 px-2 py-1 rounded text-sm border font-bold text-nature-700 dark:text-nature-200">{farmerId || 'GLOBAL'}</p>
                             </div>
                         </div>
 
                         <div className="grid grid-cols-4 gap-4 mb-8">
                             <div className="border border-blue-200 bg-blue-50/50 p-4 rounded-lg">
                                 <p className="text-xs text-blue-600 uppercase font-bold mb-1">Avg Moisture</p>
-                                <p className="text-2xl font-black text-nature-900">{metrics.avgMoisture}%</p>
+                                <p className="text-2xl font-black text-nature-900 dark:text-white">{metrics.avgMoisture}%</p>
                                 <p className="text-xs text-blue-600 font-medium mt-1">{metrics.moistureTrend}</p>
                             </div>
                             <div className="border border-red-200 bg-red-50/50 p-4 rounded-lg">
                                 <p className="text-xs text-red-600 uppercase font-bold mb-1">Avg Temperature</p>
-                                <p className="text-2xl font-black text-nature-900">{metrics.avgTemp}°C</p>
+                                <p className="text-2xl font-black text-nature-900 dark:text-white">{metrics.avgTemp}°C</p>
                             </div>
                             <div className="border border-cyan-200 bg-cyan-50/50 p-4 rounded-lg">
                                 <p className="text-xs text-cyan-600 uppercase font-bold mb-1">Avg Tank Level</p>
-                                <p className="text-2xl font-black text-nature-900">{metrics.avgWater}%</p>
+                                <p className="text-2xl font-black text-nature-900 dark:text-white">{metrics.avgWater}%</p>
                             </div>
                             <div className="border border-green-200 bg-green-50/50 p-4 rounded-lg">
                                 <p className="text-xs text-green-600 uppercase font-bold mb-1">Irrigation Events</p>
-                                <p className="text-2xl font-black text-nature-900">{metrics.irrigationEvents}</p>
+                                <p className="text-2xl font-black text-nature-900 dark:text-white">{metrics.irrigationEvents}</p>
                                 <p className="text-xs text-green-600 font-medium mt-1">Detected Spikes</p>
                             </div>
                         </div>
@@ -261,7 +261,7 @@ export default function AnalyticsReport() {
                         </div>
 
                         <div className="mb-8">
-                            <h3 className="font-bold text-nature-900 border-b pb-2 mb-4">Moisture vs Time</h3>
+                            <h3 className="font-bold text-nature-900 dark:text-white border-b pb-2 mb-4">Moisture vs Time</h3>
                             <div className="h-64 w-full">
                                 <ResponsiveContainer width="100%" height="100%">
                                     <AreaChart data={metrics.chartData} margin={{ top: 5, right: 0, left: -20, bottom: 0 }}>
@@ -275,7 +275,7 @@ export default function AnalyticsReport() {
                         </div>
 
                         <div className="mb-8">
-                            <h3 className="font-bold text-nature-900 border-b pb-2 mb-4">Temperature vs Time</h3>
+                            <h3 className="font-bold text-nature-900 dark:text-white border-b pb-2 mb-4">Temperature vs Time</h3>
                             <div className="h-48 w-full">
                                 <ResponsiveContainer width="100%" height="100%">
                                     <AreaChart data={metrics.chartData} margin={{ top: 5, right: 0, left: -20, bottom: 0 }}>
@@ -289,9 +289,9 @@ export default function AnalyticsReport() {
                         </div>
 
                         <div>
-                            <h3 className="font-bold text-nature-900 border-b pb-2 mb-4">Raw Telemetry Snippet (Latest 5 Rows)</h3>
+                            <h3 className="font-bold text-nature-900 dark:text-white border-b pb-2 mb-4">Raw Telemetry Snippet (Latest 5 Rows)</h3>
                             <table className="w-full text-sm text-left">
-                                <thead className="bg-nature-50 text-nature-500 uppercase text-xs font-bold">
+                                <thead className="bg-nature-50 dark:bg-nature-900 text-nature-500 uppercase text-xs font-bold">
                                     <tr>
                                         <th className="px-4 py-2 rounded-tl-lg">Timestamp</th>
                                         <th className="px-4 py-2">Moisture (%)</th>
@@ -301,8 +301,8 @@ export default function AnalyticsReport() {
                                 </thead>
                                 <tbody>
                                     {[...metrics.chartData].reverse().slice(0, 5).map((row, idx) => (
-                                        <tr key={idx} className="border-b border-nature-100 last:border-0 hover:bg-nature-50/50">
-                                            <td className="px-4 py-3 font-medium text-nature-900">{row.timestamp}</td>
+                                        <tr key={idx} className="border-b border-nature-100 dark:border-nature-700/50 last:border-0 hover:bg-nature-50 dark:bg-nature-900/50">
+                                            <td className="px-4 py-3 font-medium text-nature-900 dark:text-white">{row.timestamp}</td>
                                             <td className="px-4 py-3 text-blue-600 font-bold">{row.moisture}</td>
                                             <td className="px-4 py-3 text-red-600 font-bold">{row.temperature}</td>
                                             <td className="px-4 py-3 text-cyan-600 font-bold">{row.water_level}</td>

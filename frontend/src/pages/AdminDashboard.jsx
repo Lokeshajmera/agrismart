@@ -52,10 +52,10 @@ const AdminDashboard = () => {
     if (loading) return <div className="p-6">Loading admin data...</div>;
 
     return (
-        <div className="p-6 space-y-8 bg-nature-50 min-h-screen">
+        <div className="p-6 space-y-8 bg-nature-50 dark:bg-nature-900 min-h-screen">
             <header className="flex justify-between items-center mb-8">
                 <div>
-                    <h1 className="text-3xl font-bold text-nature-900">{t('admin')}</h1>
+                    <h1 className="text-3xl font-bold text-nature-900 dark:text-white">{t('admin')}</h1>
                     <p className="text-nature-600">Platform Overview & Management</p>
                 </div>
             </header>
@@ -68,14 +68,14 @@ const AdminDashboard = () => {
                     { label: 'New Suggestions', value: suggestions.length, icon: Lightbulb, color: 'bg-yellow-500' },
                     { label: 'Active Users', value: stats.users, icon: TrendingUp, color: 'bg-green-500' },
                 ].map((stat, i) => (
-                    <div key={i} className="bg-white p-6 rounded-xl shadow-sm border border-nature-200">
+                    <div key={i} className="bg-white dark:bg-nature-950 p-6 rounded-xl shadow-sm border border-nature-200 dark:border-nature-800">
                         <div className="flex items-center gap-4">
                             <div className={`p-3 rounded-lg text-white ${stat.color}`}>
                                 <stat.icon className="w-6 h-6" />
                             </div>
                             <div>
                                 <p className="text-sm text-nature-600">{stat.label}</p>
-                                <p className="text-2xl font-bold text-nature-900">{stat.value}</p>
+                                <p className="text-2xl font-bold text-nature-900 dark:text-white">{stat.value}</p>
                             </div>
                         </div>
                     </div>
@@ -84,8 +84,8 @@ const AdminDashboard = () => {
 
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
                 {/* Complaints Section */}
-                <section className="bg-white rounded-xl shadow-sm border border-nature-200 overflow-hidden">
-                    <div className="p-6 border-b border-nature-100 flex justify-between items-center">
+                <section className="bg-white dark:bg-nature-950 rounded-xl shadow-sm border border-nature-200 dark:border-nature-800 overflow-hidden">
+                    <div className="p-6 border-b border-nature-100 dark:border-nature-700/50 flex justify-between items-center">
                         <h2 className="text-xl font-bold flex items-center gap-2">
                             <AlertCircle className="w-5 h-5 text-red-500" />
                             Recent Complaints
@@ -93,9 +93,9 @@ const AdminDashboard = () => {
                     </div>
                     <div className="divide-y divide-nature-100">
                         {complaints.length > 0 ? complaints.map((c) => (
-                            <div key={c.id} className="p-4 hover:bg-nature-50">
+                            <div key={c.id} className="p-4 hover:bg-nature-50 dark:bg-nature-900">
                                 <div className="flex justify-between mb-1">
-                                    <span className="font-medium text-nature-900">{c.users?.name} ({c.users?.farmer_id})</span>
+                                    <span className="font-medium text-nature-900 dark:text-white">{c.users?.name} ({c.users?.farmer_id})</span>
                                     <span className={`text-xs px-2 py-1 rounded-full ${
                                         c.status === 'pending' ? 'bg-red-100 text-red-600' : 
                                         c.status === 'resolved' ? 'bg-green-100 text-green-600' : 'bg-blue-100 text-blue-600'
@@ -111,8 +111,8 @@ const AdminDashboard = () => {
                 </section>
 
                 {/* Suggestions Section */}
-                <section className="bg-white rounded-xl shadow-sm border border-nature-200 overflow-hidden">
-                    <div className="p-6 border-b border-nature-100">
+                <section className="bg-white dark:bg-nature-950 rounded-xl shadow-sm border border-nature-200 dark:border-nature-800 overflow-hidden">
+                    <div className="p-6 border-b border-nature-100 dark:border-nature-700/50">
                         <h2 className="text-xl font-bold flex items-center gap-2">
                             <Lightbulb className="w-5 h-5 text-yellow-500" />
                             Farmer Feedback
@@ -120,9 +120,9 @@ const AdminDashboard = () => {
                     </div>
                     <div className="divide-y divide-nature-100">
                         {suggestions.length > 0 ? suggestions.map((s) => (
-                            <div key={s.id} className="p-4 hover:bg-nature-50">
+                            <div key={s.id} className="p-4 hover:bg-nature-50 dark:bg-nature-900">
                                 <div className="flex justify-between mb-1">
-                                    <span className="font-medium text-nature-900">{s.users?.name}</span>
+                                    <span className="font-medium text-nature-900 dark:text-white">{s.users?.name}</span>
                                     <span className="text-xs text-nature-400">{new Date(s.created_at).toLocaleDateString()}</span>
                                 </div>
                                 <p className="text-sm text-nature-600">{s.message}</p>

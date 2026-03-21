@@ -1,6 +1,6 @@
-import React from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { AlertsProvider } from './context/AlertsContext';
+import { ThemeProvider } from './context/ThemeContext';
 import AppLayout from './components/layout/AppLayout';
 import OfflineBanner from './components/OfflineBanner';
 import Dashboard from './pages/Dashboard';
@@ -29,49 +29,51 @@ import SimulationMode from './pages/SimulationMode';
 
 function App() {
   return (
-    <AlertsProvider>
-      <OfflineBanner />
-      <BrowserRouter>
-        <Routes>
-        {/* Public Routes */}
-        <Route path="/" element={<LandingPage />} />
-        <Route path="/login" element={<Login />} />
-        <Route path="/signup" element={<Signup />} />
-        <Route path="/verify-otp" element={<VerifyOtp />} />
-        <Route path="/forgot-password" element={<ForgotPassword />} />
-        <Route path="/reset-password" element={<ResetPassword />} />
+    <ThemeProvider>
+      <AlertsProvider>
+        <OfflineBanner />
+        <BrowserRouter>
+          <Routes>
+          {/* Public Routes */}
+          <Route path="/" element={<LandingPage />} />
+          <Route path="/login" element={<Login />} />
+          <Route path="/signup" element={<Signup />} />
+          <Route path="/verify-otp" element={<VerifyOtp />} />
+          <Route path="/forgot-password" element={<ForgotPassword />} />
+          <Route path="/reset-password" element={<ResetPassword />} />
 
-        {/* Protected Dashboard Routes */}
-        <Route element={<ProtectedRoute />}>
-          <Route path="/app" element={<AppLayout />}>
-            <Route index element={<Navigate to="dashboard" replace />} />
-            <Route path="dashboard" element={<Dashboard />} />
-            <Route path="profile" element={<Profile />} />
-            <Route path="map" element={<FarmMap />} />
-            <Route path="sensors" element={<SensorMonitoring />} />
-            <Route path="irrigation" element={<IrrigationControl />} />
-            <Route path="insights" element={<AICropIntelligence />} />
-            <Route path="recommendations" element={<Recommendations />} />
-            <Route path="schemes" element={<GovernmentSchemes />} />
-            <Route path="alerts" element={<AlertsNotifications />} />
-            <Route path="analytics" element={<Analytics />} />
-            <Route path="settings" element={<Settings />} />
-            <Route path="complaint" element={<ComplaintForm />} />
-            <Route path="suggestion" element={<SuggestionForm />} />
-            <Route path="simulation" element={<SimulationMode />} />
+          {/* Protected Dashboard Routes */}
+          <Route element={<ProtectedRoute />}>
+            <Route path="/app" element={<AppLayout />}>
+              <Route index element={<Navigate to="dashboard" replace />} />
+              <Route path="dashboard" element={<Dashboard />} />
+              <Route path="profile" element={<Profile />} />
+              <Route path="map" element={<FarmMap />} />
+              <Route path="sensors" element={<SensorMonitoring />} />
+              <Route path="irrigation" element={<IrrigationControl />} />
+              <Route path="insights" element={<AICropIntelligence />} />
+              <Route path="recommendations" element={<Recommendations />} />
+              <Route path="schemes" element={<GovernmentSchemes />} />
+              <Route path="alerts" element={<AlertsNotifications />} />
+              <Route path="analytics" element={<Analytics />} />
+              <Route path="settings" element={<Settings />} />
+              <Route path="complaint" element={<ComplaintForm />} />
+              <Route path="suggestion" element={<SuggestionForm />} />
+              <Route path="simulation" element={<SimulationMode />} />
+            </Route>
+            {/* Admin Routes */}
+            <Route path="/admin" element={<AdminDashboard />} />
           </Route>
-          {/* Admin Routes */}
-          <Route path="/admin" element={<AdminDashboard />} />
-        </Route>
 
-        {/* Owner Target Route */}
-        <Route path="/owner-dashboard" element={<OwnerDashboard />} />
+          {/* Owner Target Route */}
+          <Route path="/owner-dashboard" element={<OwnerDashboard />} />
 
-        {/* Catch-all */}
-        <Route path="*" element={<Navigate to="/" replace />} />
-      </Routes>
-    </BrowserRouter>
-    </AlertsProvider>
+          {/* Catch-all */}
+          <Route path="*" element={<Navigate to="/" replace />} />
+        </Routes>
+      </BrowserRouter>
+      </AlertsProvider>
+    </ThemeProvider>
   );
 }
 

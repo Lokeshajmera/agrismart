@@ -19,7 +19,7 @@ export default function AICropIntelligence() {
         <div className="space-y-6 animate-in fade-in duration-500">
             <div className="flex justify-between items-center">
                 <div>
-                    <h1 className="text-2xl font-bold text-nature-900 tracking-tight">AI Crop Intelligence</h1>
+                    <h1 className="text-2xl font-bold text-nature-900 dark:text-white tracking-tight">AI Crop Intelligence</h1>
                     <p className="text-nature-500 mt-1">Machine Learning insights tailored for your wheat crop.</p>
                 </div>
                 <div className="bg-earth-100 text-earth-800 px-3 py-1.5 rounded-lg text-sm font-bold flex items-center gap-2 border border-earth-200">
@@ -70,7 +70,7 @@ export default function AICropIntelligence() {
                     </div>
                 </div>
 
-                <div className="bg-white p-6 rounded-2xl border border-red-100 shadow-sm shadow-red-500/5 flex flex-col">
+                <div className="bg-white dark:bg-nature-950 p-6 rounded-2xl border border-red-100 shadow-sm shadow-red-500/5 flex flex-col">
                     <div className="flex items-center gap-2 mb-4 text-red-600">
                         <ShieldAlert className="w-5 h-5" />
                         <span className="font-bold text-sm uppercase tracking-wider">Disease Risk</span>
@@ -79,7 +79,7 @@ export default function AICropIntelligence() {
                         <div className="w-20 h-20 rounded-full bg-red-50 border-4 border-red-100 flex items-center justify-center mb-4 text-red-500">
                             <AlertTriangle className="w-8 h-8" />
                         </div>
-                        <h3 className="text-xl font-bold text-nature-900 mb-1">Medium Risk</h3>
+                        <h3 className="text-xl font-bold text-nature-900 dark:text-white mb-1">Medium Risk</h3>
                         <p className="text-red-600 font-semibold mb-2">Wheat Rust</p>
                         <p className="text-sm text-nature-600 mb-6">High humidity tomorrow increases susceptibility. Consider preventative measures.</p>
 
@@ -92,7 +92,7 @@ export default function AICropIntelligence() {
                 </div>
             </div>
 
-            <h3 className="text-lg font-bold text-nature-900 mt-8 mb-4">Insights Feed</h3>
+            <h3 className="text-lg font-bold text-nature-900 dark:text-white mt-8 mb-4">Insights Feed</h3>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {[
@@ -100,12 +100,12 @@ export default function AICropIntelligence() {
                     { icon: AlertTriangle, title: 'Heat Stress Warning', desc: 'Temperatures projected to exceed 32°C next Tuesday. Pre-emptive short irrigation bursts scheduled.', type: 'advisory' },
                     { icon: CheckCircle2, title: 'Vegetation Health (NDVI)', desc: 'Satellite imagery analysis confirms uniform crop health across 95% of the acreage. No major anomalies.', type: 'positive' },
                 ].map((item, i) => (
-                    <div key={i} className="bg-white p-5 rounded-xl border border-nature-200 shadow-sm flex items-start gap-4">
+                    <div key={i} className="bg-white dark:bg-nature-950 p-5 rounded-xl border border-nature-200 dark:border-nature-800 shadow-sm flex items-start gap-4">
                         <div className={`p-2.5 rounded-lg shrink-0 ${item.type === 'positive' ? 'bg-green-100 text-green-600' : 'bg-orange-100 text-orange-600'}`}>
                             <item.icon className="w-5 h-5" />
                         </div>
                         <div>
-                            <h4 className="font-bold text-nature-900 mb-1">{item.title}</h4>
+                            <h4 className="font-bold text-nature-900 dark:text-white mb-1">{item.title}</h4>
                             <p className="text-sm text-nature-600 leading-relaxed">{item.desc}</p>
                         </div>
                     </div>

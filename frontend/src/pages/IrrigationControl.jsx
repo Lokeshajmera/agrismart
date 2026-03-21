@@ -189,9 +189,9 @@ export default function IrrigationControl() {
     return (
         <div className="space-y-6 animate-in fade-in duration-500 max-w-7xl mx-auto p-4">
 
-            <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 bg-white p-6 rounded-3xl border border-nature-200 shadow-sm">
+            <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 bg-white dark:bg-nature-950 p-6 rounded-3xl border border-nature-200 dark:border-nature-800 shadow-sm">
                 <div>
-                    <h1 className="text-2xl font-bold text-nature-900 tracking-tight flex items-center gap-2">
+                    <h1 className="text-2xl font-bold text-nature-900 dark:text-white tracking-tight flex items-center gap-2">
                         <Activity className="w-6 h-6 text-earth-500 animate-pulse" /> Live Irrigation Control
                     </h1>
                     <p className="text-nature-500 mt-1">{t('Synchronize manual overrides with automated real-time thresholds.')}</p>
@@ -199,7 +199,7 @@ export default function IrrigationControl() {
                 <div className="flex items-center gap-3 w-full md:w-auto">
                     <button
                         onClick={() => setSystemAuto(!systemAuto)}
-                        className={`flex-1 md:flex-none px-6 py-2.5 rounded-xl text-sm font-bold flex items-center justify-center gap-2 transition-all shadow-sm border ${systemAuto ? 'bg-blue-500 text-white border-blue-600 hover:bg-blue-600' : 'bg-white text-nature-700 border-nature-200 hover:bg-nature-50'}`}
+                        className={`flex-1 md:flex-none px-6 py-2.5 rounded-xl text-sm font-bold flex items-center justify-center gap-2 transition-all shadow-sm border ${systemAuto ? 'bg-blue-500 text-white border-blue-600 hover:bg-blue-600' : 'bg-white dark:bg-nature-950 text-nature-700 dark:text-nature-200 border-nature-200 dark:border-nature-800 hover:bg-nature-50 dark:bg-nature-900'}`}
                     >
                         <Settings2 className="w-4 h-4" />
                         {systemAuto ? t('Auto Mode Active') : t('Manual Mode Active')}
@@ -215,24 +215,24 @@ export default function IrrigationControl() {
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start">
                 <div className="space-y-6">
                     {/* Weather Intelligence Card */}
-                    <div className="bg-nature-50 p-6 rounded-3xl border border-nature-200 flex items-center justify-between shadow-inner">
+                    <div className="bg-nature-50 dark:bg-nature-900 p-6 rounded-3xl border border-nature-200 dark:border-nature-800 flex items-center justify-between shadow-inner">
                         <div className="flex items-center gap-4">
                             <div className="p-3 bg-nature-900 text-white rounded-2xl">
                                 <Sun className="w-5 h-5 animate-spin-slow" />
                             </div>
                             <div>
-                                <h4 className="font-bold text-nature-900 text-sm">{weather.city} {t('Weather')}</h4>
+                                <h4 className="font-bold text-nature-900 dark:text-white text-sm">{weather.city} {t('Weather')}</h4>
                                 <p className="text-xs text-nature-500 uppercase tracking-widest font-bold">{t('Real-time Intelligence')}</p>
                             </div>
                         </div>
                         <div className="flex gap-6 text-right">
                             <div>
                                 <p className="text-[10px] text-nature-400 font-bold uppercase">{t('Temp')}</p>
-                                <p className="font-black text-nature-900">{weather.temp}°C</p>
+                                <p className="font-black text-nature-900 dark:text-white">{weather.temp}°C</p>
                             </div>
                             <div>
                                 <p className="text-[10px] text-nature-400 font-bold uppercase">{t('Humidity')}</p>
-                                <p className="font-black text-nature-900">{weather.humidity}%</p>
+                                <p className="font-black text-nature-900 dark:text-white">{weather.humidity}%</p>
                             </div>
                             {weather.rain > 0 && (
                                 <div>
@@ -266,10 +266,10 @@ export default function IrrigationControl() {
                 </div>
 
                 {/* Field Control Section */}
-                <div className="bg-white p-8 rounded-3xl border border-nature-200 shadow-sm flex flex-col">
+                <div className="bg-white dark:bg-nature-950 p-8 rounded-3xl border border-nature-200 dark:border-nature-800 shadow-sm flex flex-col">
                     <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8 gap-4">
                         <div>
-                            <h3 className="text-lg font-bold text-nature-900">{t('Field Logic Control')}</h3>
+                            <h3 className="text-lg font-bold text-nature-900 dark:text-white">{t('Field Logic Control')}</h3>
                             <p className="text-sm text-nature-500">{systemAuto ? t('Independent Dual-Channel AI') : t('Manual Zone Overrides')}</p>
                         </div>
                         <div className="flex flex-col items-end gap-1 w-full sm:w-48">
@@ -277,7 +277,7 @@ export default function IrrigationControl() {
                                 <span>{t('Main Tank')}</span>
                                 <span className={currentData.water_level < 20 ? 'text-red-500' : 'text-blue-500'}>{currentData.water_level.toFixed(1)}%</span>
                             </div>
-                            <div className="w-full h-2 bg-nature-100 rounded-full overflow-hidden border border-nature-200/50">
+                            <div className="w-full h-2 bg-nature-100 dark:bg-nature-800 rounded-full overflow-hidden border border-nature-200 dark:border-nature-800/50">
                                 <motion.div
                                     initial={{ width: 0 }}
                                     animate={{ width: `${currentData.water_level}%` }}
@@ -292,24 +292,24 @@ export default function IrrigationControl() {
                             <div
                                 key={valve.id}
                                 onClick={() => toggleValve(valve.id)}
-                                className={`p-6 rounded-2xl border transition-all cursor-pointer group ${valve.status === 'open' ? 'border-blue-400 bg-blue-50 shadow-md ring-2 ring-blue-500/10' : 'border-nature-100 bg-white hover:border-nature-300'}`}
+                                className={`p-6 rounded-2xl border transition-all cursor-pointer group ${valve.status === 'open' ? 'border-blue-400 bg-blue-50 shadow-md ring-2 ring-blue-500/10' : 'border-nature-100 dark:border-nature-700/50 bg-white dark:bg-nature-950 hover:border-nature-300'}`}
                             >
                                 <div className="flex justify-between items-center">
                                     <div className="flex gap-4 items-center">
-                                        <div className={`p-4 rounded-xl transition-all ${valve.status === 'open' ? 'bg-blue-500 text-white shadow-lg' : 'bg-nature-50 text-nature-400 group-hover:bg-nature-100'}`}>
+                                        <div className={`p-4 rounded-xl transition-all ${valve.status === 'open' ? 'bg-blue-500 text-white shadow-lg' : 'bg-nature-50 dark:bg-nature-900 text-nature-400 group-hover:bg-nature-100 dark:bg-nature-800'}`}>
                                             <Droplets className="w-6 h-6" />
                                         </div>
                                         <div>
-                                            <h4 className="font-bold text-nature-900 text-base">{valve.name}</h4>
+                                            <h4 className="font-bold text-nature-900 dark:text-white text-base">{valve.name}</h4>
                                             <div className="flex items-center gap-3 mt-1">
-                                                <p className="text-xs text-nature-500">{t('Soil Moisture')}: <span className={`font-bold ${(Number(valve.id === 1 ? currentData.moisture : currentData.moisture_b) || 0) < 30 ? 'text-red-500' : 'text-nature-700'}`}>{(Number(valve.id === 1 ? currentData.moisture : currentData.moisture_b) || 0).toFixed(1)}%</span></p>
+                                                <p className="text-xs text-nature-500">{t('Soil Moisture')}: <span className={`font-bold ${(Number(valve.id === 1 ? currentData.moisture : currentData.moisture_b) || 0) < 30 ? 'text-red-500' : 'text-nature-700 dark:text-nature-200'}`}>{(Number(valve.id === 1 ? currentData.moisture : currentData.moisture_b) || 0).toFixed(1)}%</span></p>
                                                 <span className={`w-1.5 h-1.5 rounded-full ${valve.status === 'open' ? 'bg-blue-500' : 'bg-gray-300'}`}></span>
                                                 <p className="text-[10px] text-nature-400 uppercase font-bold tracking-widest">{valve.status === 'open' ? t('Irrigating') : t('Idle')}</p>
                                             </div>
                                         </div>
                                     </div>
                                     <div className={`w-12 h-7 rounded-full relative transition-colors ${valve.status === 'open' ? 'bg-blue-600' : 'bg-nature-200'} ${systemAuto ? 'opacity-40' : ''}`}>
-                                        <div className={`absolute top-1 w-5 h-5 rounded-full bg-white transition-all shadow-sm ${valve.status === 'open' ? 'left-6' : 'left-1'}`} />
+                                        <div className={`absolute top-1 w-5 h-5 rounded-full bg-white dark:bg-nature-950 transition-all shadow-sm ${valve.status === 'open' ? 'left-6' : 'left-1'}`} />
                                     </div>
                                 </div>
                             </div>
@@ -317,12 +317,12 @@ export default function IrrigationControl() {
                     </div>
 
                     {/* System Alerts */}
-                    <div className="mt-2 border-t border-nature-100 pt-8">
+                    <div className="mt-2 border-t border-nature-100 dark:border-nature-700/50 pt-8">
                         <div className="flex items-center gap-3 mb-4">
                             <div className="p-2 bg-red-50 rounded-lg text-red-600">
                                 <AlertCircle className="w-4 h-4" />
                             </div>
-                            <h3 className="text-sm font-bold text-nature-900 uppercase tracking-widest">{t('Intelligence Alerts')}</h3>
+                            <h3 className="text-sm font-bold text-nature-900 dark:text-white uppercase tracking-widest">{t('Intelligence Alerts')}</h3>
                         </div>
 
                         <div className="space-y-3 max-h-[250px] overflow-y-auto pr-2 custom-scrollbar">
@@ -344,7 +344,7 @@ export default function IrrigationControl() {
                                         </motion.div>
                                     ))
                                 ) : (
-                                    <div className="flex items-center gap-3 p-4 bg-nature-50 rounded-xl border border-dashed border-nature-200">
+                                    <div className="flex items-center gap-3 p-4 bg-nature-50 dark:bg-nature-900 rounded-xl border border-dashed border-nature-200 dark:border-nature-800">
                                         <CheckCircle2 className="w-5 h-5 text-nature-300" />
                                         <p className="text-[10px] font-bold text-nature-400 uppercase tracking-widest">{t('No active AI recommendations')}</p>
                                     </div>
@@ -356,13 +356,13 @@ export default function IrrigationControl() {
             </div>
 
             {/* Trends Section */}
-            <div className="bg-white p-8 rounded-3xl border border-nature-200 shadow-sm overflow-hidden mt-8">
+            <div className="bg-white dark:bg-nature-950 p-8 rounded-3xl border border-nature-200 dark:border-nature-800 shadow-sm overflow-hidden mt-8">
                 <div className="flex justify-between items-center mb-8">
                     <div className="flex items-center gap-3">
                         <div className="p-2 bg-earth-50 rounded-lg text-earth-600">
                             <Activity className="w-5 h-5" />
                         </div>
-                        <h3 className="text-xl font-bold text-nature-900">{t('Telemetry Trends')}</h3>
+                        <h3 className="text-xl font-bold text-nature-900 dark:text-white">{t('Telemetry Trends')}</h3>
                     </div>
 
                 </div>

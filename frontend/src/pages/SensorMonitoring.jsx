@@ -33,7 +33,7 @@ export default function SensorMonitoring() {
         <div className="space-y-6 animate-in fade-in duration-500">
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
                 <div>
-                    <h1 className="text-2xl font-bold text-nature-900 tracking-tight">Sensor Network</h1>
+                    <h1 className="text-2xl font-bold text-nature-900 dark:text-white tracking-tight">Sensor Network</h1>
                     <p className="text-nature-500 mt-1">Live telemetry from deployed IoT devices.</p>
                 </div>
                 
@@ -54,7 +54,7 @@ export default function SensorMonitoring() {
             </div>
 
             {loading && sensorData.length === 0 ? (
-                <div className="flex flex-col items-center justify-center p-12 bg-white rounded-2xl border border-nature-200">
+                <div className="flex flex-col items-center justify-center p-12 bg-white dark:bg-nature-950 rounded-2xl border border-nature-200 dark:border-nature-800">
                     <Loader2 className="w-8 h-8 text-earth-500 animate-spin mb-4" />
                     <p className="text-nature-600">Syncing with hardware network...</p>
                 </div>
@@ -67,9 +67,9 @@ export default function SensorMonitoring() {
                             { label: 'Ambient Temp', stat: latest ? `${latest.temperature}°C` : '---', desc: 'Sector 1', icon: ThermometerSun, clr: 'text-red-500' },
                             { label: 'Soil pH Level', stat: latest ? latest.ph : '---', desc: 'Sector 1', icon: Wind, clr: 'text-green-500' },
                         ].map((sensor, i) => (
-                            <div key={i} className="bg-white p-5 rounded-xl border border-nature-200 shadow-sm flex flex-col justify-between">
+                            <div key={i} className="bg-white dark:bg-nature-950 p-5 rounded-xl border border-nature-200 dark:border-nature-800 shadow-sm flex flex-col justify-between">
                                 <div className="flex items-start justify-between mb-4">
-                                    <div className={`p-2 rounded-lg bg-nature-50 ${sensor.clr}`}>
+                                    <div className={`p-2 rounded-lg bg-nature-50 dark:bg-nature-900 ${sensor.clr}`}>
                                         <sensor.icon className="w-5 h-5" />
                                     </div>
                                     <div className="flex items-center gap-1.5">
@@ -92,7 +92,7 @@ export default function SensorMonitoring() {
                                     </div>
                                 </div>
                                 <div>
-                                    <p className="text-2xl font-bold text-nature-900">{sensor.stat}</p>
+                                    <p className="text-2xl font-bold text-nature-900 dark:text-white">{sensor.stat}</p>
                                     <h4 className="text-sm font-bold text-nature-600 mt-1">{sensor.label}</h4>
                                     <p className="text-xs text-nature-400 mt-1">{sensor.desc}</p>
                                 </div>
@@ -101,10 +101,10 @@ export default function SensorMonitoring() {
                     </div>
 
                     <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                        <div className="bg-white p-6 rounded-2xl border border-nature-200 shadow-sm">
+                        <div className="bg-white dark:bg-nature-950 p-6 rounded-2xl border border-nature-200 dark:border-nature-800 shadow-sm">
                             <div className="flex justify-between items-center mb-6">
-                                <h3 className="text-lg font-bold text-nature-900">Live Telemetry (Last 20)</h3>
-                                <span className="text-xs font-medium text-nature-500 bg-nature-50 px-2 py-1 rounded">
+                                <h3 className="text-lg font-bold text-nature-900 dark:text-white">Live Telemetry (Last 20)</h3>
+                                <span className="text-xs font-medium text-nature-500 bg-nature-50 dark:bg-nature-900 px-2 py-1 rounded">
                                     {lastPing ? `Last Ping: ${lastPing.toLocaleTimeString()}` : 'Waiting for ping...'}
                                 </span>
                             </div>
@@ -128,11 +128,11 @@ export default function SensorMonitoring() {
                             </div>
                         </div>
 
-                        <div className="bg-white p-6 rounded-2xl border border-nature-200 shadow-sm overflow-hidden flex flex-col">
-                            <h3 className="text-lg font-bold text-nature-900 mb-4">Device Roster</h3>
+                        <div className="bg-white dark:bg-nature-950 p-6 rounded-2xl border border-nature-200 dark:border-nature-800 shadow-sm overflow-hidden flex flex-col">
+                            <h3 className="text-lg font-bold text-nature-900 dark:text-white mb-4">Device Roster</h3>
                             <div className="flex-1 overflow-y-auto">
                                 <table className="w-full text-sm text-left">
-                                    <thead className="text-xs text-nature-500 uppercase bg-nature-50">
+                                    <thead className="text-xs text-nature-500 uppercase bg-nature-50 dark:bg-nature-900">
                                         <tr>
                                             <th className="px-4 py-3 rounded-tl-lg">Device ID</th>
                                             <th className="px-4 py-3">Type</th>
@@ -144,8 +144,8 @@ export default function SensorMonitoring() {
                                             { id: 'ESP32-NODE-A', type: 'Moisture/Temp', status: latest ? 'Active' : 'Offline' },
                                             { id: 'ESP32-NODE-B', type: 'Water/pH', status: latest ? 'Active' : 'Offline' }
                                         ].map((row, i) => (
-                                            <tr key={i} className="border-b border-nature-100 last:border-0 hover:bg-nature-50/50 transition-colors">
-                                                <td className="px-4 py-3 font-medium text-nature-900">{row.id}</td>
+                                            <tr key={i} className="border-b border-nature-100 dark:border-nature-700/50 last:border-0 hover:bg-nature-50 dark:bg-nature-900/50 transition-colors">
+                                                <td className="px-4 py-3 font-medium text-nature-900 dark:text-white">{row.id}</td>
                                                 <td className="px-4 py-3 text-nature-600">{row.type}</td>
                                                 <td className={`px-4 py-3 font-medium ${row.status === 'Active' ? 'text-green-500' : 'text-gray-400'}`}>
                                                     {row.status}

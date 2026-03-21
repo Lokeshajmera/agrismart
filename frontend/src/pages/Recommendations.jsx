@@ -39,7 +39,7 @@ export default function Recommendations() {
             {/* Header */}
             <div className="flex flex-wrap justify-between items-start gap-4">
                 <div>
-                    <h1 className="text-2xl font-bold text-nature-900 tracking-tight flex items-center gap-2">
+                    <h1 className="text-2xl font-bold text-nature-900 dark:text-white tracking-tight flex items-center gap-2">
                         <Sparkles className="w-6 h-6 text-earth-500" /> AI Recommendations
                     </h1>
                     <p className="text-nature-500 mt-1 text-sm">
@@ -58,7 +58,7 @@ export default function Recommendations() {
                     )}
                 </div>
                 <div className="flex items-center gap-2">
-                    <span className="text-xs text-nature-500 font-medium bg-nature-100 px-2.5 py-1 rounded-full border border-nature-200">
+                    <span className="text-xs text-nature-500 font-medium bg-nature-100 dark:bg-nature-800 px-2.5 py-1 rounded-full border border-nature-200 dark:border-nature-800">
                         {visible.length} suggestion{visible.length !== 1 ? 's' : ''}
                     </span>
                     <button
@@ -67,7 +67,7 @@ export default function Recommendations() {
                         className={`flex items-center gap-1.5 text-sm font-medium px-3 py-2 rounded-lg transition-all cursor-pointer border ${
                             refreshing
                                 ? 'bg-earth-50 text-earth-600 border-earth-300 scale-95'
-                                : 'text-nature-600 bg-nature-100 hover:bg-green-100 hover:text-green-700 hover:border-green-300 active:scale-95 border-nature-200'
+                                : 'text-nature-600 bg-nature-100 dark:bg-nature-800 hover:bg-green-100 hover:text-green-700 hover:border-green-300 active:scale-95 border-nature-200 dark:border-nature-800'
                         }`}
                     >
                         <RefreshCw className={`w-4 h-4 ${refreshing ? 'animate-spin' : ''}`} />
@@ -90,7 +90,7 @@ export default function Recommendations() {
                     <div className="w-16 h-16 rounded-full bg-green-50 border border-green-200 flex items-center justify-center">
                         <CheckCircle className="w-8 h-8 text-green-500" />
                     </div>
-                    <p className="text-lg font-bold text-nature-700">All Caught Up!</p>
+                    <p className="text-lg font-bold text-nature-700 dark:text-nature-200">All Caught Up!</p>
                     <p className="text-sm text-nature-400 text-center max-w-xs">All suggestions dismissed. Click Refresh to generate new insights from current conditions.</p>
                     <button onClick={handleRefresh} className="mt-2 flex items-center gap-1.5 text-sm font-medium text-earth-600 hover:underline cursor-pointer">
                         <RefreshCw className="w-3.5 h-3.5" /> Refresh now
@@ -107,10 +107,10 @@ export default function Recommendations() {
                         return (
                             <div
                                 key={rec.id}
-                                className="bg-white rounded-2xl border border-nature-200 shadow-sm hover:shadow-md transition-all flex flex-col overflow-hidden"
+                                className="bg-white dark:bg-nature-950 rounded-2xl border border-nature-200 dark:border-nature-800 shadow-sm hover:shadow-md transition-all flex flex-col overflow-hidden"
                             >
                                 {/* Card header */}
-                                <div className="flex items-center justify-between px-5 pt-4 pb-3 border-b border-nature-100">
+                                <div className="flex items-center justify-between px-5 pt-4 pb-3 border-b border-nature-100 dark:border-nature-700/50">
                                     <div className="flex items-center gap-2">
                                         <div className={`w-8 h-8 rounded-xl ${rec.iconBg} flex items-center justify-center`}>
                                             <Icon className={`w-4 h-4 ${rec.iconColor}`} />
@@ -124,7 +124,7 @@ export default function Recommendations() {
                                         </span>
                                         <button
                                             onClick={() => dismiss(rec.id)}
-                                            className="text-[11px] font-semibold text-nature-400 hover:text-nature-600 hover:bg-nature-100 border border-nature-200 hover:border-nature-300 px-2.5 py-1 rounded-full transition-all cursor-pointer"
+                                            className="text-[11px] font-semibold text-nature-400 hover:text-nature-600 hover:bg-nature-100 dark:bg-nature-800 border border-nature-200 dark:border-nature-800 hover:border-nature-300 px-2.5 py-1 rounded-full transition-all cursor-pointer"
                                         >
                                             Got it ✓
                                         </button>
@@ -133,11 +133,11 @@ export default function Recommendations() {
 
                                 {/* Card body */}
                                 <div className="flex-1 flex flex-col px-5 py-4 gap-3">
-                                    <h3 className="font-bold text-nature-900 text-[15px] leading-snug">{rec.title}</h3>
+                                    <h3 className="font-bold text-nature-900 dark:text-white text-[15px] leading-snug">{rec.title}</h3>
                                     <p className="text-nature-600 text-sm leading-relaxed">{rec.reason}</p>
 
                                     {/* Tip */}
-                                    <div className="flex items-start gap-2 bg-nature-50 rounded-lg px-3 py-2 border border-nature-100 mt-auto">
+                                    <div className="flex items-start gap-2 bg-nature-50 dark:bg-nature-900 rounded-lg px-3 py-2 border border-nature-100 dark:border-nature-700/50 mt-auto">
                                         <Leaf className="w-3.5 h-3.5 text-earth-500 mt-0.5 shrink-0" />
                                         <p className="text-[11px] text-nature-500 leading-relaxed"><span className="font-semibold text-earth-600">Tip: </span>{rec.tip}</p>
                                     </div>
@@ -149,7 +149,7 @@ export default function Recommendations() {
             )}
 
             {!loading && (
-                <p className="text-center text-[11px] text-nature-400 pt-2 border-t border-nature-100">
+                <p className="text-center text-[11px] text-nature-400 pt-2 border-t border-nature-100 dark:border-nature-700/50">
                     ⚡ Powered by OpenWeatherMap + Supabase sensor data · Pune, Maharashtra
                 </p>
             )}

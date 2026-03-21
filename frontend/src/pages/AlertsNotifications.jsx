@@ -44,7 +44,7 @@ export default function AlertsNotifications() {
             {/* Header */}
             <div className="flex flex-wrap justify-between items-start gap-4 mb-6">
                 <div>
-                    <h1 className="text-2xl font-bold text-nature-900 tracking-tight">Alerts & Notifications</h1>
+                    <h1 className="text-2xl font-bold text-nature-900 dark:text-white tracking-tight">Alerts & Notifications</h1>
                     <p className="text-nature-500 mt-1 text-sm">
                         Real-time weather alerts for your farm. Auto-refreshes every 10 minutes.
                     </p>
@@ -62,7 +62,7 @@ export default function AlertsNotifications() {
                         className={`flex items-center gap-1.5 text-sm font-medium px-3 py-2 rounded-lg transition-all cursor-pointer border ${
                             refreshing
                                 ? 'bg-earth-50 text-earth-600 border-earth-300 scale-95'
-                                : 'text-nature-600 bg-nature-100 hover:bg-green-100 hover:text-green-700 hover:border-green-300 active:scale-95 border-nature-200'
+                                : 'text-nature-600 bg-nature-100 dark:bg-nature-800 hover:bg-green-100 hover:text-green-700 hover:border-green-300 active:scale-95 border-nature-200 dark:border-nature-800'
                         }`}
                         title="Refresh now"
                     >
@@ -94,7 +94,7 @@ export default function AlertsNotifications() {
                     <div className="w-16 h-16 rounded-full bg-green-50 border border-green-200 flex items-center justify-center">
                         <BellOff className="w-8 h-8 text-green-500" />
                     </div>
-                    <p className="text-lg font-bold text-nature-700">No Active Alerts</p>
+                    <p className="text-lg font-bold text-nature-700 dark:text-nature-200">No Active Alerts</p>
                     <p className="text-sm text-nature-400">All notifications have been cleared. Alerts will appear here when weather conditions change.</p>
                     <button
                         onClick={refresh}
@@ -124,7 +124,7 @@ export default function AlertsNotifications() {
                                 {/* Content */}
                                 <div className="flex-1 min-w-0">
                                     <div className="flex justify-between items-start mb-1 gap-2">
-                                        <h3 className={`font-bold text-sm ${isCritical ? 'text-red-900' : 'text-nature-900'}`}>
+                                        <h3 className={`font-bold text-sm ${isCritical ? 'text-red-900' : 'text-nature-900 dark:text-white'}`}>
                                             {isCritical && <span className="mr-1">🚨</span>}
                                             {alert.title}
                                         </h3>
@@ -133,7 +133,7 @@ export default function AlertsNotifications() {
                                             {timeAgo(alert.time)}
                                         </span>
                                     </div>
-                                    <p className="text-nature-700 text-sm leading-relaxed">{alert.msg}</p>
+                                    <p className="text-nature-700 dark:text-nature-200 text-sm leading-relaxed">{alert.msg}</p>
                                     <span className={`inline-block mt-2 text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full ${
                                         alert.type === 'critical' ? 'bg-red-100 text-red-700' :
                                         alert.type === 'warning'  ? 'bg-orange-100 text-orange-700' :
@@ -151,7 +151,7 @@ export default function AlertsNotifications() {
 
             {/* Source Note */}
             {!loading && (
-                <p className="text-center text-[11px] text-nature-400 pt-4 border-t border-nature-100">
+                <p className="text-center text-[11px] text-nature-400 pt-4 border-t border-nature-100 dark:border-nature-700/50">
                     ⛅ Weather data sourced from OpenWeatherMap · Pune, Maharashtra
                 </p>
             )}

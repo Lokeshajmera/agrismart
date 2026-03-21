@@ -59,12 +59,12 @@ export default function Signup() {
 
   if (success) {
     return (
-      <div className="min-h-screen bg-nature-50 flex flex-col justify-center sm:px-6 lg:px-8">
+      <div className="min-h-screen bg-nature-50 dark:bg-nature-900 flex flex-col justify-center sm:px-6 lg:px-8">
         <div className="sm:mx-auto sm:w-full sm:max-w-md text-center">
           <div className="flex justify-center mb-6">
             <Sprout className="w-16 h-16 text-earth-500" />
           </div>
-          <h2 className="text-3xl font-extrabold text-nature-900 mb-4">Check your email</h2>
+          <h2 className="text-3xl font-extrabold text-nature-900 dark:text-white mb-4">Check your email</h2>
           <p className="text-nature-600">
             We've sent a verification link to <strong>{email}</strong>. Please click the link to verify your account.
           </p>
@@ -79,22 +79,22 @@ export default function Signup() {
   }
 
   return (
-    <div className="min-h-screen bg-nature-50 flex flex-col justify-center sm:px-6 lg:px-8 py-12">
+    <div className="min-h-screen bg-nature-50 dark:bg-nature-900 flex flex-col justify-center sm:px-6 lg:px-8 py-12">
       <div className="sm:mx-auto sm:w-full sm:max-w-md">
         <div className="flex justify-center mb-6">
-          <Link to="/" className="flex items-center gap-2 text-2xl font-bold text-nature-900">
+          <Link to="/" className="flex items-center gap-2 text-2xl font-bold text-nature-900 dark:text-white">
             <Sprout className="w-8 h-8 text-earth-500" />
             <span>Agri<span className="text-earth-500">Smart</span></span>
           </Link>
         </div>
-        <h2 className="text-center text-3xl font-extrabold text-nature-900">Create a new account</h2>
+        <h2 className="text-center text-3xl font-extrabold text-nature-900 dark:text-white">Create a new account</h2>
       </div>
 
       <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
-        <div className="bg-white py-8 px-4 shadow-sm border border-nature-200 sm:rounded-xl sm:px-10">
+        <div className="bg-white dark:bg-nature-950 py-8 px-4 shadow-sm border border-nature-200 dark:border-nature-800 sm:rounded-xl sm:px-10">
           <form className="space-y-6" onSubmit={handleSignup}>
             <div>
-              <label className="block text-sm font-medium text-nature-700">Email address</label>
+              <label className="block text-sm font-medium text-nature-700 dark:text-nature-200">Email address</label>
               <div className="mt-1 relative">
                 <Mail className="absolute left-3 top-2.5 h-4 w-4 text-nature-400" />
                 <input 
@@ -108,7 +108,7 @@ export default function Signup() {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-nature-700">Password</label>
+              <label className="block text-sm font-medium text-nature-700 dark:text-nature-200">Password</label>
               <div className="mt-1 relative">
                 <Lock className="absolute left-3 top-2.5 h-4 w-4 text-nature-400" />
                 <input 
@@ -122,7 +122,7 @@ export default function Signup() {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-nature-700">Confirm Password</label>
+              <label className="block text-sm font-medium text-nature-700 dark:text-nature-200">Confirm Password</label>
               <div className="mt-1 relative">
                 <Lock className="absolute left-3 top-2.5 h-4 w-4 text-nature-400" />
                 <input 
@@ -145,7 +145,7 @@ export default function Signup() {
               </button>
             </div>
           </form>
-          <div className="mt-6 text-center border-t border-nature-200 pt-6">
+          <div className="mt-6 text-center border-t border-nature-200 dark:border-nature-800 pt-6">
             <p className="text-sm text-nature-600">
               Already have an account?{' '}
               <Link to="/login" className="font-medium text-earth-600 hover:text-earth-500">

@@ -7,7 +7,7 @@ export default function AppLayout() {
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
     return (
-        <div className="flex h-screen bg-nature-50 overflow-hidden text-nature-900 font-sans">
+        <div className="flex h-screen bg-nature-50 dark:bg-nature-900 overflow-hidden text-nature-900 dark:text-white font-sans">
             <Sidebar isMobileMenuOpen={isMobileMenuOpen} setIsMobileMenuOpen={setIsMobileMenuOpen} />
             <div className="flex flex-col flex-1 overflow-hidden relative">
                 <Navbar setIsMobileMenuOpen={setIsMobileMenuOpen} />

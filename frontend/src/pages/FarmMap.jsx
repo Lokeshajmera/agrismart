@@ -61,12 +61,12 @@ export default function FarmMap() {
         <div className="space-y-6 animate-in fade-in duration-500 h-full flex flex-col">
             <div className="flex justify-between items-center">
                 <div>
-                    <h1 className="text-2xl font-bold text-nature-900 tracking-tight">Interactive Farm Map</h1>
+                    <h1 className="text-2xl font-bold text-nature-900 dark:text-white tracking-tight">Interactive Farm Map</h1>
                     <p className="text-nature-500 mt-1">Real-time geospatial data, NDVI layers, and sensor locations.</p>
                 </div>
-                <div className="flex flex-wrap items-center gap-3 bg-white p-2 rounded-xl border border-nature-200 shadow-sm">
+                <div className="flex flex-wrap items-center gap-3 bg-white dark:bg-nature-950 p-2 rounded-xl border border-nature-200 dark:border-nature-800 shadow-sm">
                     <select
-                        className="bg-nature-50 border border-nature-200 text-nature-800 text-sm rounded-lg focus:ring-earth-500 focus:border-earth-500 block px-3 py-2 font-medium cursor-pointer"
+                        className="bg-nature-50 dark:bg-nature-900 border border-nature-200 dark:border-nature-800 text-nature-800 dark:text-nature-100 text-sm rounded-lg focus:ring-earth-500 focus:border-earth-500 block px-3 py-2 font-medium cursor-pointer"
                         value={selectedRegionKey}
                         onChange={(e) => setSelectedRegionKey(e.target.value)}
                     >
@@ -97,7 +97,7 @@ export default function FarmMap() {
                 </div>
             </div>
 
-            <div className="bg-white p-2 rounded-2xl border border-nature-200 shadow-sm flex-1 min-h-[500px] relative z-0">
+            <div className="bg-white dark:bg-nature-950 p-2 rounded-2xl border border-nature-200 dark:border-nature-800 shadow-sm flex-1 min-h-[500px] relative z-0">
                 <MapContainer center={region.center} zoom={15} className="h-full w-full rounded-xl z-0">
                     <MapController center={region.center} />
                     <TileLayer
@@ -124,7 +124,7 @@ export default function FarmMap() {
                         <Marker key={sensor.id} position={sensor.pos}>
                             <Popup className="rounded-xl overflow-hidden shadow-lg border-none">
                                 <div className="p-1">
-                                    <h4 className="font-bold text-nature-900 border-b pb-1 mb-2">Sensor #{sensor.id}</h4>
+                                    <h4 className="font-bold text-nature-900 dark:text-white border-b pb-1 mb-2">Sensor #{sensor.id}</h4>
                                     <p className="text-sm">Type: <span className="font-medium">{sensor.type}</span></p>
                                     <p className="text-sm">Value: <span className={`font-bold ${sensor.status === 'warning' ? 'text-orange-500' : sensor.status === 'critical' ? 'text-red-600' : 'text-green-600'}`}>{sensor.val}</span></p>
                                     <p className="text-xs text-nature-400 mt-2">Last updated: Just now</p>

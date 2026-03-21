@@ -93,24 +93,24 @@ export default function VerifyOtp() {
   };
 
   return (
-    <div className="min-h-screen bg-nature-50 flex flex-col justify-center sm:px-6 lg:px-8">
+    <div className="min-h-screen bg-nature-50 dark:bg-nature-900 flex flex-col justify-center sm:px-6 lg:px-8">
       <div className="sm:mx-auto sm:w-full sm:max-w-md">
         <div className="flex justify-center mb-6">
-          <Link to="/" className="flex items-center gap-2 text-2xl font-bold text-nature-900">
+          <Link to="/" className="flex items-center gap-2 text-2xl font-bold text-nature-900 dark:text-white">
             <Sprout className="w-8 h-8 text-earth-500" />
             <span>Agri<span className="text-earth-500">Smart</span></span>
           </Link>
         </div>
-        <h2 className="text-center text-3xl font-extrabold text-nature-900">
+        <h2 className="text-center text-3xl font-extrabold text-nature-900 dark:text-white">
           Verify your {type === 'email' ? 'Email' : 'Mobile Number'}
         </h2>
         <p className="mt-2 text-center text-sm text-nature-600">
-          We sent a code to <span className="font-medium text-nature-900">{type === 'email' ? email : phone}</span>
+          We sent a code to <span className="font-medium text-nature-900 dark:text-white">{type === 'email' ? email : phone}</span>
         </p>
       </div>
 
       <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
-        <div className="bg-white py-8 px-4 shadow-sm border border-nature-200 sm:rounded-xl sm:px-10">
+        <div className="bg-white dark:bg-nature-950 py-8 px-4 shadow-sm border border-nature-200 dark:border-nature-800 sm:rounded-xl sm:px-10">
           <form className="space-y-6" onSubmit={handleVerify}>
             <div className="flex justify-between gap-2">
               {otp.map((digit, index) => (

@@ -192,7 +192,7 @@ export default function SimulationMode() {
     return (
         <div className="p-6 max-w-7xl mx-auto space-y-6 fade-in">
             {/* Header & Controls */}
-            <div className="flex flex-col md:flex-row justify-between items-start md:items-center bg-white p-6 rounded-2xl shadow-sm border border-emerald-100">
+            <div className="flex flex-col md:flex-row justify-between items-start md:items-center bg-white dark:bg-nature-950 p-6 rounded-2xl shadow-sm border border-emerald-100">
                 <div>
                     <h1 className="text-3xl font-bold text-gray-800 flex items-center">
                         <Activity className="w-8 h-8 mr-3 text-emerald-600" />
@@ -218,7 +218,7 @@ export default function SimulationMode() {
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                 {/* Real-Time Live Hardware Sync */}
                 <div className="lg:col-span-1 space-y-6">
-                    <div className="bg-white p-6 rounded-2xl shadow-sm border border-emerald-100">
+                    <div className="bg-white dark:bg-nature-950 p-6 rounded-2xl shadow-sm border border-emerald-100">
                         <h2 className="text-xl font-bold text-gray-800 mb-6 flex items-center">
                             <Droplet className="w-5 h-5 mr-2 text-blue-500" /> Sensors Array
                         </h2>
@@ -279,22 +279,22 @@ export default function SimulationMode() {
                             <CloudRain className="w-5 h-5 mr-2 text-indigo-500" /> OpenWeather API
                         </h2>
                         <div className="grid grid-cols-2 gap-4">
-                            <div className="bg-white p-3 rounded-xl border border-blue-50 flex flex-col items-center">
+                            <div className="bg-white dark:bg-nature-950 p-3 rounded-xl border border-blue-50 flex flex-col items-center">
                                 <ThermometerSun className="w-6 h-6 text-orange-400 mb-1"/>
                                 <span className="text-lg font-bold text-gray-800">{liveWeather.temp}°C</span>
                                 <span className="text-xs text-gray-500 uppercase">Temp</span>
                             </div>
-                            <div className="bg-white p-3 rounded-xl border border-blue-50 flex flex-col items-center">
+                            <div className="bg-white dark:bg-nature-950 p-3 rounded-xl border border-blue-50 flex flex-col items-center">
                                 <CloudRain className="w-6 h-6 text-blue-400 mb-1"/>
                                 <span className="text-lg font-bold text-gray-800">{liveWeather.rain} mm</span>
                                 <span className="text-xs text-gray-500 uppercase">1h Rain</span>
                             </div>
-                            <div className="bg-white p-3 rounded-xl border border-blue-50 flex flex-col items-center">
+                            <div className="bg-white dark:bg-nature-950 p-3 rounded-xl border border-blue-50 flex flex-col items-center">
                                 <Activity className="w-6 h-6 text-emerald-400 mb-1"/>
                                 <span className="text-lg font-bold text-gray-800">{liveWeather.humidity}%</span>
                                 <span className="text-xs text-gray-500 uppercase">Humidity</span>
                             </div>
-                            <div className="bg-white p-3 rounded-xl border border-blue-50 flex flex-col items-center">
+                            <div className="bg-white dark:bg-nature-950 p-3 rounded-xl border border-blue-50 flex flex-col items-center">
                                 <Wind className="w-6 h-6 text-gray-400 mb-1"/>
                                 <span className="text-lg font-bold text-gray-800">{liveWeather.wind_speed} km/h</span>
                                 <span className="text-xs text-gray-500 uppercase">Wind</span>
@@ -353,7 +353,7 @@ export default function SimulationMode() {
                     </div>
 
                     {/* Hardware Telemetry Graph */}
-                    <div className="bg-white p-6 rounded-2xl shadow-sm border border-emerald-100 flex-1 flex flex-col">
+                    <div className="bg-white dark:bg-nature-950 p-6 rounded-2xl shadow-sm border border-emerald-100 flex-1 flex flex-col">
                         <h2 className="text-xl font-bold text-gray-800 border-b pb-4 mb-4 flex items-center">
                             <Activity className="w-5 h-5 mr-2 text-emerald-600" /> Hardware Telemetry Feed
                         </h2>

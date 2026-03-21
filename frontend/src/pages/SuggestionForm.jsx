@@ -34,20 +34,20 @@ const SuggestionForm = () => {
 
   return (
     <div className="max-w-2xl mx-auto p-6">
-      <div className="bg-white rounded-xl shadow-sm border border-nature-200 p-8">
+      <div className="bg-white dark:bg-nature-950 rounded-xl shadow-sm border border-nature-200 dark:border-nature-800 p-8">
         <div className="flex items-center gap-3 mb-6">
           <div className="p-3 bg-yellow-100 rounded-lg">
             <Lightbulb className="w-6 h-6 text-yellow-600" />
           </div>
           <div>
-            <h1 className="text-2xl font-bold text-nature-900">{t('suggestions')}</h1>
+            <h1 className="text-2xl font-bold text-nature-900 dark:text-white">{t('suggestions')}</h1>
             <p className="text-nature-600">Help us improve the platform with your ideas</p>
           </div>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-6">
           <div>
-            <label className="block text-sm font-medium text-nature-700 mb-1">Your Suggestion</label>
+            <label className="block text-sm font-medium text-nature-700 dark:text-nature-200 mb-1">Your Suggestion</label>
             <textarea 
               required
               rows={5}

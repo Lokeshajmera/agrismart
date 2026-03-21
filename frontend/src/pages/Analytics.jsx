@@ -50,17 +50,17 @@ export default function Analytics() {
         <div className="space-y-6 animate-in fade-in duration-500 max-w-7xl mx-auto p-2">
 
             {/* Header with Live Sync Status */}
-            <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 bg-white p-6 rounded-3xl border border-nature-200 shadow-sm">
+            <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 bg-white dark:bg-nature-950 p-6 rounded-3xl border border-nature-200 dark:border-nature-800 shadow-sm">
                 <div>
-                    <h1 className="text-2xl font-bold text-nature-900 tracking-tight flex items-center gap-2">
+                    <h1 className="text-2xl font-bold text-nature-900 dark:text-white tracking-tight flex items-center gap-2">
                         <Activity className="w-6 h-6 text-earth-500 animate-pulse" /> Live Analytics Dashboard
                     </h1>
                     <p className="text-nature-500 mt-1">Real-time incoming ESP32 sensor telemetry streams.</p>
                 </div>
 
-                <div className="flex items-center gap-3 w-full md:w-auto p-2 bg-nature-50 rounded-2xl border border-nature-200">
+                <div className="flex items-center gap-3 w-full md:w-auto p-2 bg-nature-50 dark:bg-nature-900 rounded-2xl border border-nature-200 dark:border-nature-800">
                     {liveData.length === 0 ? (
-                        <div className="px-6 py-2 bg-nature-100 text-nature-600 rounded-xl font-bold flex items-center justify-center gap-2">
+                        <div className="px-6 py-2 bg-nature-100 dark:bg-nature-800 text-nature-600 rounded-xl font-bold flex items-center justify-center gap-2">
                             <RefreshCcw className="w-4 h-4 animate-spin-slow" /> Loading Data...
                         </div>
                     ) : (
@@ -74,7 +74,7 @@ export default function Analytics() {
             {/* KPI Cards */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 <div className="text-white p-6 rounded-2xl shadow-lg border relative overflow-hidden group transition-colors duration-500 bg-nature-900 border-nature-800">
-                    <div className="absolute top-0 right-0 w-32 h-32 bg-white rounded-full blur-3xl opacity-10 group-hover:opacity-20 transition-opacity"></div>
+                    <div className="absolute top-0 right-0 w-32 h-32 bg-white dark:bg-nature-950 rounded-full blur-3xl opacity-10 group-hover:opacity-20 transition-opacity"></div>
                     <div className="flex items-center gap-2 text-white/80 mb-2">
                         <Droplets className="w-5 h-5" />
                         <h3 className="font-bold">Avg Soil Moisture</h3>
@@ -85,18 +85,18 @@ export default function Analytics() {
                     </p>
                 </div>
 
-                <div className="bg-white p-6 rounded-2xl shadow-sm border border-nature-200">
+                <div className="bg-white dark:bg-nature-950 p-6 rounded-2xl shadow-sm border border-nature-200 dark:border-nature-800">
                     <div className="flex items-center gap-2 text-green-600 mb-2">
                         <Leaf className="w-5 h-5" />
-                        <h3 className="font-bold text-nature-900">Crop Health Index</h3>
+                        <h3 className="font-bold text-nature-900 dark:text-white">Crop Health Index</h3>
                     </div>
-                    <p className="text-4xl font-extrabold text-nature-900 mb-1">Optimal</p>
+                    <p className="text-4xl font-extrabold text-nature-900 dark:text-white mb-1">Optimal</p>
                     <p className="text-sm text-nature-500 flex items-center gap-1">Correlated with telemetry</p>
                 </div>
 
-                <div className="bg-white p-6 rounded-2xl shadow-sm border border-nature-200">
-                    <h3 className="font-bold text-nature-900 mb-2">Telemetry Status</h3>
-                    <p className="text-4xl font-extrabold text-nature-900 flex items-center gap-2 mb-1">
+                <div className="bg-white dark:bg-nature-950 p-6 rounded-2xl shadow-sm border border-nature-200 dark:border-nature-800">
+                    <h3 className="font-bold text-nature-900 dark:text-white mb-2">Telemetry Status</h3>
+                    <p className="text-4xl font-extrabold text-nature-900 dark:text-white flex items-center gap-2 mb-1">
                         Active
                         <span className="relative flex h-3 w-3">
                             <span className="absolute inline-flex h-full w-full rounded-full opacity-75 bg-green-400 animate-ping"></span>
@@ -113,9 +113,9 @@ export default function Analytics() {
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
 
                 {/* 1. Primary Chart: Moisture */}
-                <div className="bg-white p-6 rounded-2xl shadow-sm border border-nature-200 lg:col-span-2">
+                <div className="bg-white dark:bg-nature-950 p-6 rounded-2xl shadow-sm border border-nature-200 dark:border-nature-800 lg:col-span-2">
                     <div className="flex justify-between items-center mb-6">
-                        <h3 className="text-lg font-bold text-nature-900">Soil Moisture Dynamics</h3>
+                        <h3 className="text-lg font-bold text-nature-900 dark:text-white">Soil Moisture Dynamics</h3>
                     </div>
                     <div className="h-80 w-full">
                         {chartData.length > 0 ? (
@@ -143,8 +143,8 @@ export default function Analytics() {
                 </div>
 
                 {/* 2. Secondary Chart: Air Humidity & Temp */}
-                <div className="bg-white p-6 rounded-2xl shadow-sm border border-nature-200 lg:col-span-2">
-                    <h3 className="text-lg font-bold text-nature-900 mb-6">Environmental Dynamics (Temperature & Humidity)</h3>
+                <div className="bg-white dark:bg-nature-950 p-6 rounded-2xl shadow-sm border border-nature-200 dark:border-nature-800 lg:col-span-2">
+                    <h3 className="text-lg font-bold text-nature-900 dark:text-white mb-6">Environmental Dynamics (Temperature & Humidity)</h3>
                     <div className="h-64 w-full">
                         {chartData.length > 0 ? (
                             <ResponsiveContainer width="100%" height="100%">

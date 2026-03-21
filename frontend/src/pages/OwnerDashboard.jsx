@@ -112,15 +112,15 @@ const OwnerDashboard = () => {
     if (loading) return <div className="p-8 flex justify-center text-nature-600">Loading Director Dashboard...</div>;
 
     return (
-        <div className="min-h-screen bg-nature-50">
+        <div className="min-h-screen bg-nature-50 dark:bg-nature-900">
             {/* Top Navigation */}
-            <nav className="bg-white border-b border-nature-200 px-6 py-4 flex justify-between items-center sticky top-0 z-10">
+            <nav className="bg-white dark:bg-nature-950 border-b border-nature-200 dark:border-nature-800 px-6 py-4 flex justify-between items-center sticky top-0 z-10">
                 <div className="flex items-center gap-2">
                     <Sprout className="w-8 h-8 text-earth-600" />
-                    <span className="text-xl font-bold text-nature-900">Agri<span className="text-earth-600">Smart</span> <span className="text-nature-500 font-medium ml-2">Director Portal</span></span>
+                    <span className="text-xl font-bold text-nature-900 dark:text-white">Agri<span className="text-earth-600">Smart</span> <span className="text-nature-500 font-medium ml-2">Director Portal</span></span>
                 </div>
                 <div className="flex items-center gap-4">
-                    <span className="text-sm font-medium text-nature-700 bg-nature-100 px-3 py-1 rounded-full">xyz@gmail.com</span>
+                    <span className="text-sm font-medium text-nature-700 dark:text-nature-200 bg-nature-100 dark:bg-nature-800 px-3 py-1 rounded-full">xyz@gmail.com</span>
                     <button onClick={handleLogout} className="flex items-center gap-2 text-nature-600 hover:text-red-600 transition-colors">
                         <LogOut className="w-5 h-5" />
                         <span className="text-sm font-medium">Exit</span>
@@ -130,54 +130,54 @@ const OwnerDashboard = () => {
 
             <div className="max-w-7xl mx-auto p-6 space-y-8 mt-4">
                 <header>
-                    <h1 className="text-3xl font-bold text-nature-900 mb-2">Welcome, Director</h1>
+                    <h1 className="text-3xl font-bold text-nature-900 dark:text-white mb-2">Welcome, Director</h1>
                     <p className="text-nature-600">Here is the latest overview of the AgriSmart platform.</p>
                 </header>
 
                 {/* Quick Stats Grid */}
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                    <div className="bg-white p-6 rounded-2xl shadow-sm border border-nature-200 flex items-center gap-4">
+                    <div className="bg-white dark:bg-nature-950 p-6 rounded-2xl shadow-sm border border-nature-200 dark:border-nature-800 flex items-center gap-4">
                         <div className="p-4 bg-blue-100 rounded-xl text-blue-600">
                             <Users className="w-7 h-7" />
                         </div>
                         <div>
                             <p className="text-sm text-nature-500 font-medium uppercase tracking-wide">Total Members</p>
-                            <p className="text-3xl font-bold text-nature-900">{stats.users}</p>
+                            <p className="text-3xl font-bold text-nature-900 dark:text-white">{stats.users}</p>
                         </div>
                     </div>
-                    <div className="bg-white p-6 rounded-2xl shadow-sm border border-nature-200 flex items-center gap-4">
+                    <div className="bg-white dark:bg-nature-950 p-6 rounded-2xl shadow-sm border border-nature-200 dark:border-nature-800 flex items-center gap-4">
                         <div className="p-4 bg-red-100 rounded-xl text-red-600">
                             <AlertCircle className="w-7 h-7" />
                         </div>
                         <div>
                             <p className="text-sm text-nature-500 font-medium uppercase tracking-wide">Pending Issues</p>
-                            <p className="text-3xl font-bold text-nature-900">{stats.pendingComplaints}</p>
+                            <p className="text-3xl font-bold text-nature-900 dark:text-white">{stats.pendingComplaints}</p>
                         </div>
                     </div>
-                    <div className="bg-white p-6 rounded-2xl shadow-sm border border-nature-200 flex items-center gap-4">
+                    <div className="bg-white dark:bg-nature-950 p-6 rounded-2xl shadow-sm border border-nature-200 dark:border-nature-800 flex items-center gap-4">
                         <div className="p-4 bg-yellow-100 rounded-xl text-yellow-600">
                             <Lightbulb className="w-7 h-7" />
                         </div>
                         <div>
                             <p className="text-sm text-nature-500 font-medium uppercase tracking-wide">New Suggestions</p>
-                            <p className="text-3xl font-bold text-nature-900">{stats.suggestions}</p>
+                            <p className="text-3xl font-bold text-nature-900 dark:text-white">{stats.suggestions}</p>
                         </div>
                     </div>
                 </div>
 
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
                     {/* Complaints */}
-                    <section className="bg-white rounded-2xl shadow-sm border border-nature-200 overflow-hidden">
-                        <div className="p-5 border-b border-nature-100 bg-nature-50 flex justify-between items-center">
-                            <h2 className="text-lg font-bold text-nature-900 flex items-center gap-2">
+                    <section className="bg-white dark:bg-nature-950 rounded-2xl shadow-sm border border-nature-200 dark:border-nature-800 overflow-hidden">
+                        <div className="p-5 border-b border-nature-100 dark:border-nature-700/50 bg-nature-50 dark:bg-nature-900 flex justify-between items-center">
+                            <h2 className="text-lg font-bold text-nature-900 dark:text-white flex items-center gap-2">
                                 <AlertCircle className="w-5 h-5 text-red-500" /> Recent Complaints
                             </h2>
                         </div>
                         <div className="divide-y divide-nature-100">
                             {recentComplaints.length > 0 ? recentComplaints.map(c => (
-                                <div key={c.id} className="p-5 hover:bg-nature-50 transition-colors">
+                                <div key={c.id} className="p-5 hover:bg-nature-50 dark:bg-nature-900 transition-colors">
                                     <div className="flex justify-between items-start mb-2">
-                                        <div className="font-semibold text-nature-900">{c.users?.name || 'Unknown User'} <span className="text-nature-400 text-sm font-normal">({c.users?.farmer_id})</span></div>
+                                        <div className="font-semibold text-nature-900 dark:text-white">{c.users?.name || 'Unknown User'} <span className="text-nature-400 text-sm font-normal">({c.users?.farmer_id})</span></div>
                                         <div className="flex items-center gap-3">
                                             <span className={`text-xs px-2.5 py-1 rounded-full font-medium ${
                                                 c.status === 'pending' ? 'bg-red-100 text-red-700' : 
@@ -203,17 +203,17 @@ const OwnerDashboard = () => {
                     </section>
 
                     {/* Suggestions */}
-                    <section className="bg-white rounded-2xl shadow-sm border border-nature-200 overflow-hidden">
-                        <div className="p-5 border-b border-nature-100 bg-nature-50 flex justify-between items-center">
-                            <h2 className="text-lg font-bold text-nature-900 flex items-center gap-2">
+                    <section className="bg-white dark:bg-nature-950 rounded-2xl shadow-sm border border-nature-200 dark:border-nature-800 overflow-hidden">
+                        <div className="p-5 border-b border-nature-100 dark:border-nature-700/50 bg-nature-50 dark:bg-nature-900 flex justify-between items-center">
+                            <h2 className="text-lg font-bold text-nature-900 dark:text-white flex items-center gap-2">
                                 <Lightbulb className="w-5 h-5 text-yellow-500" /> New Suggestions
                             </h2>
                         </div>
                         <div className="divide-y divide-nature-100">
                             {recentSuggestions.length > 0 ? recentSuggestions.map(s => (
-                                <div key={s.id} className="p-5 hover:bg-nature-50 transition-colors">
+                                <div key={s.id} className="p-5 hover:bg-nature-50 dark:bg-nature-900 transition-colors">
                                     <div className="flex justify-between items-center mb-2">
-                                        <div className="font-semibold text-nature-900">{s.users?.name || 'Unknown User'}</div>
+                                        <div className="font-semibold text-nature-900 dark:text-white">{s.users?.name || 'Unknown User'}</div>
                                         <div className="flex items-center gap-4">
                                             <span className="text-xs text-nature-400 font-medium">{new Date(s.created_at).toLocaleDateString()}</span>
                                             <button 
@@ -232,26 +232,26 @@ const OwnerDashboard = () => {
                     </section>
 
                     {/* Members List */}
-                    <section className="bg-white rounded-2xl shadow-sm border border-nature-200 overflow-hidden">
-                        <div className="p-5 border-b border-nature-100 bg-nature-50 flex justify-between items-center">
-                            <h2 className="text-lg font-bold text-nature-900 flex items-center gap-2">
+                    <section className="bg-white dark:bg-nature-950 rounded-2xl shadow-sm border border-nature-200 dark:border-nature-800 overflow-hidden">
+                        <div className="p-5 border-b border-nature-100 dark:border-nature-700/50 bg-nature-50 dark:bg-nature-900 flex justify-between items-center">
+                            <h2 className="text-lg font-bold text-nature-900 dark:text-white flex items-center gap-2">
                                 <Users className="w-5 h-5 text-blue-500" /> New Members
                             </h2>
                         </div>
                         <div className="divide-y divide-nature-100">
                             {recentMembers.length > 0 ? recentMembers.map(m => (
-                                <div key={m.id} className="p-4 flex items-center justify-between hover:bg-nature-50 transition-colors">
+                                <div key={m.id} className="p-4 flex items-center justify-between hover:bg-nature-50 dark:bg-nature-900 transition-colors">
                                     <div className="flex items-center gap-3">
                                         <div className="w-10 h-10 rounded-full bg-earth-100 text-earth-700 flex items-center justify-center font-bold text-sm">
                                             {m.name.charAt(0)}
                                         </div>
                                         <div>
-                                            <p className="font-semibold text-nature-900 text-sm">{m.name}</p>
+                                            <p className="font-semibold text-nature-900 dark:text-white text-sm">{m.name}</p>
                                             <p className="text-xs text-nature-500">{m.email}</p>
                                         </div>
                                     </div>
                                     <div className="text-right">
-                                        <p className="text-sm font-medium text-nature-700">{m.farmer_id}</p>
+                                        <p className="text-sm font-medium text-nature-700 dark:text-nature-200">{m.farmer_id}</p>
                                         <p className="text-xs text-nature-400">{new Date(m.created_at).toLocaleDateString()}</p>
                                     </div>
                                 </div>
