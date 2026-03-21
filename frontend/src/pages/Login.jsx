@@ -1,18 +1,25 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
-import { Sprout, Mail, Lock } from 'lucide-react';
+import { Sprout, Mail, Lock, ArrowLeft } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { toast } from 'react-hot-toast';
 
 export default function Login() {
   const navigate = useNavigate();
   const location = useLocation();
-  const { loginWithPassword, loginWithOtp } = useAuth();
+  const { user, loginWithPassword, loginWithOtp } = useAuth();
   
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [activeTab, setActiveTab] = useState('password'); // 'password', 'email-otp'
+
+  // Auto-redirect if already logged in
+  useEffect(() => {
+    if (user) {
+      navigate('/app/dashboard');
+    }
+  }, [user, navigate]);
 
   useEffect(() => {
     // Removed auto-fill per user request
@@ -23,14 +30,6 @@ export default function Login() {
     setLoading(true);
 
     if (activeTab === 'password') {
-      // Bypass real authentication for the Hackathon owner demo
-      if (email === 'xyz@gmail.com' && password === '654321') {
-        setLoading(false);
-        toast.success('Logged in as Director successfully');
-        navigate('/owner-dashboard');
-        return;
-      }
-
       try {
         const { error } = await loginWithPassword(email, password);
         if (error) throw error;
@@ -58,7 +57,11 @@ export default function Login() {
   };
 
   return (
-    <div className="min-h-screen bg-nature-50 dark:bg-nature-900 flex flex-col justify-center sm:px-6 lg:px-8">
+    <div className="min-h-screen bg-nature-50 dark:bg-nature-900 flex flex-col justify-center sm:px-6 lg:px-8 relative">
+      <Link to="/" className="absolute top-6 left-6 flex items-center gap-2 text-nature-500 hover:text-earth-600 font-medium transition-colors">
+        <ArrowLeft className="w-4 h-4" /> Back to Home
+      </Link>
+
       <div className="sm:mx-auto sm:w-full sm:max-w-md">
         <div className="flex justify-center mb-6">
           <Link to="/" className="flex items-center gap-2 text-2xl font-bold text-nature-900 dark:text-white">

@@ -35,7 +35,7 @@ const regions = {
     },
     'mp': {
         name: 'Madhya Pradesh (Sehore)',
-        center: [23.2000, 77.0800], // Rural wheat fields near Sehore
+        center: [23.2000, 77.0800], // Rural fields near Sehore
         boundary: [[23.2020, 77.0770], [23.2020, 77.0830], [23.1980, 77.0830], [23.1980, 77.0770]],
         sensors: [
             { id: 6, pos: [23.2010, 77.0785], type: 'Moisture', status: 'critical', val: '18%' },

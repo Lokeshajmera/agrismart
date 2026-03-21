@@ -154,7 +154,7 @@ export default function GovernmentSchemes() {
                         </h2>
                         <p className="text-earth-100 text-sm max-w-2xl leading-relaxed">
                             {lang === 'en'
-                                ? 'Based on your profile as a Wheat Farmer actively managing irrigation zones, you are highly eligible for PMKSY subsidies. Upgrading your sensors and drip lines can be subsidized by up to 55%.'
+                                ? 'Based on your profile as a Farmer actively managing irrigation zones, you are highly eligible for PMKSY subsidies. Upgrading your sensors and drip lines can be subsidized by up to 55%.'
                                 : 'गेहूं के किसान के रूप में आपकी प्रोफ़ाइल के आधार पर, आप पीएमकेएसवाई सब्सिडी के लिए अत्यधिक पात्र हैं। आपके सेंसर और ड्रिप लाइनों को अपग्रेड करने पर 55% तक की सब्सिडी मिल सकती है।'}
                         </p>
                     </div>

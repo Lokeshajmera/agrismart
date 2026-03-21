@@ -2,12 +2,10 @@ import React, { useMemo } from 'react';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { ThermometerSun, Droplets, Wind, Play, Square, Loader2 } from 'lucide-react';
 import { useRealtimeSensor } from '../hooks/useRealtimeSensor';
-import { useSensorSimulation } from '../hooks/useSensorSimulation';
 import { useOfflineStore } from '../store/useOfflineStore';
 
 export default function SensorMonitoring() {
     const { sensorData, loading, lastPing } = useRealtimeSensor();
-    const { isSimulating, toggleSimulation } = useSensorSimulation();
     const { isOnline } = useOfflineStore();
 
     const latest = useMemo(() => {
@@ -36,21 +34,6 @@ export default function SensorMonitoring() {
                     <h1 className="text-2xl font-bold text-nature-900 dark:text-white tracking-tight">Sensor Network</h1>
                     <p className="text-nature-500 mt-1">Live telemetry from deployed IoT devices.</p>
                 </div>
-                
-                <button 
-                    onClick={toggleSimulation}
-                    className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors shadow-sm flex items-center gap-2 ${
-                        isSimulating 
-                        ? 'bg-red-500 hover:bg-red-600 text-white animate-pulse' 
-                        : 'bg-earth-500 hover:bg-earth-600 text-white'
-                    }`}
-                >
-                    {isSimulating ? (
-                        <><Square className="w-4 h-4" /> Stop Simulation</>
-                    ) : (
-                        <><Play className="w-4 h-4" /> Start Simulator</>
-                    )}
-                </button>
             </div>
 
             {loading && sensorData.length === 0 ? (
@@ -122,7 +105,7 @@ export default function SensorMonitoring() {
                                     </ResponsiveContainer>
                                 ) : (
                                     <div className="h-full flex items-center justify-center text-nature-400 text-sm">
-                                        No recent telemetry collected. Turn on the simulator!
+                                        Waiting for device connectivity...
                                     </div>
                                 )}
                             </div>

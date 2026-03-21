@@ -27,9 +27,9 @@ function generateAlerts(current, forecast) {
             msg: `Current temperature is ${temp.toFixed(1)}°C. Severe heat stress risk for crops. Increase irrigation immediately and consider shading.`,
             time: now,
             icon: 'thermometer',
-            color: 'text-red-600',
-            bg: 'bg-red-50',
-            border: 'border-red-200',
+            color: 'text-red-600 dark:text-red-400',
+            bg: 'bg-red-50 dark:bg-red-900/30',
+            border: 'border-red-200 dark:border-red-800/50',
         });
     } else if (temp >= 35) {
         alerts.push({
@@ -39,9 +39,9 @@ function generateAlerts(current, forecast) {
             msg: `Temperature has reached ${temp.toFixed(1)}°C. Monitor crop health closely and ensure adequate irrigation.`,
             time: now,
             icon: 'thermometer',
-            color: 'text-orange-600',
-            bg: 'bg-orange-50',
-            border: 'border-orange-200',
+            color: 'text-orange-600 dark:text-orange-400',
+            bg: 'bg-orange-50 dark:bg-orange-900/30',
+            border: 'border-orange-200 dark:border-orange-800/50',
         });
     }
 
@@ -53,9 +53,9 @@ function generateAlerts(current, forecast) {
             msg: `Humidity is critically low at ${humidity}%. Soil moisture will deplete rapidly. Activate drip irrigation now.`,
             time: now,
             icon: 'droplets',
-            color: 'text-red-600',
-            bg: 'bg-red-50',
-            border: 'border-red-200',
+            color: 'text-red-600 dark:text-red-400',
+            bg: 'bg-red-50 dark:bg-red-900/30',
+            border: 'border-red-200 dark:border-red-800/50',
         });
     } else if (humidity < 40) {
         alerts.push({
@@ -65,9 +65,9 @@ function generateAlerts(current, forecast) {
             msg: `Humidity is ${humidity}%. Consider increasing watering frequency to prevent moisture stress.`,
             time: now,
             icon: 'droplets',
-            color: 'text-orange-600',
-            bg: 'bg-orange-50',
-            border: 'border-orange-200',
+            color: 'text-orange-600 dark:text-orange-400',
+            bg: 'bg-orange-50 dark:bg-orange-900/30',
+            border: 'border-orange-200 dark:border-orange-800/50',
         });
     }
 
@@ -79,9 +79,9 @@ function generateAlerts(current, forecast) {
             msg: `Wind speed is ${windSpeed.toFixed(1)} m/s. Risk of crop damage and uneven irrigation. Pause overhead sprinklers.`,
             time: now,
             icon: 'wind',
-            color: 'text-red-600',
-            bg: 'bg-red-50',
-            border: 'border-red-200',
+            color: 'text-red-600 dark:text-red-400',
+            bg: 'bg-red-50 dark:bg-red-900/30',
+            border: 'border-red-200 dark:border-red-800/50',
         });
     } else if (windSpeed > 10) {
         alerts.push({
@@ -91,9 +91,9 @@ function generateAlerts(current, forecast) {
             msg: `Wind speed at ${windSpeed.toFixed(1)} m/s. Sprinkler efficiency may be reduced. Switch to drip irrigation if possible.`,
             time: now,
             icon: 'wind',
-            color: 'text-orange-600',
-            bg: 'bg-orange-50',
-            border: 'border-orange-200',
+            color: 'text-orange-600 dark:text-orange-400',
+            bg: 'bg-orange-50 dark:bg-orange-900/30',
+            border: 'border-orange-200 dark:border-orange-800/50',
         });
     }
 
@@ -105,9 +105,9 @@ function generateAlerts(current, forecast) {
             msg: `${weatherDesc.charAt(0).toUpperCase() + weatherDesc.slice(1)} detected. Ground all drone missions immediately and secure equipment.`,
             time: now,
             icon: 'zap',
-            color: 'text-red-600',
-            bg: 'bg-red-50',
-            border: 'border-red-200',
+            color: 'text-red-600 dark:text-red-400',
+            bg: 'bg-red-50 dark:bg-red-900/30',
+            border: 'border-red-200 dark:border-red-800/50',
         });
     } else if (weatherId >= 300 && weatherId <= 321) {
         alerts.push({
@@ -117,9 +117,9 @@ function generateAlerts(current, forecast) {
             msg: 'Light drizzle detected. Consider pausing scheduled irrigation to avoid waterlogging.',
             time: now,
             icon: 'rain',
-            color: 'text-blue-600',
-            bg: 'bg-blue-50',
-            border: 'border-blue-200',
+            color: 'text-blue-600 dark:text-blue-400',
+            bg: 'bg-blue-50 dark:bg-blue-900/30',
+            border: 'border-blue-200 dark:border-blue-800/50',
         });
     } else if (weatherId >= 500 && weatherId <= 531) {
         alerts.push({
@@ -129,9 +129,9 @@ function generateAlerts(current, forecast) {
             msg: `${weatherDesc.charAt(0).toUpperCase() + weatherDesc.slice(1)} — Auto-irrigation paused to prevent waterlogging. Drainage check recommended.`,
             time: now,
             icon: 'rain',
-            color: 'text-blue-600',
-            bg: 'bg-blue-50',
-            border: 'border-blue-200',
+            color: 'text-blue-600 dark:text-blue-400',
+            bg: 'bg-blue-50 dark:bg-blue-900/30',
+            border: 'border-blue-200 dark:border-blue-800/50',
         });
     }
 
@@ -157,9 +157,9 @@ function generateAlerts(current, forecast) {
                 msg: `Weather forecast shows ${rainExpected.weather[0].description} around ${rainTime.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' })}. Prepare fields and pause irrigation beforehand.`,
                 time: now,
                 icon: 'rain',
-                color: 'text-blue-600',
-                bg: 'bg-blue-50',
-                border: 'border-blue-200',
+                color: 'text-blue-600 dark:text-blue-400',
+                bg: 'bg-blue-50 dark:bg-blue-900/30',
+                border: 'border-blue-200 dark:border-blue-800/50',
             });
         }
 
@@ -173,9 +173,9 @@ function generateAlerts(current, forecast) {
                 msg: `Temperature expected to reach ${heatExpected.main.temp.toFixed(1)}°C around ${heatTime.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' })}. Pre-schedule morning irrigation.`,
                 time: now,
                 icon: 'thermometer',
-                color: 'text-orange-600',
-                bg: 'bg-orange-50',
-                border: 'border-orange-200',
+                color: 'text-orange-600 dark:text-orange-400',
+                bg: 'bg-orange-50 dark:bg-orange-900/30',
+                border: 'border-orange-200 dark:border-orange-800/50',
             });
         }
 
@@ -189,9 +189,9 @@ function generateAlerts(current, forecast) {
                 msg: `Thunderstorm expected around ${stormTime.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' })}. Schedule drone missions before then, secure equipment.`,
                 time: now,
                 icon: 'zap',
-                color: 'text-red-600',
-                bg: 'bg-red-50',
-                border: 'border-red-200',
+                color: 'text-red-600 dark:text-red-400',
+                bg: 'bg-red-50 dark:bg-red-900/30',
+                border: 'border-red-200 dark:border-red-800/50',
             });
         }
     }
@@ -218,7 +218,7 @@ function generateRecommendations(weather, forecast, soilMoisture) {
     if (!isStorm && temp < 35 && temp > 15 && wind < 10) {
         recs.push({
             id: 'general_optimal', category: 'General',
-            icon: Leaf, iconColor: 'text-green-600', iconBg: 'bg-green-50', priority: 'low',
+            icon: Leaf, iconColor: 'text-green-600 dark:text-green-400', iconBg: 'bg-green-50 dark:bg-green-900/30', priority: 'low',
             title: 'Suitable Farming Conditions',
             reason: `Current weather (${temp.toFixed(1)}°C) and environment are highly suitable for all general farming operations.`,
             tip: 'Excellent time for sowing, manual harvesting, or field walk.'
@@ -229,7 +229,7 @@ function generateRecommendations(weather, forecast, soilMoisture) {
     if (isRaining || isStorm) {
         recs.push({
             id: 'irr_pause', category: 'Irrigation',
-            icon: Droplets, iconColor: 'text-blue-500', iconBg: 'bg-blue-50', priority: 'high',
+            icon: Droplets, iconColor: 'text-blue-500 dark:text-blue-400', iconBg: 'bg-blue-50 dark:bg-blue-900/30', priority: 'high',
             title: 'Pause All Irrigation Immediately',
             reason: `Active ${isStorm ? 'thunderstorm' : 'rainfall'} detected. Running irrigation now wastes water and risks waterlogging root zones.`,
             tip: 'Resume once rainfall totals are known and soil absorption is assessed.'
@@ -238,7 +238,7 @@ function generateRecommendations(weather, forecast, soilMoisture) {
         const hrs = Math.round((new Date(rainSoon.dt * 1000) - Date.now()) / 3600000);
         recs.push({
             id: 'irr_reduce_rain', category: 'Irrigation',
-            icon: CloudRain, iconColor: 'text-blue-500', iconBg: 'bg-blue-50', priority: 'high',
+            icon: CloudRain, iconColor: 'text-blue-500 dark:text-blue-400', iconBg: 'bg-blue-50 dark:bg-blue-900/30', priority: 'high',
             title: `Suspend Irrigation — Rain Expected in ~${hrs}h`,
             reason: `Forecast shows rainfall in ~${hrs} hours. Irrigating now could cause overwatering and nutrient runoff.`,
             tip: 'Reassess soil moisture after the rain event before resuming your schedule.'
@@ -246,7 +246,7 @@ function generateRecommendations(weather, forecast, soilMoisture) {
     } else if (moisture < 25) {
         recs.push({
             id: 'irr_urgent', category: 'Irrigation',
-            icon: Droplets, iconColor: 'text-red-500', iconBg: 'bg-red-50', priority: 'high',
+            icon: Droplets, iconColor: 'text-red-500 dark:text-red-400', iconBg: 'bg-red-50 dark:bg-red-900/30', priority: 'high',
             title: 'Urgent: Increase Irrigation — Critically Low Moisture',
             reason: `Soil moisture is critically low at ${moisture}%. Crops are at immediate risk of wilting and yield loss.`,
             tip: 'Target 45–60% soil moisture. Irrigate during early morning (5–7 AM) to minimise evaporation.'
@@ -254,7 +254,7 @@ function generateRecommendations(weather, forecast, soilMoisture) {
     } else if (moisture < 40) {
         recs.push({
             id: 'irr_increase', category: 'Irrigation',
-            icon: Droplets, iconColor: 'text-orange-500', iconBg: 'bg-orange-50', priority: 'medium',
+            icon: Droplets, iconColor: 'text-orange-500 dark:text-orange-400', iconBg: 'bg-orange-50 dark:bg-orange-900/30', priority: 'medium',
             title: 'Increase Irrigation Frequency',
             reason: `Soil moisture at ${moisture}% is below the optimal range (40–65%). Consider increasing watering cycles by 15–20 minutes.`,
             tip: 'Early morning irrigation (5–7 AM) minimises evaporation losses and maximises plant uptake.'
@@ -262,7 +262,7 @@ function generateRecommendations(weather, forecast, soilMoisture) {
     } else if (moisture > 75) {
         recs.push({
             id: 'irr_reduce', category: 'Irrigation',
-            icon: TrendingDown, iconColor: 'text-blue-500', iconBg: 'bg-blue-50', priority: 'medium',
+            icon: TrendingDown, iconColor: 'text-blue-500 dark:text-blue-400', iconBg: 'bg-blue-50 dark:bg-blue-900/30', priority: 'medium',
             title: 'Reduce Irrigation — Soil is Saturated',
             reason: `Soil moisture is high at ${moisture}%. Over-irrigation promotes root rot and washes away nutrients. Reduce watering by ~30%.`,
             tip: 'Well-drained soils absorb 10–20mm/hr. Watch for surface pooling as a sign of over-watering.'
@@ -270,7 +270,7 @@ function generateRecommendations(weather, forecast, soilMoisture) {
     } else {
         recs.push({
             id: 'irr_ok', category: 'Irrigation',
-            icon: Droplets, iconColor: 'text-green-500', iconBg: 'bg-green-50', priority: 'low',
+            icon: Droplets, iconColor: 'text-green-500 dark:text-green-400', iconBg: 'bg-green-50 dark:bg-green-900/30', priority: 'low',
             title: 'Irrigation Schedule is Optimal',
             reason: `Soil moisture at ${moisture}% is within the ideal range (40–65%). Maintain your current watering schedule.`,
             tip: 'Continue monitoring daily — adjust if temperature exceeds 35°C or moisture drops below 40%.'
@@ -281,7 +281,7 @@ function generateRecommendations(weather, forecast, soilMoisture) {
     if (temp >= 38) {
         recs.push({
             id: 'heat_extreme', category: 'Heat Management',
-            icon: Thermometer, iconColor: 'text-red-600', iconBg: 'bg-red-50', priority: 'high',
+            icon: Thermometer, iconColor: 'text-red-600 dark:text-red-400', iconBg: 'bg-red-50 dark:bg-red-900/30', priority: 'high',
             title: 'Extreme Heat — Emergency Crop Protection Needed',
             reason: `Temperature is dangerously high at ${temp.toFixed(1)}°C. Risk of crop burn, flower drop, and accelerated water loss from soil.`,
             tip: 'Avoid all field operations between 11 AM–3 PM. Light irrigation at midday can help cool the crop canopy.'
@@ -290,7 +290,7 @@ function generateRecommendations(weather, forecast, soilMoisture) {
         const heatTemp = heatSoon ? heatSoon.main.temp.toFixed(1) : temp.toFixed(1);
         recs.push({
             id: 'heat_warning', category: 'Heat Management',
-            icon: Thermometer, iconColor: 'text-orange-500', iconBg: 'bg-orange-50', priority: 'medium',
+            icon: Thermometer, iconColor: 'text-orange-500 dark:text-orange-400', iconBg: 'bg-orange-50 dark:bg-orange-900/30', priority: 'medium',
             title: 'Schedule Early Morning Irrigation for Heat Wave',
             reason: `Temperature ${heatSoon ? 'forecast to reach' : 'at'} ${heatTemp}°C. Shift irrigation to 5–7 AM to maximise plant uptake before heat peaks.`,
             tip: 'During heat waves, plants need 20–25% more water to compensate for high evapotranspiration rates.'
@@ -301,7 +301,7 @@ function generateRecommendations(weather, forecast, soilMoisture) {
     if (humidity > 80 && temp > 22) {
         recs.push({
             id: 'pest_fungal', category: 'Pest & Disease',
-            icon: Bug, iconColor: 'text-purple-600', iconBg: 'bg-purple-50', priority: 'high',
+            icon: Bug, iconColor: 'text-purple-600 dark:text-purple-400', iconBg: 'bg-purple-50 dark:bg-purple-900/30', priority: 'high',
             title: 'High Fungal Disease Risk — Act Now',
             reason: `Humidity at ${humidity}% combined with ${temp.toFixed(1)}°C creates ideal conditions for blight, mildew, and rust in crops.`,
             tip: 'Apply copper-based fungicide in early morning hours. Drone spray provides most even coverage at low wind conditions.'
@@ -309,7 +309,7 @@ function generateRecommendations(weather, forecast, soilMoisture) {
     } else if (humidity > 65 && temp > 25) {
         recs.push({
             id: 'pest_scout', category: 'Pest & Disease',
-            icon: Bug, iconColor: 'text-orange-500', iconBg: 'bg-orange-50', priority: 'medium',
+            icon: Bug, iconColor: 'text-orange-500 dark:text-orange-400', iconBg: 'bg-orange-50 dark:bg-orange-900/30', priority: 'medium',
             title: 'Scout Fields for Early Pest Activity',
             reason: `Current conditions (${humidity}% humidity, ${temp.toFixed(1)}°C) favour aphid and whitefly activity. Early detection prevents large infestations.`,
             tip: 'Pay special attention to leaf undersides and new growth tips during your field walk.'
@@ -319,7 +319,7 @@ function generateRecommendations(weather, forecast, soilMoisture) {
     if (temp >= 35 && humidity < 40) {
         recs.push({
             id: 'pest_spider', category: 'Pest & Disease',
-            icon: Bug, iconColor: 'text-red-500', iconBg: 'bg-red-50', priority: 'medium',
+            icon: Bug, iconColor: 'text-red-500 dark:text-red-400', iconBg: 'bg-red-50 dark:bg-red-900/30', priority: 'medium',
             title: 'Spider Mite Activity Likely in Dry Heat',
             reason: `Hot (${temp.toFixed(1)}°C) and dry (${humidity}% humidity) conditions accelerate spider mite reproduction. Inspect crops immediately.`,
             tip: 'Neem oil spray (0.5%) is an effective eco-friendly option. Focus on the underside of lower leaves.'
@@ -330,7 +330,7 @@ function generateRecommendations(weather, forecast, soilMoisture) {
     if (isStorm || stormSoon) {
         recs.push({
             id: 'drone_ground', category: 'Drone Mission',
-            icon: Plane, iconColor: 'text-red-500', iconBg: 'bg-red-50', priority: 'high',
+            icon: Plane, iconColor: 'text-red-500 dark:text-red-400', iconBg: 'bg-red-50 dark:bg-red-900/30', priority: 'high',
             title: 'Ground All Drone Missions — Storm Warning',
             reason: `${isStorm ? 'Active thunderstorm' : 'Thunderstorm forecast soon'} — flying drones risks equipment damage and loss of data.`,
             tip: 'Drones can resume 30 minutes after storm clears and wind drops below 7 m/s.'
@@ -338,7 +338,7 @@ function generateRecommendations(weather, forecast, soilMoisture) {
     } else if (wind > 10) {
         recs.push({
             id: 'drone_wind', category: 'Drone Mission',
-            icon: Wind, iconColor: 'text-orange-500', iconBg: 'bg-orange-50', priority: 'medium',
+            icon: Wind, iconColor: 'text-orange-500 dark:text-orange-400', iconBg: 'bg-orange-50 dark:bg-orange-900/30', priority: 'medium',
             title: 'Delay Drone Launch — Wind Speed Too High',
             reason: `Wind at ${wind.toFixed(1)} m/s exceeds safe operation threshold (7 m/s). Mapping accuracy and spray precision will be compromised.`,
             tip: 'Optimal drone conditions: wind < 7 m/s, clean visibility, no precipitation.'
@@ -347,7 +347,7 @@ function generateRecommendations(weather, forecast, soilMoisture) {
         const hrs = Math.round((new Date(rainSoon.dt * 1000) - Date.now()) / 3600000);
         recs.push({
             id: 'drone_prerain', category: 'Drone Mission',
-            icon: Plane, iconColor: 'text-blue-500', iconBg: 'bg-blue-50', priority: 'medium',
+            icon: Plane, iconColor: 'text-blue-500 dark:text-blue-400', iconBg: 'bg-blue-50 dark:bg-blue-900/30', priority: 'medium',
             title: `Complete Drone Missions Before Rain (~${hrs}h away)`,
             reason: `Rain expected in ~${hrs}h. Complete any pending spray or NDVI mapping missions now to avoid a 24–48h delay.`,
             tip: 'Pre-rain field scanning helps identify drainage problem areas before they become issues.'
@@ -355,7 +355,7 @@ function generateRecommendations(weather, forecast, soilMoisture) {
     } else {
         recs.push({
             id: 'drone_ok', category: 'Drone Mission',
-            icon: Plane, iconColor: 'text-green-500', iconBg: 'bg-green-50', priority: 'low',
+            icon: Plane, iconColor: 'text-green-500 dark:text-green-400', iconBg: 'bg-green-50 dark:bg-green-900/30', priority: 'low',
             title: 'Good Window for Drone Operations',
             reason: `Wind at ${wind.toFixed(1)} m/s and clear conditions provide a good flight window for NDVI scanning and field surveys.`,
             tip: 'Early morning missions (6–9 AM) yield the best NDVI accuracy due to lower solar angle and calmer air.'
@@ -366,7 +366,7 @@ function generateRecommendations(weather, forecast, soilMoisture) {
     if (humidity < 35) {
         recs.push({
             id: 'water_mulch', category: 'Water Conservation',
-            icon: IndianRupee, iconColor: 'text-green-600', iconBg: 'bg-green-50', priority: 'medium',
+            icon: IndianRupee, iconColor: 'text-green-600 dark:text-green-400', iconBg: 'bg-green-50 dark:bg-green-900/30', priority: 'medium',
             title: 'Apply Mulch to Prevent Moisture Loss',
             reason: `Low humidity at ${humidity}% causes soil moisture to evaporate 2–3× faster than normal. Mulching can cut water needs by up to 40%.`,
             tip: 'Apply 5–8 cm of dry straw or crop residue around plant bases for best effect.'
@@ -374,7 +374,7 @@ function generateRecommendations(weather, forecast, soilMoisture) {
     } else {
         recs.push({
             id: 'water_save', category: 'Water Conservation',
-            icon: IndianRupee, iconColor: 'text-green-600', iconBg: 'bg-green-50', priority: 'low',
+            icon: IndianRupee, iconColor: 'text-green-600 dark:text-green-400', iconBg: 'bg-green-50 dark:bg-green-900/30', priority: 'low',
             title: 'Optimise Irrigation Timing for Water Savings',
             reason: 'Irrigating during early morning (before 8 AM) instead of afternoon can reduce water evaporation losses by 20–30%.',
             tip: 'Under PM Krishi Sinchayee Yojana, irrigation efficiency equipment is subsidised up to 55% for small farmers.'
@@ -392,8 +392,8 @@ function generateRecommendations(weather, forecast, soilMoisture) {
             tip: 'Apply fertiliser 1–2 days after irrigation when soil has good moisture for optimal absorption.'
         },
         rabi: {
-            title: 'Rabi Season — Monitor for Wheat Rust',
-            reason: 'Rabi wheat and chickpea are susceptible to yellow and stem rust during cool humid periods. Inspect flag leaves weekly.',
+            title: 'Rabi Season — Monitor for Crop Rust',
+            reason: 'Rabi crops and chickpea are susceptible to yellow and stem rust during cool humid periods. Inspect flag leaves weekly.',
             tip: 'If rust is found on >5% of leaves, apply Propiconazole 25 EC @ 0.1% immediately.'
         },
         summer: {
@@ -405,7 +405,7 @@ function generateRecommendations(weather, forecast, soilMoisture) {
 
     recs.push({
         id: 'seasonal', category: 'Crop Management',
-        icon: Wheat, iconColor: 'text-yellow-600', iconBg: 'bg-yellow-50', priority: 'medium',
+        icon: Wheat, iconColor: 'text-yellow-600 dark:text-yellow-400', iconBg: 'bg-yellow-50 dark:bg-yellow-900/30', priority: 'medium',
         ...seasonal
     });
 

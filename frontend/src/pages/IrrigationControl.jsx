@@ -205,12 +205,12 @@ export default function IrrigationControl() {
         <div className="max-w-[1400px] mx-auto p-4 md:p-6 animate-in fade-in duration-500">
 
             {/* Header */}
-            <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 bg-white rounded-2xl p-4 md:p-6 border border-nature-200/60 shadow-sm mb-6">
+            <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 bg-white dark:bg-nature-950 rounded-2xl p-4 md:p-6 border border-nature-200/60 dark:border-nature-800 shadow-sm mb-6">
                 <div>
-                    <h1 className="text-xl md:text-2xl font-bold text-nature-900 flex items-center gap-3">
+                    <h1 className="text-xl md:text-2xl font-bold text-nature-900 dark:text-white flex items-center gap-3">
                         <Activity className="w-5 h-5 md:w-6 md:h-6 text-orange-500" /> {t('Live Irrigation Control')}
                     </h1>
-                    <p className="text-[11px] md:text-[13px] text-nature-500 mt-1.5 font-medium">{t('Synchronize manual overrides with automated real-time thresholds.')}</p>
+                    <p className="text-[11px] md:text-[13px] text-nature-500 dark:text-nature-400 mt-1.5 font-medium">{t('Synchronize manual overrides with automated real-time thresholds.')}</p>
                 </div>
                 <div className="flex items-center gap-4">
                     <button
@@ -233,24 +233,24 @@ export default function IrrigationControl() {
                 <div className="lg:col-span-2 space-y-6">
 
                     {/* Weather Mini-Card */}
-                    <div className="bg-white rounded-2xl p-5 border border-nature-200/60 shadow-sm flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                    <div className="bg-white dark:bg-nature-950 rounded-2xl p-5 border border-nature-200/60 dark:border-nature-800 shadow-sm flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
                         <div className="flex items-center gap-4">
-                            <div className="w-12 h-12 bg-nature-50 rounded-xl flex items-center justify-center border border-nature-100">
-                                <ThermometerSun className="w-6 h-6 text-nature-700" />
+                            <div className="w-12 h-12 bg-nature-50 dark:bg-nature-900 rounded-xl flex items-center justify-center border border-nature-100 dark:border-nature-800">
+                                <ThermometerSun className="w-6 h-6 text-nature-700 dark:text-nature-300" />
                             </div>
                             <div>
-                                <h3 className="font-bold text-[13px] md:text-sm text-nature-900">{weather.city} {t('Weather')}</h3>
-                                <p className="text-[9px] md:text-[10px] text-nature-500 font-bold tracking-wider uppercase mt-1">{t('REAL-TIME INTELLIGENCE')}</p>
+                                <h3 className="font-bold text-[13px] md:text-sm text-nature-900 dark:text-white">{weather.city} {t('Weather')}</h3>
+                                <p className="text-[9px] md:text-[10px] text-nature-500 dark:text-nature-400 font-bold tracking-wider uppercase mt-1">{t('REAL-TIME INTELLIGENCE')}</p>
                             </div>
                         </div>
                         <div className="flex gap-6 sm:gap-10 sm:pr-4">
                             <div className="text-center sm:text-right">
-                                <p className="text-[9px] md:text-[10px] text-nature-400 font-bold uppercase tracking-wider mb-1">{t('TEMP')}</p>
-                                <p className="text-sm md:text-base font-bold text-nature-900">{weather.temp.toFixed(1)}°C</p>
+                                <p className="text-[9px] md:text-[10px] text-nature-400 dark:text-nature-500 font-bold uppercase tracking-wider mb-1">{t('TEMP')}</p>
+                                <p className="text-sm md:text-base font-bold text-nature-900 dark:text-white">{weather.temp.toFixed(1)}°C</p>
                             </div>
                             <div className="text-center sm:text-right">
-                                <p className="text-[9px] md:text-[10px] text-nature-400 font-bold uppercase tracking-wider mb-1">{t('HUMIDITY')}</p>
-                                <p className="text-sm md:text-base font-bold text-nature-900">{weather.humidity}%</p>
+                                <p className="text-[9px] md:text-[10px] text-nature-400 dark:text-nature-500 font-bold uppercase tracking-wider mb-1">{t('HUMIDITY')}</p>
+                                <p className="text-sm md:text-base font-bold text-nature-900 dark:text-white">{weather.humidity}%</p>
                             </div>
                         </div>
                     </div>
@@ -263,16 +263,16 @@ export default function IrrigationControl() {
 
                 {/* Right Column (Logic Control) */}
                 <div className="lg:col-span-1">
-                    <div className="bg-white rounded-3xl p-6 border border-nature-200/60 shadow-sm h-full flex flex-col">
+                    <div className="bg-white dark:bg-nature-950 rounded-3xl p-6 border border-nature-200/60 dark:border-nature-800 shadow-sm h-full flex flex-col">
                         <div className="flex justify-between items-start mb-8">
                             <div>
-                                <h3 className="font-bold text-[15px] text-nature-900">{t('Field Logic Control')}</h3>
-                                <p className="text-[11px] text-nature-500 font-medium mt-1.5">{t('Independent Dual-Channel AI')}</p>
+                                <h3 className="font-bold text-[15px] text-nature-900 dark:text-white">{t('Field Logic Control')}</h3>
+                                <p className="text-[11px] text-nature-500 dark:text-nature-400 font-medium mt-1.5">{t('Independent Dual-Channel AI')}</p>
                             </div>
                             <div className="text-right">
-                                <p className="text-[9px] text-nature-400 font-bold uppercase tracking-widest mb-1">{t('MAIN TANK')}</p>
-                                <p className="text-xs font-bold text-blue-600 mb-1.5">{water.toFixed(1)}%</p>
-                                <div className="w-20 h-1.5 bg-nature-100 rounded-full overflow-hidden">
+                                <p className="text-[9px] text-nature-400 dark:text-nature-500 font-bold uppercase tracking-widest mb-1">{t('MAIN TANK')}</p>
+                                <p className="text-xs font-bold text-blue-600 dark:text-blue-400 mb-1.5">{water.toFixed(1)}%</p>
+                                <div className="w-20 h-1.5 bg-nature-100 dark:bg-nature-800 rounded-full overflow-hidden">
                                     <div className={`h-full rounded-full shadow-sm ${water < 20 ? 'bg-red-500' : 'bg-blue-500'}`} style={{ width: `${water}%` }}></div>
                                 </div>
                             </div>
@@ -280,47 +280,47 @@ export default function IrrigationControl() {
 
                         <div className="space-y-4">
                             {/* Area 1 Toggle */}
-                            <div className="flex items-center justify-between border border-[#e2e8f0] p-5 rounded-[20px] shadow-[0_2px_10px_rgba(0,0,0,0.015)] bg-white mb-4">
+                            <div className="flex items-center justify-between border border-[#e2e8f0] dark:border-nature-800 p-5 rounded-[20px] shadow-[0_2px_10px_rgba(0,0,0,0.015)] bg-white dark:bg-nature-900 mb-4">
                                 <div className="flex items-center gap-5">
-                                    <div className="w-[48px] h-[48px] rounded-[16px] bg-[#eef3f0] flex items-center justify-center text-[#698a76] border border-[#e2e8e5]">
+                                    <div className="w-[48px] h-[48px] rounded-[16px] bg-[#eef3f0] dark:bg-nature-800 flex items-center justify-center text-[#698a76] dark:text-nature-400 border border-[#e2e8e5] dark:border-nature-700">
                                         <Droplets className="w-[22px] h-[22px] opacity-90" />
                                     </div>
                                     <div>
-                                        <h4 className="font-extrabold text-[15px] text-[#1a211e] tracking-tight">{t('Area 1 (North Section)')}</h4>
-                                        <p className="text-[12px] text-[#8aa396] mt-1 font-medium">{t('Soil Moisture:')} <span className="font-extrabold text-[#1a211e] ml-1">{avg1.toFixed(1)}%</span> <span className="mx-2 text-[#cbd5e1]">•</span> <span className={dispIrr1 ? 'text-blue-500 font-extrabold' : 'text-[#8aa396] font-extrabold uppercase'}>{dispIrr1 ? t('PUMPING') : t('IDLE')}</span></p>
+                                        <h4 className="font-extrabold text-[15px] text-[#1a211e] dark:text-white tracking-tight">{t('Area 1 (North Section)')}</h4>
+                                        <p className="text-[12px] text-[#8aa396] dark:text-nature-400 mt-1 font-medium">{t('Soil Moisture:')} <span className="font-extrabold text-[#1a211e] dark:text-white ml-1">{avg1.toFixed(1)}%</span> <span className="mx-2 text-[#cbd5e1] dark:text-nature-600">•</span> <span className={dispIrr1 ? 'text-blue-500 dark:text-blue-400 font-extrabold' : 'text-[#8aa396] dark:text-nature-500 font-extrabold uppercase'}>{dispIrr1 ? t('PUMPING') : t('IDLE')}</span></p>
                                     </div>
                                 </div>
                                 <label className={`relative inline-flex items-center ${!isAutoMode ? 'cursor-pointer' : 'cursor-not-allowed opacity-50'} group mr-2`}>
                                     <input type="checkbox" className="sr-only peer" checked={dispIrr1} onChange={() => handleTogglePump(1)} disabled={isAutoMode} />
-                                    <div className="w-[46px] h-[26px] bg-[#e2e8f0] peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-[#cbd5e1] after:border after:rounded-full after:h-[22px] after:w-[22px] after:transition-all peer-checked:bg-blue-500"></div>
+                                    <div className="w-[46px] h-[26px] bg-[#e2e8f0] dark:bg-nature-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-[#cbd5e1] after:border after:rounded-full after:h-[22px] after:w-[22px] after:transition-all peer-checked:bg-blue-500"></div>
                                 </label>
                             </div>
 
                             {/* Area 2 Toggle */}
-                            <div className="flex items-center justify-between border border-[#e2e8f0] p-5 rounded-[20px] shadow-[0_2px_10px_rgba(0,0,0,0.015)] bg-white">
+                            <div className="flex items-center justify-between border border-[#e2e8f0] dark:border-nature-800 p-5 rounded-[20px] shadow-[0_2px_10px_rgba(0,0,0,0.015)] bg-white dark:bg-nature-900">
                                 <div className="flex items-center gap-5">
-                                    <div className="w-[48px] h-[48px] rounded-[16px] bg-[#eef3f0] flex items-center justify-center text-[#698a76] border border-[#e2e8e5]">
+                                    <div className="w-[48px] h-[48px] rounded-[16px] bg-[#eef3f0] dark:bg-nature-800 flex items-center justify-center text-[#698a76] dark:text-nature-400 border border-[#e2e8e5] dark:border-nature-700">
                                         <Droplets className="w-[22px] h-[22px] opacity-90" />
                                     </div>
                                     <div>
-                                        <h4 className="font-extrabold text-[15px] text-[#1a211e] tracking-tight">{t('Area 2 (South Section)')}</h4>
-                                        <p className="text-[12px] text-[#8aa396] mt-1 font-medium">{t('Soil Moisture:')} <span className="font-extrabold text-[#1a211e] ml-1">{avg2.toFixed(1)}%</span> <span className="mx-2 text-[#cbd5e1]">•</span> <span className={dispIrr2 ? 'text-blue-500 font-extrabold' : 'text-[#8aa396] font-extrabold uppercase'}>{dispIrr2 ? t('PUMPING') : t('IDLE')}</span></p>
+                                        <h4 className="font-extrabold text-[15px] text-[#1a211e] dark:text-white tracking-tight">{t('Area 2 (South Section)')}</h4>
+                                        <p className="text-[12px] text-[#8aa396] dark:text-nature-400 mt-1 font-medium">{t('Soil Moisture:')} <span className="font-extrabold text-[#1a211e] dark:text-white ml-1">{avg2.toFixed(1)}%</span> <span className="mx-2 text-[#cbd5e1] dark:text-nature-600">•</span> <span className={dispIrr2 ? 'text-blue-500 dark:text-blue-400 font-extrabold' : 'text-[#8aa396] dark:text-nature-500 font-extrabold uppercase'}>{dispIrr2 ? t('PUMPING') : t('IDLE')}</span></p>
                                     </div>
                                 </div>
                                 <label className={`relative inline-flex items-center ${!isAutoMode ? 'cursor-pointer' : 'cursor-not-allowed opacity-50'} group mr-2`}>
                                     <input type="checkbox" className="sr-only peer" checked={dispIrr2} onChange={() => handleTogglePump(2)} disabled={isAutoMode} />
-                                    <div className="w-[46px] h-[26px] bg-[#e2e8f0] peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-[#cbd5e1] after:border after:rounded-full after:h-[22px] after:w-[22px] after:transition-all peer-checked:bg-blue-500"></div>
+                                    <div className="w-[46px] h-[26px] bg-[#e2e8f0] dark:bg-nature-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-[#cbd5e1] after:border after:rounded-full after:h-[22px] after:w-[22px] after:transition-all peer-checked:bg-blue-500"></div>
                                 </label>
                             </div>
                         </div>
 
-                        <div className="pt-8 mt-5 border-t border-[#f1f5f9]">
-                            <h4 className="text-[13px] font-extrabold text-[#1a211e] flex items-center gap-2 uppercase tracking-widest mb-4">
+                        <div className="pt-8 mt-5 border-t border-[#f1f5f9] dark:border-nature-800">
+                            <h4 className="text-[13px] font-extrabold text-[#1a211e] dark:text-white flex items-center gap-2 uppercase tracking-widest mb-4">
                                 <AlertCircle className="w-[18px] h-[18px] text-red-500" /> {t('INTELLIGENCE ALERTS')}
                             </h4>
-                            <div className="bg-[#f8fafc] border border-dashed border-[#bbf7d0] rounded-[16px] p-4 flex items-center gap-3 w-full">
-                                <div className="w-6 h-6 rounded-full border border-[#cbd5e1] flex items-center justify-center bg-white"><div className="w-2.5 h-2.5 bg-[#cbd5e1] rounded-full"></div></div>
-                                <span className="text-[11px] font-extrabold text-[#64748b] tracking-wider uppercase">{t('NO ACTIVE AI RECOMMENDATIONS')}</span>
+                            <div className="bg-[#f8fafc] dark:bg-nature-900 border border-dashed border-[#bbf7d0] dark:border-nature-700 rounded-[16px] p-4 flex items-center gap-3 w-full">
+                                <div className="w-6 h-6 rounded-full border border-[#cbd5e1] dark:border-nature-600 flex items-center justify-center bg-white dark:bg-nature-800"><div className="w-2.5 h-2.5 bg-[#cbd5e1] dark:bg-nature-500 rounded-full"></div></div>
+                                <span className="text-[11px] font-extrabold text-[#64748b] dark:text-nature-400 tracking-wider uppercase">{t('NO ACTIVE AI RECOMMENDATIONS')}</span>
                             </div>
                         </div>
                     </div>
@@ -328,10 +328,10 @@ export default function IrrigationControl() {
             </div>
 
             {/* Trends Section */}
-            <div className="bg-white rounded-3xl p-6 sm:p-8 border border-nature-200/60 shadow-sm mt-6">
+            <div className="bg-white dark:bg-nature-950 rounded-3xl p-6 sm:p-8 border border-nature-200/60 dark:border-nature-800 shadow-sm mt-6">
                 <div className="flex items-center gap-3 mb-8">
                     <Activity className="w-5 h-5 text-orange-400" />
-                    <h3 className="text-[15px] font-bold text-nature-900">{t('Telemetry Trends')}</h3>
+                    <h3 className="text-[15px] font-bold text-nature-900 dark:text-white">{t('Telemetry Trends')}</h3>
                 </div>
                 <div className="h-[260px] w-full">
                     <ResponsiveContainer width="100%" height="100%">

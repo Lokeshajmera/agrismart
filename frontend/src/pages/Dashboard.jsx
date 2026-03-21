@@ -47,6 +47,7 @@ export default function Dashboard() {
     const { tLive: t } = useLiveTranslation();
     const { user } = useAuth();
     const [profile, setProfile] = useState({ name: 'Farmer', farmer_id: '---' });
+    const [showSoilInfo, setShowSoilInfo] = useState(false);
     const { isOnline } = useOfflineStore();
     const { alerts, recs = [] } = useAlerts();
 
@@ -141,36 +142,47 @@ export default function Dashboard() {
         <div className="min-h-screen bg-transparent text-nature-700 dark:text-nature-200 font-sans p-2">
 
             {/* Top Toolbar */}
-            <div className="flex flex-col xl:flex-row items-center justify-between gap-4 mb-6 bg-white dark:bg-nature-950/60 backdrop-blur-md p-3 rounded-2xl border border-nature-200 dark:border-nature-800 shadow-sm">
-                <div className="flex flex-wrap items-center gap-4 xl:gap-6 w-full xl:w-auto overflow-hidden">
-                    <div className="flex items-center gap-2 whitespace-nowrap">
-                        <CloudSun className="w-5 h-5 text-orange-400" />
-                        <span className="text-nature-700 dark:text-nature-200 font-medium">{t('Welcome Farmer')}</span>
-                        <span className="text-earth-600 font-bold text-sm ml-2 bg-earth-50 px-2 py-1 rounded border border-earth-100">{profile.farmer_id}</span>
-                        <span className="text-nature-900 dark:text-white font-bold text-lg ml-2 border-r border-nature-300 pr-4 transition-all">{liveData.temp}°C</span>
+            <div className="flex flex-col xl:flex-row items-center justify-between gap-4 mb-4 sm:mb-6 bg-white dark:bg-nature-950/60 backdrop-blur-md p-3 sm:p-4 rounded-2xl border border-nature-200 dark:border-nature-800 shadow-sm w-full overflow-hidden">
+                <div className="flex flex-wrap items-center gap-3 sm:gap-4 xl:gap-6 w-full xl:w-auto">
+                    <div className="flex flex-wrap items-center gap-2 sm:gap-3 flex-1 min-w-0">
+                        <div className="flex items-center gap-1.5 sm:gap-2 whitespace-nowrap shrink-0">
+                            <CloudSun className="w-4 h-4 sm:w-5 sm:h-5 text-orange-400 shrink-0" />
+                            <span className="text-nature-700 dark:text-nature-200 font-medium text-sm sm:text-base truncate max-w-[120px] sm:max-w-none">{t('Welcome Farmer')}</span>
+                        </div>
+                        <span className="text-earth-600 font-bold text-xs sm:text-sm bg-earth-50 dark:bg-earth-900/30 px-1.5 py-0.5 sm:px-2 sm:py-1 rounded border border-earth-100 dark:border-earth-800/50 whitespace-nowrap shrink-0">{profile.farmer_id}</span>
+                        <div className="hidden sm:block w-px h-5 bg-nature-300 dark:bg-nature-700 mx-1 shrink-0"></div>
+                        <span className="text-nature-900 dark:text-white font-bold text-base sm:text-lg transition-all whitespace-nowrap shrink-0">{liveData.temp}°C</span>
                     </div>
-                    <div className="flex items-center gap-2 whitespace-nowrap">
-                        <Droplets className="w-4 h-4 text-blue-500" />
-                        <span className="text-nature-700 dark:text-nature-200 transition-all">{liveData.humidity}%</span>
+                    <div className="flex justify-between sm:justify-start items-center gap-2 w-full sm:w-auto mt-2 sm:mt-0">
+                        <div className="flex items-center gap-2 whitespace-nowrap shrink-0 bg-nature-50 dark:bg-nature-900/50 px-3 py-1.5 sm:bg-transparent sm:px-0 sm:py-0 rounded-lg">
+                            <Droplets className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-blue-500 shrink-0" />
+                            <span className="text-nature-700 dark:text-nature-200 transition-all font-medium sm:font-normal text-xs sm:text-sm">{liveData.humidity}% <span className="sm:hidden ml-1">{t('Humidity')}</span></span>
+                        </div>
+                        {/* Map Pin duplicated for easy tap target on lower row */}
+                        <Link to="/app/map" className="sm:hidden p-1.5 bg-white dark:bg-nature-950 rounded-lg border border-nature-200 dark:border-nature-800 hover:bg-nature-50 dark:bg-nature-900 cursor-pointer transition shadow-sm shrink-0">
+                            <MapPin className="w-4 h-4 text-nature-500 hover:text-earth-500 shrink-0" />
+                        </Link>
                     </div>
                 </div>
 
-                <div className="flex flex-wrap items-center gap-2 sm:gap-3 w-full xl:w-auto justify-start xl:justify-end relative z-[100]">
+                <div className="flex flex-wrap items-center gap-2 w-full xl:w-auto justify-between sm:justify-start xl:justify-end relative z-[100] mt-1 sm:mt-0 border-t sm:border-t-0 border-nature-100 dark:border-nature-800 pt-3 sm:pt-0">
 
                     {/* Online / Offline Status Indicator (Moved to Right) */}
-                    <div className="flex items-center gap-2 px-3 py-1.5 bg-white dark:bg-nature-950 rounded-lg border border-nature-200 dark:border-nature-800 shadow-sm transition">
-                        <span className={`w-2.5 h-2.5 rounded-full ${isOnline ? 'bg-green-500 animate-[pulse_2s_ease-in-out_infinite]' : 'bg-red-500'}`}></span>
-                        <span className={`text-xs font-bold ${isOnline ? 'text-green-700' : 'text-red-600'}`}>
+                    <div className="flex items-center gap-2 px-2.5 sm:px-3 py-1.5 bg-white dark:bg-nature-950 rounded-lg border border-nature-200 dark:border-nature-800 shadow-sm transition shrink-0 flex-1 sm:flex-none justify-center">
+                        <span className={`w-2 h-2 sm:w-2.5 sm:h-2.5 rounded-full shrink-0 ${isOnline ? 'bg-green-500 animate-[pulse_2s_ease-in-out_infinite]' : 'bg-red-500'}`}></span>
+                        <span className={`text-[10px] sm:text-xs font-bold ${isOnline ? 'text-green-700 dark:text-green-500' : 'text-red-600 dark:text-red-500'}`}>
                             {isOnline ? t('Online') : t('Offline')}
                         </span>
                     </div>
 
-                    <Link to="/app/insights" className="flex items-center gap-2 bg-white dark:bg-nature-950 px-3 py-1.5 rounded-lg border border-nature-200 dark:border-nature-800 whitespace-nowrap hover:bg-nature-50 dark:bg-nature-900 cursor-pointer transition shadow-sm">
-                        <Plane className="w-4 h-4 text-nature-500" />
-                        <span className="text-xs text-nature-600 font-medium">{t('Drone Status: Online')}</span>
+                    <Link to="/app/insights" className="flex items-center justify-center gap-1.5 sm:gap-2 bg-white dark:bg-nature-950 px-2.5 sm:px-3 py-1.5 rounded-lg border border-nature-200 dark:border-nature-800 hover:bg-nature-50 dark:bg-nature-900 cursor-pointer transition shadow-sm shrink-0 flex-[2] sm:flex-none">
+                        <Plane className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-nature-500 shrink-0" />
+                        <span className="text-[10px] sm:text-xs text-nature-600 dark:text-nature-300 font-medium whitespace-nowrap">{t('Drone Status: Online')}</span>
                     </Link>
-                    <Link to="/app/map" className="p-2 bg-white dark:bg-nature-950 rounded-lg border border-nature-200 dark:border-nature-800 hover:bg-nature-50 dark:bg-nature-900 cursor-pointer transition shadow-sm">
-                        <MapPin className="w-5 h-5 text-nature-500 hover:text-earth-500" />
+                    
+                    {/* Map Pin Hidden on Mobile because it moved left */}
+                    <Link to="/app/map" className="hidden sm:block p-1.5 sm:p-2 bg-white dark:bg-nature-950 rounded-lg border border-nature-200 dark:border-nature-800 hover:bg-nature-50 dark:bg-nature-900 cursor-pointer transition shadow-sm shrink-0">
+                        <MapPin className="w-4 h-4 sm:w-5 sm:h-5 text-nature-500 hover:text-earth-500 shrink-0" />
                     </Link>
 
                 </div>
@@ -179,25 +191,25 @@ export default function Dashboard() {
             {/* Quick Links */}
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
                 <Link to="/app/map" className="bg-white dark:bg-nature-950/80 backdrop-blur-md rounded-2xl border border-nature-200 dark:border-nature-800 p-4 shadow-sm hover:shadow-md transition flex flex-col items-center justify-center gap-2 group">
-                    <div className="w-10 h-10 rounded-full bg-blue-50 flex items-center justify-center border border-blue-100 group-hover:bg-blue-100 transition">
+                    <div className="w-10 h-10 rounded-full bg-blue-50 dark:bg-blue-900/30 flex items-center justify-center border border-blue-100 dark:border-blue-800/50 group-hover:bg-blue-100 transition">
                         <MapIcon className="w-5 h-5 text-blue-500" />
                     </div>
                     <span className="text-sm font-bold text-nature-800 dark:text-nature-100 text-center">{t('Farm Overview')}</span>
                 </Link>
                 <Link to="/app/irrigation" className="bg-white dark:bg-nature-950/80 backdrop-blur-md rounded-2xl border border-nature-200 dark:border-nature-800 p-4 shadow-sm hover:shadow-md transition flex flex-col items-center justify-center gap-2 group">
-                    <div className="w-10 h-10 rounded-full bg-cyan-50 flex items-center justify-center border border-cyan-100 group-hover:bg-cyan-100 transition">
+                    <div className="w-10 h-10 rounded-full bg-cyan-50 dark:bg-cyan-900/30 flex items-center justify-center border border-cyan-100 dark:border-cyan-800/50 group-hover:bg-cyan-100 transition">
                         <Droplets className="w-5 h-5 text-cyan-500" />
                     </div>
                     <span className="text-sm font-bold text-nature-800 dark:text-nature-100 text-center">{t('Irrigation Control')}</span>
                 </Link>
                 <Link to="/app/insights" className="bg-white dark:bg-nature-950/80 backdrop-blur-md rounded-2xl border border-nature-200 dark:border-nature-800 p-4 shadow-sm hover:shadow-md transition flex flex-col items-center justify-center gap-2 group">
-                    <div className="w-10 h-10 rounded-full bg-purple-50 flex items-center justify-center border border-purple-100 group-hover:bg-purple-100 transition">
+                    <div className="w-10 h-10 rounded-full bg-purple-50 dark:bg-purple-900/30 flex items-center justify-center border border-purple-100 dark:border-purple-800/50 group-hover:bg-purple-100 transition">
                         <Plane className="w-5 h-5 text-purple-500" />
                     </div>
                     <span className="text-sm font-bold text-nature-800 dark:text-nature-100 text-center">{t('Drone Missions')}</span>
                 </Link>
                 <Link to="/app/alerts" className="bg-white dark:bg-nature-950/80 backdrop-blur-md rounded-2xl border border-nature-200 dark:border-nature-800 p-4 shadow-sm hover:shadow-md transition flex flex-col items-center justify-center gap-2 group">
-                    <div className="w-10 h-10 rounded-full bg-red-50 flex items-center justify-center border border-red-100 group-hover:bg-red-100 transition">
+                    <div className="w-10 h-10 rounded-full bg-red-50 dark:bg-red-900/30 flex items-center justify-center border border-red-100 dark:border-red-800/50 group-hover:bg-red-100 transition">
                         <AlertTriangle className="w-5 h-5 text-red-500" />
                     </div>
                     <span className="text-sm font-bold text-nature-800 dark:text-nature-100 text-center">{t('Alerts')}</span>
@@ -213,7 +225,7 @@ export default function Dashboard() {
 
                     {/* Farm Info */}
                     <div className="bg-white dark:bg-nature-950/80 backdrop-blur-md rounded-2xl p-5 border border-nature-200 dark:border-nature-800 shadow-md hover:shadow-lg transition relative overflow-hidden group">
-                        <div className="absolute top-0 right-0 w-32 h-32 bg-earth-100 rounded-bl-full blur-2xl opacity-50"></div>
+                        <div className="absolute top-0 right-0 w-32 h-32 bg-earth-100 dark:bg-earth-900/30 rounded-bl-full blur-2xl opacity-50 dark:opacity-20 pointer-events-none"></div>
                         <div className="flex justify-between items-start mb-4 relative z-10">
                             <div>
                                 <h2 className="text-xl font-bold text-nature-900 dark:text-white flex items-center gap-2">
@@ -267,7 +279,23 @@ export default function Dashboard() {
                             <h3 className="text-base font-bold text-nature-900 dark:text-white flex items-center gap-2 flex-wrap">
                                 {t('Soil Condition')}
                             </h3>
-                            <button className="text-nature-400 hover:text-nature-600 cursor-pointer p-1"><Info className="w-4 h-4" /></button>
+                            <div className="relative">
+                                <button onClick={() => setShowSoilInfo(!showSoilInfo)} className="text-nature-400 hover:text-nature-600 dark:hover:text-nature-200 cursor-pointer p-1 transition-colors">
+                                    <Info className="w-4 h-4" />
+                                </button>
+                                
+                                {showSoilInfo && <div className="fixed inset-0 z-[50]" onClick={() => setShowSoilInfo(false)}></div>}
+                                
+                                <div className={`absolute right-0 top-full mt-2 w-[260px] sm:w-[300px] p-4 bg-white dark:bg-nature-900 border border-nature-200 dark:border-nature-800 shadow-[0_10px_40px_-10px_rgba(0,0,0,0.15)] rounded-2xl z-[60] text-sm transition-all duration-300 origin-top-right ${showSoilInfo ? 'opacity-100 scale-100 visible' : 'opacity-0 scale-95 invisible'}`}>
+                                    <div className="font-bold text-nature-900 dark:text-white mb-1.5 flex items-center gap-1.5 border-b border-nature-100 dark:border-nature-700/50 dark:border-nature-800 pb-2">
+                                        <Info className="w-4 h-4 text-blue-500" />
+                                        <span>{t('Soil Health Indicator')}</span>
+                                    </div>
+                                    <div className="text-nature-600 dark:text-nature-400 text-xs sm:text-sm leading-relaxed mt-2 pt-1">
+                                        {t('Soil moisture indicates water availability in soil. Optimal range is')} <span className="font-semibold text-green-600 dark:text-green-400">35%–60%</span> {t('for healthy crop growth.')}
+                                    </div>
+                                </div>
+                            </div>
                         </div>
 
                         <div className="flex justify-around items-center w-full gap-2">
@@ -346,7 +374,7 @@ export default function Dashboard() {
                     {/* Automated Drone Mission */}
                     <Link to="/app/insights" className="bg-white dark:bg-nature-950/80 backdrop-blur-md rounded-2xl border border-nature-200 dark:border-nature-800 p-4 flex items-center justify-between group cursor-pointer hover:bg-nature-50 dark:bg-nature-900 hover:shadow-md transition shadow-sm">
                         <div className="flex items-center gap-4">
-                            <div className="w-10 h-10 rounded-xl bg-earth-50 border border-earth-100 flex items-center justify-center group-hover:scale-110 transition-transform">
+                            <div className="w-10 h-10 rounded-xl bg-earth-50 dark:bg-earth-900/30 border border-earth-100 dark:border-earth-800/50 flex items-center justify-center group-hover:scale-110 transition-transform">
                                 <Plane className="w-5 h-5 text-earth-500 group-hover:text-earth-600" />
                             </div>
                             <div>
@@ -437,7 +465,7 @@ export default function Dashboard() {
                             ) : recs.slice(0, 3).map(rec => {
                                 const Icon = rec.icon;
                                 return (
-                                    <div key={rec.id} className={`${rec.iconBg} border border-nature-100 dark:border-nature-700/50/50 rounded-xl p-3 flex gap-3 hover:opacity-90 transition cursor-pointer group`}>
+                                    <div key={rec.id} className={`${rec.iconBg} border border-nature-100 dark:border-nature-700/50 rounded-xl p-3 flex gap-3 hover:opacity-90 transition cursor-pointer group`}>
                                         <div className={`mt-0.5 shrink-0 w-8 h-8 rounded-full ${rec.iconBg} border border-nature-200 dark:border-nature-800/50 flex items-center justify-center ${rec.iconColor} group-hover:scale-110 transition-transform`}>
                                             <Icon className="w-4 h-4" />
                                         </div>

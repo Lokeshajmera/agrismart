@@ -20,9 +20,9 @@ export default function AICropIntelligence() {
             <div className="flex justify-between items-center">
                 <div>
                     <h1 className="text-2xl font-bold text-nature-900 dark:text-white tracking-tight">AI Crop Intelligence</h1>
-                    <p className="text-nature-500 mt-1">Machine Learning insights tailored for your wheat crop.</p>
+                    <p className="text-nature-500 mt-1">Machine Learning insights tailored for your crop.</p>
                 </div>
-                <div className="bg-earth-100 text-earth-800 px-3 py-1.5 rounded-lg text-sm font-bold flex items-center gap-2 border border-earth-200">
+                <div className="bg-earth-100 dark:bg-earth-900/30 text-earth-800 dark:text-earth-300 px-3 py-1.5 rounded-lg text-sm font-bold flex items-center gap-2 border border-earth-200 dark:border-earth-800/50">
                     <Brain className="w-4 h-4" /> AI Models Active
                 </div>
             </div>
@@ -30,7 +30,7 @@ export default function AICropIntelligence() {
             {/* Main Predictions */}
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                 <div className="bg-gradient-to-br from-nature-900 to-nature-800 p-6 rounded-2xl shadow-lg relative overflow-hidden text-white col-span-1 lg:col-span-2 shadow-nature-900/20">
-                    <div className="absolute top-0 right-0 w-64 h-64 bg-earth-500/20 rounded-full blur-3xl -mr-20 -mt-20"></div>
+                    <div className="absolute top-0 right-0 w-64 h-64 bg-earth-500/20 dark:bg-nature-900/40 rounded-full blur-3xl -mr-20 -mt-20 pointer-events-none"></div>
                     <div className="relative z-10 w-full h-full flex flex-col justify-center">
                         <div className="flex items-center gap-2 mb-4 text-earth-300">
                             <Sprout className="w-5 h-5" />
@@ -48,7 +48,7 @@ export default function AICropIntelligence() {
                                     {insightYield} Tons / Hectare
                                 </h2>
                                 <p className="text-nature-300 text-sm mb-6 max-w-md leading-relaxed flex-1">
-                                    Based on current soil conditions, historical data from North India, and the 14-day weather forecast, your wheat yield is projected to be <strong className="text-white">+{Math.round((insightYield - 3.75) * 10)}% higher</strong> than the regional average.
+                                    Based on current soil conditions, historical data from India, and the 14-day weather forecast, your yield is projected to be <strong className="text-white">+{Math.round((insightYield - 3.75) * 10)}% higher</strong> than the regional average.
                                 </p>
                             </>
                         )}
@@ -70,17 +70,17 @@ export default function AICropIntelligence() {
                     </div>
                 </div>
 
-                <div className="bg-white dark:bg-nature-950 p-6 rounded-2xl border border-red-100 shadow-sm shadow-red-500/5 flex flex-col">
-                    <div className="flex items-center gap-2 mb-4 text-red-600">
+                <div className="bg-white dark:bg-nature-950 p-6 rounded-2xl border border-red-100 dark:border-red-900/30 shadow-sm shadow-red-500/5 flex flex-col">
+                    <div className="flex items-center gap-2 mb-4 text-red-600 dark:text-red-500">
                         <ShieldAlert className="w-5 h-5" />
                         <span className="font-bold text-sm uppercase tracking-wider">Disease Risk</span>
                     </div>
                     <div className="flex-1 flex flex-col justify-center items-center text-center">
-                        <div className="w-20 h-20 rounded-full bg-red-50 border-4 border-red-100 flex items-center justify-center mb-4 text-red-500">
+                        <div className="w-20 h-20 rounded-full bg-red-50 dark:bg-red-900/20 border-4 border-red-100 dark:border-red-800/30 flex items-center justify-center mb-4 text-red-500 dark:text-red-400">
                             <AlertTriangle className="w-8 h-8" />
                         </div>
                         <h3 className="text-xl font-bold text-nature-900 dark:text-white mb-1">Medium Risk</h3>
-                        <p className="text-red-600 font-semibold mb-2">Wheat Rust</p>
+                        <p className="text-red-600 dark:text-red-400 font-semibold mb-2">Crop Rust</p>
                         <p className="text-sm text-nature-600 mb-6">High humidity tomorrow increases susceptibility. Consider preventative measures.</p>
 
                         {!analyzing && (
@@ -101,7 +101,7 @@ export default function AICropIntelligence() {
                     { icon: CheckCircle2, title: 'Vegetation Health (NDVI)', desc: 'Satellite imagery analysis confirms uniform crop health across 95% of the acreage. No major anomalies.', type: 'positive' },
                 ].map((item, i) => (
                     <div key={i} className="bg-white dark:bg-nature-950 p-5 rounded-xl border border-nature-200 dark:border-nature-800 shadow-sm flex items-start gap-4">
-                        <div className={`p-2.5 rounded-lg shrink-0 ${item.type === 'positive' ? 'bg-green-100 text-green-600' : 'bg-orange-100 text-orange-600'}`}>
+                        <div className={`p-2.5 rounded-lg shrink-0 ${item.type === 'positive' ? 'bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400' : 'bg-orange-100 dark:bg-orange-900/30 text-orange-600 dark:text-orange-400'}`}>
                             <item.icon className="w-5 h-5" />
                         </div>
                         <div>

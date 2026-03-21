@@ -13,6 +13,7 @@ export default function Profile() {
   // Form fields
   const [name, setName] = useState('');
   const [phone, setPhone] = useState('+91');
+  const [errors, setErrors] = useState({});
 
   useEffect(() => {
     if (user) {
@@ -34,8 +35,11 @@ export default function Profile() {
       
       if (data) {
         setProfile(data);
-        setName(data.name || '');
-        setPhone(data.phone || '');
+        setName(data.name || user?.user_metadata?.name || '');
+        setPhone(data.phone || user?.user_metadata?.phone || '');
+      } else {
+        setName(user?.user_metadata?.name || '');
+        setPhone(user?.user_metadata?.phone || '');
       }
     } catch (error) {
       console.error('Error fetching profile:', error);
@@ -58,11 +62,16 @@ export default function Profile() {
 
   const handleSave = async (e) => {
     e.preventDefault();
-    if (!name || !phone) {
-      toast.error('Name and Phone are required');
+    const newErrors = {};
+    if (!name || !name.trim()) newErrors.name = 'Full Name is required';
+    if (!phone || phone.trim() === '+91' || phone.replace(/\D/g,'').length < 10) newErrors.phone = 'Please enter a valid 10-digit mobile number';
+
+    if (Object.keys(newErrors).length > 0) {
+      setErrors(newErrors);
       return;
     }
-
+    setErrors({});
+    
     setSaving(true);
     try {
       let currentFarmerId = profile?.farmer_id;
@@ -154,7 +163,7 @@ export default function Profile() {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-nature-700 dark:text-nature-200">Full Name</label>
+              <label className="block text-sm font-medium text-nature-700 dark:text-nature-200">Full Name <span className="text-red-500">*</span></label>
               <div className="mt-1 flex rounded-md shadow-sm">
                 <span className="inline-flex items-center px-3 rounded-l-md border border-r-0 border-nature-300 bg-nature-50 dark:bg-nature-900 text-nature-500 sm:text-sm">
                   <User className="h-4 w-4" />
@@ -163,15 +172,16 @@ export default function Profile() {
                   type="text"
                   required
                   value={name}
-                  onChange={(e) => setName(e.target.value)}
-                  className="flex-1 min-w-0 block w-full px-3 py-2 rounded-none rounded-r-md border border-nature-300 focus:ring-earth-500 focus:border-earth-500 sm:text-sm"
+                  onChange={(e) => { setName(e.target.value); setErrors({...errors, name: ''}); }}
+                  className={`flex-1 min-w-0 block w-full px-3 py-2 rounded-none rounded-r-md border focus:ring-earth-500 sm:text-sm ${errors.name ? 'border-red-500 focus:border-red-500' : 'border-nature-300 focus:border-earth-500'}`}
                   placeholder="Rahul Kumar"
                 />
               </div>
+              {errors.name && <p className="text-red-500 text-xs mt-1.5">{errors.name}</p>}
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-nature-700 dark:text-nature-200">Mobile Number</label>
+              <label className="block text-sm font-medium text-nature-700 dark:text-nature-200">Mobile Number <span className="text-red-500">*</span></label>
               <div className="mt-1 flex rounded-md shadow-sm">
                 <span className="inline-flex items-center px-3 rounded-l-md border border-r-0 border-nature-300 bg-nature-50 dark:bg-nature-900 text-nature-500 sm:text-sm">
                   <Phone className="h-4 w-4" />
@@ -180,11 +190,12 @@ export default function Profile() {
                   type="tel"
                   required
                   value={phone}
-                  onChange={(e) => setPhone(e.target.value)}
-                  className="flex-1 min-w-0 block w-full px-3 py-2 rounded-none rounded-r-md border border-nature-300 focus:ring-earth-500 focus:border-earth-500 sm:text-sm"
+                  onChange={(e) => { setPhone(e.target.value); setErrors({...errors, phone: ''}); }}
+                  className={`flex-1 min-w-0 block w-full px-3 py-2 rounded-none rounded-r-md border focus:ring-earth-500 sm:text-sm ${errors.phone ? 'border-red-500 focus:border-red-500' : 'border-nature-300 focus:border-earth-500'}`}
                   placeholder="+919876543210"
                 />
               </div>
+              {errors.phone && <p className="text-red-500 text-xs mt-1.5">{errors.phone}</p>}
             </div>
 
             <div className="pt-4 flex justify-end">

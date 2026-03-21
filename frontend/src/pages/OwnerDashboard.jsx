@@ -20,7 +20,7 @@ const OwnerDashboard = () => {
         fetchData();
         // Mock some system updates for the hackathon demo since there is no updates table
         setUpdates([
-            { id: 1, title: 'AI Yield Model Updated', date: new Date().toLocaleDateString(), desc: 'The North Indian wheat yield prediction model has been improved by 15%.' },
+            { id: 1, title: 'AI Yield Model Updated', date: new Date().toLocaleDateString(), desc: 'The Indian yield prediction model has been improved by 15%.' },
             { id: 2, title: 'New Sensor Firmware', date: new Date(Date.now() - 86400000).toLocaleDateString(), desc: 'Firmware v2.4 pushed to all active ESP32 nodes.' },
             { id: 3, title: 'Satellite Data Integration', date: new Date(Date.now() - 172800000).toLocaleDateString(), desc: 'NDVI heatmaps are now syncing daily instead of weekly.' }
         ]);
@@ -80,13 +80,13 @@ const OwnerDashboard = () => {
         }
     };
 
-    const handleDeleteComplaint = async (id) => {
+    const handleResolveComplaint = async (id) => {
         try {
-            const { error } = await supabase.from('complaints').delete().eq('id', id);
+            const { error } = await supabase.from('complaints').update({ status: 'resolved' }).eq('id', id);
             if (error) throw error;
-            setRecentComplaints(prev => prev.filter(c => c.id !== id));
+            setRecentComplaints(prev => prev.map(c => c.id === id ? { ...c, status: 'resolved' } : c));
             setStats(prev => ({ ...prev, pendingComplaints: Math.max(0, prev.pendingComplaints - 1) }));
-            toast.success('Complaint resolved and removed');
+            toast.success('Complaint marked as resolved');
         } catch (error) {
             toast.error('Failed to resolve complaint');
         }
@@ -177,24 +177,32 @@ const OwnerDashboard = () => {
                             {recentComplaints.length > 0 ? recentComplaints.map(c => (
                                 <div key={c.id} className="p-5 hover:bg-nature-50 dark:bg-nature-900 transition-colors">
                                     <div className="flex justify-between items-start mb-2">
-                                        <div className="font-semibold text-nature-900 dark:text-white">{c.users?.name || 'Unknown User'} <span className="text-nature-400 text-sm font-normal">({c.users?.farmer_id})</span></div>
+                                        <div className="font-semibold text-nature-900 dark:text-white flex items-center gap-2">
+                                            <span className="font-mono bg-earth-100 text-earth-700 dark:bg-earth-900/30 dark:text-earth-400 px-2 py-0.5 rounded text-xs font-bold tracking-wider">
+                                                CMP{c.id.toString().padStart(3, '0')}
+                                            </span>
+                                            {c.users?.name || 'Unknown User'} <span className="text-nature-400 text-sm font-normal">({c.users?.farmer_id})</span>
+                                        </div>
                                         <div className="flex items-center gap-3">
                                             <span className={`text-xs px-2.5 py-1 rounded-full font-medium ${
-                                                c.status === 'pending' ? 'bg-red-100 text-red-700' : 
-                                                c.status === 'resolved' ? 'bg-green-100 text-green-700' : 'bg-blue-100 text-blue-700'
-                                            }`}>{c.status.toUpperCase()}</span>
+                                                c.status === 'pending' ? 'bg-amber-100 text-amber-700' : 
+                                                'bg-green-100 text-green-700'
+                                            }`}>
+                                                {c.status === 'resolved' ? 'Resolved' : 'Pending'}
+                                            </span>
                                             <button 
-                                                onClick={() => handleDeleteComplaint(c.id)}
-                                                className="p-1.5 text-nature-400 hover:text-green-600 hover:bg-green-100 rounded-lg transition-colors border border-transparent hover:border-green-200"
-                                                title="Mark as Solved & Remove"
+                                                onClick={() => handleResolveComplaint(c.id)}
+                                                disabled={c.status === 'resolved'}
+                                                className={`p-1.5 rounded-lg transition-colors border ${c.status === 'resolved' ? 'text-green-300 dark:text-green-800 cursor-not-allowed border-transparent' : 'text-nature-400 hover:text-green-600 hover:bg-green-100 border-transparent hover:border-green-200'}`}
+                                                title={c.status === 'resolved' ? 'Already Resolved' : 'Mark as Resolved'}
                                             >
                                                 <CheckCircle className="w-5 h-5" />
                                             </button>
                                         </div>
                                     </div>
-                                    <p className="text-nature-600 text-sm mb-2">{c.message}</p>
+                                    <p className="text-nature-600 text-sm mb-2"><span className="font-semibold capitalize text-nature-800 dark:text-nature-200">{c.category}:</span> {c.message}</p>
                                     <div className="flex justify-between items-center text-xs text-nature-400 font-medium">
-                                        <span>Category: <span className="capitalize">{c.category}</span></span>
+                                        <span></span>
                                         <span>{new Date(c.created_at).toLocaleDateString()}</span>
                                     </div>
                                 </div>

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { NavLink } from 'react-router-dom';
+import { NavLink, Link } from 'react-router-dom';
 import {
     LayoutDashboard,
     Map as MapIcon,
@@ -13,7 +13,8 @@ import {
     MessageSquare,
     Lightbulb,
     ShieldCheck,
-    Sparkles
+    Sparkles,
+    Headset
 } from 'lucide-react';
 import clsx from 'clsx';
 import { useLiveTranslation } from '../../hooks/useLiveTranslation';
@@ -51,6 +52,7 @@ export default function Sidebar({ isMobileMenuOpen, setIsMobileMenuOpen }) {
         { icon: Lightbulb, label: t('Suggestions'), path: '/app/suggestion' },
         { icon: BarChart3, label: t('Analytics'), path: '/app/analytics' },
         { icon: Settings, label: t('Settings'), path: '/app/settings' },
+        { icon: Headset, label: t('Contact Support'), path: '/app/contact' },
     ];
 
     if (role === 'admin') {
@@ -71,12 +73,12 @@ export default function Sidebar({ isMobileMenuOpen, setIsMobileMenuOpen }) {
                 isMobileMenuOpen ? "translate-x-0" : "-translate-x-full"
             )}>
                 <div className="h-20 flex items-center px-6 border-b border-nature-800">
-                    <div className="flex items-center gap-2 text-xl font-bold tracking-tight">
+                    <Link to="/" className="flex items-center gap-2 text-xl font-bold tracking-tight hover:opacity-80 transition-opacity cursor-pointer">
                         <div className="text-earth-400">
                             <Sprout className="w-7 h-7" />
                         </div>
                         <span className="text-white">Agri<span className="text-earth-400 font-light">Smart</span></span>
-                    </div>
+                    </Link>
                 </div>
 
                 <div className="flex-1 overflow-y-auto scrollbar-hide py-4">

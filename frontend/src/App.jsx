@@ -25,7 +25,9 @@ import ComplaintForm from './pages/ComplaintForm';
 import SuggestionForm from './pages/SuggestionForm';
 import ProtectedRoute from './components/ProtectedRoute';
 import OwnerDashboard from './pages/OwnerDashboard';
-import SimulationMode from './pages/SimulationMode';
+import OwnerLogin from './pages/OwnerLogin';
+import Contact from './pages/Contact';
+import Legal from './pages/Legal';
 
 function App() {
   return (
@@ -36,6 +38,8 @@ function App() {
           <Routes>
           {/* Public Routes */}
           <Route path="/" element={<LandingPage />} />
+          <Route path="/contact" element={<Contact />} />
+          <Route path="/legal" element={<Legal />} />
           <Route path="/login" element={<Login />} />
           <Route path="/signup" element={<Signup />} />
           <Route path="/verify-otp" element={<VerifyOtp />} />
@@ -59,13 +63,14 @@ function App() {
               <Route path="settings" element={<Settings />} />
               <Route path="complaint" element={<ComplaintForm />} />
               <Route path="suggestion" element={<SuggestionForm />} />
-              <Route path="simulation" element={<SimulationMode />} />
+              <Route path="contact" element={<Contact />} />
             </Route>
             {/* Admin Routes */}
             <Route path="/admin" element={<AdminDashboard />} />
           </Route>
 
-          {/* Owner Target Route */}
+          {/* Owner Target Routes */}
+          <Route path="/owner-login" element={<OwnerLogin />} />
           <Route path="/owner-dashboard" element={<OwnerDashboard />} />
 
           {/* Catch-all */}
