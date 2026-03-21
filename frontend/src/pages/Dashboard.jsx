@@ -83,7 +83,7 @@ export default function Dashboard() {
                 const url = `https://api.openweathermap.org/data/2.5/weather?q=Pune&appid=${API_KEY}&units=metric`;
                 const response = await fetch(url);
                 const data = await response.json();
-                
+
                 if (data.main) {
                     setLiveData(prev => ({
                         ...prev,
@@ -134,21 +134,21 @@ export default function Dashboard() {
 
             {/* Top Toolbar */}
             <div className="flex flex-col xl:flex-row items-center justify-between gap-4 mb-6 bg-white dark:bg-nature-950/60 backdrop-blur-md p-3 rounded-2xl border border-nature-200 dark:border-nature-800 shadow-sm">
-                    <div className="flex flex-wrap items-center gap-4 xl:gap-6 w-full xl:w-auto overflow-hidden">
-                        <div className="flex items-center gap-2 whitespace-nowrap">
-                            <CloudSun className="w-5 h-5 text-orange-400" />
-                            <span className="text-nature-700 dark:text-nature-200 font-medium">{t('Welcome Farmer')}</span>
-                            <span className="text-earth-600 font-bold text-sm ml-2 bg-earth-50 px-2 py-1 rounded border border-earth-100">{profile.farmer_id}</span>
-                            <span className="text-nature-900 dark:text-white font-bold text-lg ml-2 border-r border-nature-300 pr-4 transition-all">{liveData.temp}°C</span>
-                        </div>
-                        <div className="flex items-center gap-2 whitespace-nowrap">
-                            <Droplets className="w-4 h-4 text-blue-500" />
-                            <span className="text-nature-700 dark:text-nature-200 transition-all">{liveData.humidity}%</span>
-                        </div>
+                <div className="flex flex-wrap items-center gap-4 xl:gap-6 w-full xl:w-auto overflow-hidden">
+                    <div className="flex items-center gap-2 whitespace-nowrap">
+                        <CloudSun className="w-5 h-5 text-orange-400" />
+                        <span className="text-nature-700 dark:text-nature-200 font-medium">{t('Welcome Farmer')}</span>
+                        <span className="text-earth-600 font-bold text-sm ml-2 bg-earth-50 px-2 py-1 rounded border border-earth-100">{profile.farmer_id}</span>
+                        <span className="text-nature-900 dark:text-white font-bold text-lg ml-2 border-r border-nature-300 pr-4 transition-all">{liveData.temp}°C</span>
                     </div>
+                    <div className="flex items-center gap-2 whitespace-nowrap">
+                        <Droplets className="w-4 h-4 text-blue-500" />
+                        <span className="text-nature-700 dark:text-nature-200 transition-all">{liveData.humidity}%</span>
+                    </div>
+                </div>
 
                 <div className="flex flex-wrap items-center gap-2 sm:gap-3 w-full xl:w-auto justify-start xl:justify-end relative z-[100]">
-                    
+
                     {/* Online / Offline Status Indicator (Moved to Right) */}
                     <div className="flex items-center gap-2 px-3 py-1.5 bg-white dark:bg-nature-950 rounded-lg border border-nature-200 dark:border-nature-800 shadow-sm transition">
                         <span className={`w-2.5 h-2.5 rounded-full ${isOnline ? 'bg-green-500 animate-[pulse_2s_ease-in-out_infinite]' : 'bg-red-500'}`}></span>
@@ -279,7 +279,7 @@ export default function Dashboard() {
                         </div>
                     </div>
 
-                        {/* Alerts Widget */}
+                    {/* Alerts Widget */}
                     <Link to="/app/alerts" className="bg-white dark:bg-nature-950/80 backdrop-blur-md rounded-2xl border border-nature-200 dark:border-nature-800 shadow-md hover:shadow-lg transition flex flex-col group cursor-pointer overflow-hidden max-h-[260px]">
                         <div className="px-5 py-4 border-b border-nature-100 dark:border-nature-700/50 flex justify-between items-center group-hover:bg-nature-50 dark:bg-nature-900/50 rounded-t-2xl transition">
                             <h3 className="text-base font-bold text-nature-900 dark:text-white flex items-center gap-2">

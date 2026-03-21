@@ -4,7 +4,7 @@ import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContai
 import { supabase } from '../supabaseClient';
 import { useAuth } from '../context/AuthContext';
 import { jsPDF } from 'jspdf';
-import html2canvas from 'html2canvas';
+import html2canvas from 'html2canvas-pro';
 
 export default function AnalyticsReport() {
     const { user } = useAuth();
@@ -37,16 +37,24 @@ export default function AnalyticsReport() {
             setIsLoading(true);
             let query = supabase.from('sensor_data').select('*');
             
-            if (farmerId) {
-                query = query.eq('farmer_id', farmerId);
-            }
+            // Temporarily comment out the farmer_id filter because the current 
+            // telemetry testing data has NULL farmer_ids in the database.
+            // if (farmerId) {
+            //     query = query.eq('farmer_id', farmerId);
+            // }
 
             let fromDate = new Date();
             let toDate = new Date();
 
             if (timeRange === '1h') fromDate.setHours(toDate.getHours() - 1);
-            else if (timeRange === '1d') fromDate.setDate(toDate.getDate() - 1);
-            else if (timeRange === '7d') fromDate.setDate(toDate.getDate() - 7);
+            else if (timeRange === '1d') {
+                fromDate.setDate(toDate.getDate() - 1);
+                fromDate.setHours(0, 0, 0, 0);
+            }
+            else if (timeRange === '7d') {
+                fromDate.setDate(toDate.getDate() - 7);
+                fromDate.setHours(0, 0, 0, 0);
+            }
             else if (timeRange === 'custom' && startDate && endDate) {
                 fromDate = new Date(startDate);
                 toDate = new Date(endDate);
@@ -131,14 +139,28 @@ export default function AnalyticsReport() {
     const downloadPDF = async () => {
         if (!reportRef.current) return;
         setIsGenerating(true);
+        
         try {
             const canvas = await html2canvas(reportRef.current, { scale: 2, useCORS: true });
             const imgData = canvas.toDataURL('image/png');
             const pdf = new jsPDF('p', 'mm', 'a4');
             const pdfWidth = pdf.internal.pageSize.getWidth();
             const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
+            const pageHeight = pdf.internal.pageSize.getHeight();
             
-            pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
+            let heightLeft = pdfHeight;
+            let position = 0;
+
+            pdf.addImage(imgData, 'PNG', 0, position, pdfWidth, pdfHeight);
+            heightLeft -= pageHeight;
+
+            while (heightLeft > 0) {
+                position = heightLeft - pdfHeight;
+                pdf.addPage();
+                pdf.addImage(imgData, 'PNG', 0, position, pdfWidth, pdfHeight);
+                heightLeft -= pageHeight;
+            }
+
             pdf.save(`Farm_Analytics_Report_${new Date().toISOString().split('T')[0]}.pdf`);
         } catch (error) {
             console.error("PDF Gen Error:", error);
@@ -289,28 +311,34 @@ export default function AnalyticsReport() {
                         </div>
 
                         <div>
-                            <h3 className="font-bold text-nature-900 dark:text-white border-b pb-2 mb-4">Raw Telemetry Snippet (Latest 5 Rows)</h3>
-                            <table className="w-full text-sm text-left">
-                                <thead className="bg-nature-50 dark:bg-nature-900 text-nature-500 uppercase text-xs font-bold">
-                                    <tr>
-                                        <th className="px-4 py-2 rounded-tl-lg">Timestamp</th>
-                                        <th className="px-4 py-2">Moisture (%)</th>
-                                        <th className="px-4 py-2">Temperature (°C)</th>
-                                        <th className="px-4 py-2 rounded-tr-lg">Water Level (%)</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {[...metrics.chartData].reverse().slice(0, 5).map((row, idx) => (
-                                        <tr key={idx} className="border-b border-nature-100 dark:border-nature-700/50 last:border-0 hover:bg-nature-50 dark:bg-nature-900/50">
-                                            <td className="px-4 py-3 font-medium text-nature-900 dark:text-white">{row.timestamp}</td>
-                                            <td className="px-4 py-3 text-blue-600 font-bold">{row.moisture}</td>
-                                            <td className="px-4 py-3 text-red-600 font-bold">{row.temperature}</td>
-                                            <td className="px-4 py-3 text-cyan-600 font-bold">{row.water_level}</td>
+                            <h3 className="font-bold text-nature-900 dark:text-white border-b pb-2 mb-4">
+                                Raw Telemetry Snippet (Latest 6 Rows)
+                            </h3>
+                            <div className="rounded-lg border border-nature-200 dark:border-nature-800 overflow-hidden">
+                                <table className="w-full text-sm text-left">
+                                    <thead className="bg-nature-50 dark:bg-nature-900 text-nature-500 uppercase text-xs font-bold">
+                                        <tr>
+                                            <th className="px-4 py-3">Timestamp</th>
+                                            <th className="px-4 py-3">Moisture (%)</th>
+                                            <th className="px-4 py-3">Temperature (°C)</th>
+                                            <th className="px-4 py-3">Water Level (%)</th>
                                         </tr>
-                                    ))}
-                                </tbody>
-                            </table>
-                            <p className="text-xs text-nature-400 mt-2 text-center italic">* Download CSV to view complete dataset block logs.</p>
+                                    </thead>
+                                    <tbody>
+                                        {[...metrics.chartData].reverse().slice(0, 6).map((row, idx) => (
+                                            <tr key={idx} className="border-b border-nature-100 dark:border-nature-700/50 last:border-0 hover:bg-nature-50 dark:bg-nature-900/50">
+                                                <td className="px-4 py-3 font-medium text-nature-900 dark:text-white">{row.timestamp}</td>
+                                                <td className="px-4 py-3 text-blue-600 font-bold">{row.moisture}</td>
+                                                <td className="px-4 py-3 text-red-600 font-bold">{row.temperature}</td>
+                                                <td className="px-4 py-3 text-cyan-600 font-bold">{row.water_level}</td>
+                                            </tr>
+                                        ))}
+                                    </tbody>
+                                </table>
+                            </div>
+                            {metrics.chartData.length > 6 && (
+                                <p className="text-xs text-nature-400 mt-3 text-center italic">* Displaying latest 6 rows for PDF stability. Please download CSV to view all {metrics.chartData.length} records.</p>
+                            )}
                         </div>
                     </div>
                 </div>

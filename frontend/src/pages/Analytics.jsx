@@ -117,59 +117,63 @@ export default function Analytics() {
                     <div className="flex justify-between items-center mb-6">
                         <h3 className="text-lg font-bold text-nature-900 dark:text-white">Soil Moisture Dynamics</h3>
                     </div>
-                    <div className="h-80 w-full">
-                        {chartData.length > 0 ? (
-                            <ResponsiveContainer width="100%" height="100%">
-                                <AreaChart data={chartData} margin={{ top: 10, right: 30, left: 0, bottom: 5 }}>
-                                    <defs>
-                                        <linearGradient id="colorMoisture" x1="0" y1="0" x2="0" y2="1">
-                                            <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.3} />
-                                            <stop offset="95%" stopColor="#3b82f6" stopOpacity={0} />
-                                        </linearGradient>
-                                    </defs>
-                                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e1efe6" />
-                                    <XAxis dataKey="time" axisLine={false} tickLine={false} tick={{ fill: '#94a3b8', fontSize: 10 }} dy={10} />
-                                    <YAxis axisLine={false} tickLine={false} tick={{ fill: '#3b82f6', fontSize: 10 }} />
-                                    <Tooltip contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 4px 20px rgba(0,0,0,0.08)' }} itemStyle={{ fontWeight: 'bold' }} />
-                                    <Legend wrapperStyle={{ paddingTop: '20px' }} iconType="circle" />
-                                    <Area type="monotone" name="Area 1 Moisture (%)" dataKey="moisture" stroke="#3b82f6" strokeWidth={3} fillOpacity={1} fill="url(#colorMoisture)" activeDot={{ r: 6, strokeWidth: 0 }} />
-                                    <Area type="monotone" name="Area 2 Moisture (%)" dataKey="moisture_b" stroke="#10b981" strokeWidth={3} fillOpacity={0} activeDot={{ r: 6, strokeWidth: 0 }} />
-                                </AreaChart>
-                            </ResponsiveContainer>
-                        ) : (
-                            <div className="w-full h-full flex items-center justify-center"><p className="text-nature-400 font-bold">Waiting for data...</p></div>
-                        )}
+                    <div className="w-full overflow-x-auto pb-2 scrollbar-hide">
+                        <div className="h-80 min-w-[700px]">
+                            {chartData.length > 0 ? (
+                                <ResponsiveContainer width="100%" height="100%">
+                                    <AreaChart data={chartData} margin={{ top: 10, right: 30, left: 0, bottom: 5 }}>
+                                        <defs>
+                                            <linearGradient id="colorMoisture" x1="0" y1="0" x2="0" y2="1">
+                                                <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.3} />
+                                                <stop offset="95%" stopColor="#3b82f6" stopOpacity={0} />
+                                            </linearGradient>
+                                        </defs>
+                                        <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e1efe6" />
+                                        <XAxis dataKey="time" axisLine={false} tickLine={false} tick={{ fill: '#94a3b8', fontSize: 10 }} dy={10} />
+                                        <YAxis axisLine={false} tickLine={false} tick={{ fill: '#3b82f6', fontSize: 10 }} />
+                                        <Tooltip contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 4px 20px rgba(0,0,0,0.08)' }} itemStyle={{ fontWeight: 'bold' }} />
+                                        <Legend wrapperStyle={{ paddingTop: '20px' }} iconType="circle" />
+                                        <Area type="monotone" name="Area 1 Moisture (%)" dataKey="moisture" stroke="#3b82f6" strokeWidth={3} fillOpacity={1} fill="url(#colorMoisture)" activeDot={{ r: 6, strokeWidth: 0 }} />
+                                        <Area type="monotone" name="Area 2 Moisture (%)" dataKey="moisture_b" stroke="#10b981" strokeWidth={3} fillOpacity={0} activeDot={{ r: 6, strokeWidth: 0 }} />
+                                    </AreaChart>
+                                </ResponsiveContainer>
+                            ) : (
+                                <div className="w-full h-full flex items-center justify-center"><p className="text-nature-400 font-bold">Waiting for data...</p></div>
+                            )}
+                        </div>
                     </div>
                 </div>
 
                 {/* 2. Secondary Chart: Air Humidity & Temp */}
                 <div className="bg-white dark:bg-nature-950 p-6 rounded-2xl shadow-sm border border-nature-200 dark:border-nature-800 lg:col-span-2">
                     <h3 className="text-lg font-bold text-nature-900 dark:text-white mb-6">Environmental Dynamics (Temperature & Humidity)</h3>
-                    <div className="h-64 w-full">
-                        {chartData.length > 0 ? (
-                            <ResponsiveContainer width="100%" height="100%">
-                                <AreaChart data={chartData} margin={{ top: 10, right: 30, left: 0, bottom: 5 }}>
-                                    <defs>
-                                        <linearGradient id="colorHumidity" x1="0" y1="0" x2="0" y2="1">
-                                            <stop offset="5%" stopColor="#8b5cf6" stopOpacity={0.3} />
-                                            <stop offset="95%" stopColor="#8b5cf6" stopOpacity={0} />
-                                        </linearGradient>
-                                        <linearGradient id="colorTemp" x1="0" y1="0" x2="0" y2="1">
-                                            <stop offset="5%" stopColor="#ef4444" stopOpacity={0.3} />
-                                            <stop offset="95%" stopColor="#ef4444" stopOpacity={0} />
-                                        </linearGradient>
-                                    </defs>
-                                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e1efe6" />
-                                    <XAxis dataKey="time" axisLine={false} tickLine={false} tick={{ fill: '#94a3b8', fontSize: 10 }} dy={10} />
-                                    <YAxis yAxisId="left" axisLine={false} tickLine={false} tick={{ fill: '#8b5cf6', fontSize: 10 }} />
-                                    <YAxis yAxisId="right" orientation="right" axisLine={false} tickLine={false} tick={{ fill: '#ef4444', fontSize: 10 }} />
-                                    <Tooltip contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 4px 20px rgba(0,0,0,0.08)' }} />
-                                    <Legend wrapperStyle={{ paddingTop: '20px' }} iconType="circle" />
-                                    <Area yAxisId="left" type="monotone" name="Air Humidity (%)" dataKey="humidity" stroke="#8b5cf6" strokeWidth={3} fillOpacity={1} fill="url(#colorHumidity)" />
-                                    <Area yAxisId="right" type="monotone" name="Air Temp (°C)" dataKey="temperature" stroke="#ef4444" strokeWidth={3} fillOpacity={1} fill="url(#colorTemp)" />
-                                </AreaChart>
-                            </ResponsiveContainer>
-                        ) : null}
+                    <div className="w-full overflow-x-auto pb-2 scrollbar-hide">
+                        <div className="h-64 min-w-[700px]">
+                            {chartData.length > 0 ? (
+                                <ResponsiveContainer width="100%" height="100%">
+                                    <AreaChart data={chartData} margin={{ top: 10, right: 30, left: 0, bottom: 5 }}>
+                                        <defs>
+                                            <linearGradient id="colorHumidity" x1="0" y1="0" x2="0" y2="1">
+                                                <stop offset="5%" stopColor="#8b5cf6" stopOpacity={0.3} />
+                                                <stop offset="95%" stopColor="#8b5cf6" stopOpacity={0} />
+                                            </linearGradient>
+                                            <linearGradient id="colorTemp" x1="0" y1="0" x2="0" y2="1">
+                                                <stop offset="5%" stopColor="#ef4444" stopOpacity={0.3} />
+                                                <stop offset="95%" stopColor="#ef4444" stopOpacity={0} />
+                                            </linearGradient>
+                                        </defs>
+                                        <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e1efe6" />
+                                        <XAxis dataKey="time" axisLine={false} tickLine={false} tick={{ fill: '#94a3b8', fontSize: 10 }} dy={10} />
+                                        <YAxis yAxisId="left" axisLine={false} tickLine={false} tick={{ fill: '#8b5cf6', fontSize: 10 }} />
+                                        <YAxis yAxisId="right" orientation="right" axisLine={false} tickLine={false} tick={{ fill: '#ef4444', fontSize: 10 }} />
+                                        <Tooltip contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 4px 20px rgba(0,0,0,0.08)' }} />
+                                        <Legend wrapperStyle={{ paddingTop: '20px' }} iconType="circle" />
+                                        <Area yAxisId="left" type="monotone" name="Air Humidity (%)" dataKey="humidity" stroke="#8b5cf6" strokeWidth={3} fillOpacity={1} fill="url(#colorHumidity)" />
+                                        <Area yAxisId="right" type="monotone" name="Air Temp (°C)" dataKey="temperature" stroke="#ef4444" strokeWidth={3} fillOpacity={1} fill="url(#colorTemp)" />
+                                    </AreaChart>
+                                </ResponsiveContainer>
+                            ) : null}
+                        </div>
                     </div>
                 </div>
 
