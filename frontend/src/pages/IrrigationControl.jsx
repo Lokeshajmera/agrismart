@@ -100,16 +100,12 @@ export default function IrrigationControl() {
     }, [liveData]);
 
     // 3. AI NATIVE ALGORITHM
-    const predictWaterLiters = (m, t, h, r, ph) => {
-        let baseWater = 40;
-        let predictedWater = Math.round(
-            baseWater
-            - (m * 0.4)
-            + (t * 0.5)
-            - (r * 3)
-            + (Math.abs((ph || 6.5) - 6.5) * 2)
-        );
-        return Math.max(0, Math.min(predictedWater, 60)); // Bounded 0-60 Liters
+    const predictIrrigationNeed = (m, temp, h, r, ph) => {
+        if (m >= 40 || r > 2) return t('None');
+        let score = (40 - m) + (temp - 25) - r;
+        if (score > 15) return t('High');
+        if (score > 5) return t('Moderate');
+        return t('Low');
     };
 
     // 4. ML Logic Engine & Precise Thresholds Requested
@@ -118,10 +114,6 @@ export default function IrrigationControl() {
 
         let newAlerts = [];
         let { moisture, moisture_b, water_level, ph } = currentData;
-
-        const waterRequiredArea1 = predictWaterLiters(moisture, weather.temp, weather.humidity, weather.rain, ph);
-        const waterRequiredArea2 = predictWaterLiters(moisture_b, weather.temp, weather.humidity, weather.rain, ph);
-        const maxWaterReq = Math.max(waterRequiredArea1, waterRequiredArea2);
 
         // Area 1 AI Alerts
         if (moisture < 30) {
@@ -258,7 +250,7 @@ export default function IrrigationControl() {
                         subtitle={t('Serving Area 1')}
                         isActive={valves[0].status === 'open'}
                         moisture={currentData.moisture}
-                        waterRequired={predictWaterLiters(currentData.moisture, weather.temp, weather.humidity, weather.rain, currentData.ph)}
+                        irrigationNeed={predictIrrigationNeed(currentData.moisture, weather.temp, weather.humidity, weather.rain, currentData.ph)}
                         t={t}
                     />
                     {/* Pumping Unit 2 */}
@@ -268,7 +260,7 @@ export default function IrrigationControl() {
                         subtitle={t('Serving Area 2')}
                         isActive={valves[1].status === 'open'}
                         moisture={currentData.moisture_b}
-                        waterRequired={predictWaterLiters(currentData.moisture_b, weather.temp, weather.humidity, weather.rain, currentData.ph)}
+                        irrigationNeed={predictIrrigationNeed(currentData.moisture_b, weather.temp, weather.humidity, weather.rain, currentData.ph)}
                         t={t}
                     />
                 </div>
@@ -392,7 +384,7 @@ export default function IrrigationControl() {
     );
 }
 
-const PumpCard = ({ id, title, subtitle, isActive, moisture, waterRequired, t }) => (
+const PumpCard = ({ id, title, subtitle, isActive, moisture, irrigationNeed, t }) => (
     <div className="bg-nature-900 text-white p-8 rounded-3xl shadow-2xl relative overflow-hidden group border border-nature-800">
         <div className="absolute top-0 right-0 w-40 h-40 bg-blue-500/10 rounded-full blur-3xl -mr-20 -mt-20 group-hover:bg-blue-500/20 transition-all" />
 
@@ -423,8 +415,8 @@ const PumpCard = ({ id, title, subtitle, isActive, moisture, waterRequired, t })
         </div>
 
         <div className="space-y-6 relative z-10">
-            <Indicator label={t('Flow Velocity')} value={isActive ? "45 L/min" : "0 L/min"} progress={isActive ? 65 : 0} />
-            <Indicator label={t('Supply Demand')} value={isActive ? `${waterRequired} L` : "0 L"} progress={isActive ? 100 : 0} color="bg-nature-400" />
+            <Indicator label={t('Pump Status')} value={isActive ? t('RUNNING') : t('STANDBY')} progress={isActive ? 100 : 0} />
+            <Indicator label={t('Irrigation Need')} value={irrigationNeed} progress={irrigationNeed === t('High') ? 100 : irrigationNeed === t('Moderate') ? 60 : irrigationNeed === t('Low') ? 30 : 0} color="bg-nature-400" />
 
             <div className="pt-6 mt-6 border-t border-nature-800 grid grid-cols-2 gap-4">
                 <div className="flex items-center gap-3 text-nature-400 bg-nature-800/50 p-3 rounded-xl border border-nature-800/50">
@@ -438,7 +430,7 @@ const PumpCard = ({ id, title, subtitle, isActive, moisture, waterRequired, t })
                     <BrainCircuit className="w-5 h-5 text-emerald-500" />
                     <div>
                         <p className="text-[9px] uppercase font-bold tracking-widest text-nature-600">{t('Need')}</p>
-                        <p className="text-xs font-bold text-white">{waterRequired}L</p>
+                        <p className="text-xs font-bold text-white uppercase">{irrigationNeed}</p>
                     </div>
                 </div>
             </div>

@@ -233,8 +233,8 @@ export default function Dashboard() {
                                 <div className="bg-gradient-to-r from-earth-400 to-earth-500 h-2 rounded-full transition-all duration-1000" style={{ width: `${liveData.irrigationUsage}%` }}></div>
                             </div>
                             <div className="flex justify-between text-xs text-nature-500">
-                                <span>1200 L {t('Used')}</span>
-                                <span className="text-green-600 flex items-center gap-1"><ArrowRight className="w-3 h-3 transform -rotate-45" /> 10 mL</span>
+                                <span>{t('Optimal Moisture')}</span>
+                                <span className="text-green-600 flex items-center gap-1"><CheckCircle2 className="w-3 h-3" /> {t('Active')}</span>
                                 <span>{t('Root Zone')}</span>
                             </div>
                         </div>
@@ -389,8 +389,8 @@ export default function Dashboard() {
                                 <span className="text-xs font-bold text-nature-900 flex items-center gap-1 justify-end"><Droplets className="w-3 h-3 text-blue-500" /> 3 {t('Hours')}</span>
                             </div>
                             <div className="absolute right-0 sm:right-0 bottom-0 bg-white/95 backdrop-blur-md border border-nature-200 shadow-md p-2 rounded-xl text-right z-10 hidden sm:block">
-                                <span className="text-[10px] text-nature-500 uppercase tracking-wider block">{t('Available')}</span>
-                                <span className="text-xs font-bold text-nature-900 flex items-center gap-1 justify-end text-green-600"><Wind className="w-3 h-3" /> 600 L/hr</span>
+                                <span className="text-[10px] text-nature-500 uppercase tracking-wider block">{t('Pump Status')}</span>
+                                <span className="text-xs font-bold text-nature-900 flex items-center gap-1 justify-end text-green-600"><Activity className="w-3 h-3" /> {t('Active')}</span>
                             </div>
                         </div>
 
@@ -405,8 +405,8 @@ export default function Dashboard() {
                                 </span>
                             </div>
                             <div className="flex justify-between items-center text-sm">
-                                <span className="text-nature-500">{t('Valves Open')}</span>
-                                <span className="text-nature-900 font-bold">600 L/hr</span>
+                                <span className="text-nature-500">{t('Valve Status')}</span>
+                                <span className="text-nature-900 font-bold text-green-600">{t('Optimal Flow')}</span>
                             </div>
                         </div>
 
