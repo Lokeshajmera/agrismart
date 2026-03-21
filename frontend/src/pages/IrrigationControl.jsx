@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useMemo } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import {
     Droplets, Settings2, Power, AlertCircle, Clock,
     Play, Pause, RefreshCcw, Activity, ThermometerSun,
@@ -19,46 +19,39 @@ export default function IrrigationControl() {
     const { tLive: t } = useLiveTranslation();
     const { user } = useAuth();
 
-    // Core Control State
-    const [systemAuto, setSystemAuto] = useState(true);
-    const [valves, setValves] = useState([
-        { id: 1, name: t('Area 1 (North Section)'), status: 'closed', type: 'primary' },
-        { id: 2, name: t('Area 2 (South Section)'), status: 'closed', type: 'secondary' },
-    ]);
-
     // Live Data State
     const [liveData, setLiveData] = useState([]);
     const [isLoading, setIsLoading] = useState(true);
-    const [alerts, setAlerts] = useState([]);
 
-    // External Data State
+    // AI Logic Local States (Replaces DB columns as requested)
+    const [mode1, setMode1] = useState('auto');
+    const [mode2, setMode2] = useState('auto');
+
+    // External Data State (Weather Fallback)
     const [weather, setWeather] = useState({ temp: 28, humidity: 60, rain: 0, city: 'Pune' });
     const API_KEY = "e5c8c35726d52c53ed66735380eae2e9";
 
+    const fetchLiveStream = async () => {
+        if (liveData.length === 0) setIsLoading(true);
+        try {
+            const { data } = await supabase
+                .from('sensor_data')
+                .select('*')
+                .order('created_at', { ascending: false })
+                .limit(20);
+
+            if (data && data.length > 0) {
+                setLiveData(data.reverse()); // Set chronologically left to right
+            }
+        } catch (err) { } finally { setIsLoading(false); }
+    };
+
     // 1. Fetch Live Stream
     useEffect(() => {
-        const fetchLiveStream = async () => {
-            if (liveData.length === 0) setIsLoading(true);
-            try {
-                const { data } = await supabase
-                    .from('sensor_data')
-                    .select('*')
-                    .order('id', { ascending: false })
-                    .limit(20);
-
-                if (data && data.length > 0) {
-                    setLiveData(data.reverse()); // Set chronologically left to right
-                }
-            } catch (err) {
-                console.error('Error fetching stream:', err);
-            } finally {
-                setIsLoading(false);
-            }
-        };
         fetchLiveStream();
-        const interval = setInterval(fetchLiveStream, 8000); // 8 second live polling
+        const interval = setInterval(fetchLiveStream, 5000); // 5s deep polling
         return () => clearInterval(interval);
-    }, [liveData.length]);
+    }, []);
 
     // 2. Fetch Live Weather Intelligence
     useEffect(() => {
@@ -67,390 +60,356 @@ export default function IrrigationControl() {
                 const url = `https://api.openweathermap.org/data/2.5/weather?q=${weather.city}&appid=${API_KEY}&units=metric`;
                 const response = await fetch(url);
                 const data = await response.json();
-
                 if (data.main) {
-                    setWeather({
-                        temp: data.main.temp,
-                        humidity: data.main.humidity,
-                        rain: data.rain ? (data.rain['1h'] || 0) : 0,
-                        city: data.name
-                    });
+                    setWeather({ temp: data.main.temp, humidity: data.main.humidity, rain: data.rain ? (data.rain['1h'] || 0) : 0, city: data.name });
                 }
-            } catch (err) {
-                console.error('Weather fetch error:', err);
-            }
+            } catch (err) { }
         };
         fetchWeather();
-        const interval = setInterval(fetchWeather, 300000); // Update every 5 mins
+        const interval = setInterval(fetchWeather, 300000);
         return () => clearInterval(interval);
     }, [weather.city]);
 
     const currentData = useMemo(() => {
-        if (liveData.length === 0) return { moisture: 36, moisture_b: 40, temperature: 28, water_level: 80, ph: 6.5 };
-        const data = liveData[liveData.length - 1]; // Absolute latest row
-        return {
-            ...data,
-            moisture: data.soil1 ?? 36, // Explicit ESP32 schema translation
-            moisture_b: data.soil2 ?? 40, // Second hardware sensor (Area 2)
-            temperature: data.temp1 ?? 28, // Hardware temp sensor
-            humidity: data.hum1 ?? 60, // Hardware hum sensor
-            water_level: data.water_level ?? 80, // Fallback purely (no ESP32 equivalent yet)
-            ph: data.ph ?? 6.5 // Fallback purely
-        };
+        if (liveData.length === 0) return null;
+        return liveData[liveData.length - 1]; // Absolute latest DB row
     }, [liveData]);
 
-    // 3. AI NATIVE ALGORITHM
-    const predictIrrigationNeed = (m, temp, h, r, ph) => {
-        if (m >= 40 || r > 2) return t('None');
-        let score = (40 - m) + (temp - 25) - r;
-        if (score > 15) return t('High');
-        if (score > 5) return t('Moderate');
-        return t('Low');
+    // Helpers to generate UI averages matching backend
+    const getAvg1 = (d) => {
+        let count = 0, sum = 0;
+        if (d.soil1 !== null) { sum += Number(d.soil1); count++; }
+        if (d.soil2 !== null) { sum += Number(d.soil2); count++; }
+        return count > 0 ? sum / count : 0;
     };
 
-    // 4. ML Logic Engine & Precise Thresholds Requested
+    const getAvg2 = (d) => {
+        let count = 0, sum = 0;
+        if (d.soil3 !== null) { sum += Number(d.soil3); count++; }
+        if (d.soil4 !== null) { sum += Number(d.soil4); count++; }
+        return count > 0 ? sum / count : 0;
+    };
+
+    const getReason = (avg, temp, mode) => {
+        if (mode === 'manual') return 'Manual Override Activated';
+        if (avg > 70) return 'Overwatering – Irrigation OFF';
+        if (temp > 28 && avg < 45) return 'High Temperature – Priority Irrigation';
+        if (temp < 15 && avg < 45) return 'Cold Conditions – Irrigation Blocked';
+        if (avg < 35) return 'Low Moisture – Irrigation ON';
+        if (avg > 60) return 'Optimal Moisture – Irrigation OFF';
+        return 'Stable Environment Checks';
+    };
+
+    // --- FRONTEND AI MATRIX ENGINE ---
+    // Safely replaces the backend interval. Executes precisely on mode or liveData change.
     useEffect(() => {
-        if (!currentData || liveData.length === 0) return;
+        if (!currentData) return;
 
-        let newAlerts = [];
-        let { moisture, moisture_b, water_level, ph } = currentData;
+        const temp = Number(currentData.temp1) || weather.temp;
+        const avg1 = getAvg1(currentData);
+        const avg2 = getAvg2(currentData);
 
-        // Area 1 AI Alerts
-        if (moisture < 30) {
-            newAlerts.push({ id: 'ai-req-1', text: t('⚠ Area 1: Irrigation required today'), type: 'warning', icon: Droplets });
+        const evaluateArea = (avg, currentMode, currentIrr) => {
+            if (currentMode === 'manual') return currentIrr; // DO NOT override user
+            if (avg > 70) return false;                  // OVERWATER -> Force OFF
+            if (temp > 28 && avg < 45) return true;      // Priority ON
+            if (temp < 15 && avg < 45) return false;     // Block OFF
+            if (avg < 35) return true;                   // Low Moist -> ON
+            if (avg > 60) return false;                  // Optimal -> OFF
+            return currentIrr;
+        };
+
+        const newIrr1 = evaluateArea(avg1, mode1, currentData.irrigation1 || false);
+        const newIrr2 = evaluateArea(avg2, mode2, currentData.irrigation2 || false);
+
+        // Only explicitly update the database columns if the intelligent matrix determines a state change!
+        if (newIrr1 !== (currentData.irrigation1 || false) || newIrr2 !== (currentData.irrigation2 || false)) {
+            supabase.from('sensor_data')
+                .update({ irrigation1: newIrr1, irrigation2: newIrr2 })
+                .eq('id', currentData.id)
+                .then(() => fetchLiveStream()); // Optimistic UI refresh
         }
-        if (moisture >= 40) {
-            newAlerts.push({ id: 'high-moist-1', text: t('💧 Area 1: High Moisture Detected (>40%)'), type: 'success', icon: CheckCircle2 });
-        }
+    }, [currentData, mode1, mode2, weather.temp]);
 
-        // Area 2 AI Alerts
-        if (moisture_b < 30) {
-            newAlerts.push({ id: 'ai-req-2', text: t('⚠ Area 2: Irrigation required today'), type: 'warning', icon: Droplets });
-        }
-        if (moisture_b >= 40) {
-            newAlerts.push({ id: 'high-moist-2', text: t('💧 Area 2: High Moisture Detected (>40%)'), type: 'success', icon: CheckCircle2 });
-        }
 
-        // Emergency Hardware Lock
-        const isWaterCritical = water_level < 20;
-        if (isWaterCritical) {
-            newAlerts.push({ id: 'water-locked', text: t('CRITICAL: Water level below 20%. All pumps locked.'), type: 'error', icon: AlertCircle });
-        }
+    // Database Sync Actions
+    const handleModeChange = (areaId, newMode) => {
+        if (areaId === 1) setMode1(newMode);
+        if (areaId === 2) setMode2(newMode);
+        toast.success(`Area ${areaId} switched to ${newMode.toUpperCase()} mode!`);
+    };
 
-        // Auto Mode Logic Implementation
-        if (systemAuto) {
-            // Explicit Request: "when water moist level goes over the 30 it should stop watering and below it shoul dgive"
-            let shouldOpenA = (moisture < 30);
-            let shouldOpenB = (moisture_b < 30);
+    const handleTogglePump = async (areaId) => {
+        if (!currentData) return;
+        const currentMode = areaId === 1 ? mode1 : mode2;
+        const irrCol = areaId === 1 ? 'irrigation1' : 'irrigation2';
 
-            if (moisture >= 30) shouldOpenA = false;
-            if (moisture_b >= 30) shouldOpenB = false;
-
-            // Emergency Hard Stop
-            if (isWaterCritical) {
-                shouldOpenA = false;
-                shouldOpenB = false;
-                toast.error(t('EMERGENCY STOP: Tank Level < 20%. Pumps shutdown.'), { id: 'emergency-tank', duration: 3000 });
-            }
-
-            setValves(prev => {
-                const statusA = shouldOpenA ? 'open' : 'closed';
-                const statusB = shouldOpenB ? 'open' : 'closed';
-                if (prev[0].status === statusA && prev[1].status === statusB) return prev;
-                return prev.map(v => ({
-                    ...v,
-                    status: (v.id === 1 ? statusA : statusB)
-                }));
-            });
-        }
-
-        setAlerts(prev => JSON.stringify(prev) === JSON.stringify(newAlerts) ? prev : newAlerts);
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [currentData, systemAuto, weather, liveData.length]);
-
-    const toggleValve = (id) => {
-        if (systemAuto) {
-            toast.error(t('Switch to Manual Mode to control valves.'));
+        if (currentMode === 'auto') {
+            toast.error('Switch to MANUAL mode first to override AI rules.', { duration: 3000 });
             return;
         }
-        setValves(valves.map(v => v.id === id ? { ...v, status: v.status === 'open' ? 'closed' : 'open' } : v));
+
+        const newState = !currentData[irrCol];
+        
+        // Optimistic UI update for instantaneous feedback
+        const updatedData = [...liveData];
+        updatedData[updatedData.length - 1] = { ...currentData, [irrCol]: newState };
+        setLiveData(updatedData);
+
+        try {
+            await supabase.from('sensor_data').update({ [irrCol]: newState }).eq('id', currentData.id);
+            toast.success(`Area ${areaId} Pump is now ${newState ? 'ON' : 'OFF'}`);
+        } catch (err) {
+            toast.error('Failed to command pump.');
+            fetchLiveStream(); // Revert optimism on failure
+        }
     };
 
     const chartData = useMemo(() => {
         if (liveData.length === 0) return [];
         return liveData.map((d) => ({
-            ...d,
-            moisture: d.soil1 ?? 0,
-            moisture_b: d.soil2 ?? 0,
-            time: new Date(d.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })
+            time: new Date(d.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' }),
+            avg1: getAvg1(d),
+            avg2: getAvg2(d)
         }));
     }, [liveData]);
 
-    return (
-        <div className="space-y-6 animate-in fade-in duration-500 max-w-7xl mx-auto p-4">
+    const activeData = currentData || {
+        temp1: weather.temp,
+        water_level: 85,
+        soil1: null,
+        soil2: null,
+        soil3: null,
+        soil4: null,
+        irrigation1: false,
+        irrigation2: false
+    };
 
-            <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 bg-white dark:bg-nature-950 p-6 rounded-3xl border border-nature-200 dark:border-nature-800 shadow-sm">
+    const temp = Number(activeData.temp1) || weather.temp;
+    const water = Number(activeData.water_level) || 85;
+
+    const avg1 = getAvg1(activeData);
+    const avg2 = getAvg2(activeData);
+    const dispIrr1 = activeData.irrigation1 || false;
+    const dispIrr2 = activeData.irrigation2 || false;
+
+    const isAutoMode = mode1 === 'auto' && mode2 === 'auto';
+    const toggleGlobalMode = () => {
+        const newMode = isAutoMode ? 'manual' : 'auto';
+        setMode1(newMode);
+        setMode2(newMode);
+        toast.success(`Switched to ${newMode.toUpperCase()} mode!`);
+    };
+
+    return (
+        <div className="max-w-[1400px] mx-auto p-4 md:p-6 animate-in fade-in duration-500">
+
+            {/* Header */}
+            <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 bg-white rounded-2xl p-4 md:p-6 border border-nature-200/60 shadow-sm mb-6">
                 <div>
-                    <h1 className="text-2xl font-bold text-nature-900 dark:text-white tracking-tight flex items-center gap-2">
-                        <Activity className="w-6 h-6 text-earth-500 animate-pulse" /> Live Irrigation Control
+                    <h1 className="text-xl md:text-2xl font-bold text-nature-900 flex items-center gap-3">
+                        <Activity className="w-5 h-5 md:w-6 md:h-6 text-orange-500" /> {t('Live Irrigation Control')}
                     </h1>
-                    <p className="text-nature-500 mt-1">{t('Synchronize manual overrides with automated real-time thresholds.')}</p>
+                    <p className="text-[11px] md:text-[13px] text-nature-500 mt-1.5 font-medium">{t('Synchronize manual overrides with automated real-time thresholds.')}</p>
                 </div>
-                <div className="flex items-center gap-3 w-full md:w-auto">
+                <div className="flex items-center gap-4">
                     <button
-                        onClick={() => setSystemAuto(!systemAuto)}
-                        className={`flex-1 md:flex-none px-6 py-2.5 rounded-xl text-sm font-bold flex items-center justify-center gap-2 transition-all shadow-sm border ${systemAuto ? 'bg-blue-500 text-white border-blue-600 hover:bg-blue-600' : 'bg-white dark:bg-nature-950 text-nature-700 dark:text-nature-200 border-nature-200 dark:border-nature-800 hover:bg-nature-50 dark:bg-nature-900'}`}
+                        onClick={toggleGlobalMode}
+                        className={`px-5 py-2.5 rounded-xl text-xs font-bold tracking-wide flex items-center gap-2 transition-all ${isAutoMode ? 'bg-blue-600 text-white shadow-md shadow-blue-500/20' : 'bg-nature-100 text-nature-600 hover:bg-nature-200'}`}
                     >
-                        <Settings2 className="w-4 h-4" />
-                        {systemAuto ? t('Auto Mode Active') : t('Manual Mode Active')}
+                        {isAutoMode && <Settings2 className="w-4 h-4" />}
+                        {isAutoMode ? t('Auto Mode Active') : t('Manual Override')}
                     </button>
-                    {liveData.length === 0 && (
-                        <div className="flex items-center gap-2 text-nature-500">
-                            <RefreshCcw className="w-4 h-4 animate-spin-slow" /> <span className="font-bold text-xs">SYNCING</span>
-                        </div>
-                    )}
+                    <div className="flex items-center gap-2 text-nature-400 text-[10px] font-bold uppercase tracking-widest px-1">
+                        <RefreshCcw className={`w-3.5 h-3.5 ${!currentData ? 'animate-spin' : 'animate-spin-slow'} text-emerald-500`} />
+                        {!currentData ? t('CONNECTING') : t('SYNCING')}
+                    </div>
                 </div>
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start">
-                <div className="space-y-6">
-                    {/* Weather Intelligence Card */}
-                    <div className="bg-nature-50 dark:bg-nature-900 p-6 rounded-3xl border border-nature-200 dark:border-nature-800 flex items-center justify-between shadow-inner">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+
+                {/* Left Column (Weather & Pumps) */}
+                <div className="lg:col-span-2 space-y-6">
+
+                    {/* Weather Mini-Card */}
+                    <div className="bg-white rounded-2xl p-5 border border-nature-200/60 shadow-sm flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
                         <div className="flex items-center gap-4">
-                            <div className="p-3 bg-nature-900 text-white rounded-2xl">
-                                <Sun className="w-5 h-5 animate-spin-slow" />
+                            <div className="w-12 h-12 bg-nature-50 rounded-xl flex items-center justify-center border border-nature-100">
+                                <ThermometerSun className="w-6 h-6 text-nature-700" />
                             </div>
                             <div>
-                                <h4 className="font-bold text-nature-900 dark:text-white text-sm">{weather.city} {t('Weather')}</h4>
-                                <p className="text-xs text-nature-500 uppercase tracking-widest font-bold">{t('Real-time Intelligence')}</p>
+                                <h3 className="font-bold text-[13px] md:text-sm text-nature-900">{weather.city} {t('Weather')}</h3>
+                                <p className="text-[9px] md:text-[10px] text-nature-500 font-bold tracking-wider uppercase mt-1">{t('REAL-TIME INTELLIGENCE')}</p>
                             </div>
                         </div>
-                        <div className="flex gap-6 text-right">
-                            <div>
-                                <p className="text-[10px] text-nature-400 font-bold uppercase">{t('Temp')}</p>
-                                <p className="font-black text-nature-900 dark:text-white">{weather.temp}°C</p>
+                        <div className="flex gap-6 sm:gap-10 sm:pr-4">
+                            <div className="text-center sm:text-right">
+                                <p className="text-[9px] md:text-[10px] text-nature-400 font-bold uppercase tracking-wider mb-1">{t('TEMP')}</p>
+                                <p className="text-sm md:text-base font-bold text-nature-900">{weather.temp.toFixed(1)}°C</p>
                             </div>
-                            <div>
-                                <p className="text-[10px] text-nature-400 font-bold uppercase">{t('Humidity')}</p>
-                                <p className="font-black text-nature-900 dark:text-white">{weather.humidity}%</p>
+                            <div className="text-center sm:text-right">
+                                <p className="text-[9px] md:text-[10px] text-nature-400 font-bold uppercase tracking-wider mb-1">{t('HUMIDITY')}</p>
+                                <p className="text-sm md:text-base font-bold text-nature-900">{weather.humidity}%</p>
                             </div>
-                            {weather.rain > 0 && (
-                                <div>
-                                    <p className="text-[10px] text-red-500 font-bold uppercase">{t('Rain')}</p>
-                                    <p className="font-black text-red-600">{weather.rain}mm</p>
-                                </div>
-                            )}
                         </div>
                     </div>
 
-                    {/* Pumping Unit 1 */}
-                    <PumpCard
-                        id={1}
-                        title={t('Pumping Unit #1')}
-                        subtitle={t('Serving Area 1')}
-                        isActive={valves[0].status === 'open'}
-                        moisture={currentData.moisture}
-                        irrigationNeed={predictIrrigationNeed(currentData.moisture, weather.temp, weather.humidity, weather.rain, currentData.ph)}
-                        t={t}
-                    />
-                    {/* Pumping Unit 2 */}
-                    <PumpCard
-                        id={2}
-                        title={t('Pumping Unit #2')}
-                        subtitle={t('Serving Area 2')}
-                        isActive={valves[1].status === 'open'}
-                        moisture={currentData.moisture_b}
-                        irrigationNeed={predictIrrigationNeed(currentData.moisture_b, weather.temp, weather.humidity, weather.rain, currentData.ph)}
-                        t={t}
-                    />
+                    <div className="grid grid-cols-1 xl:grid-cols-1 gap-6">
+                        <DarkPumpCard id={1} title={t("Pumping Unit #1")} moisture={avg1} isPumping={dispIrr1} isAutoMode={isAutoMode} onToggle={() => handleTogglePump(1)} t={t} reason={getReason(avg1, temp, mode1)} />
+                        <DarkPumpCard id={2} title={t("Pumping Unit #2")} moisture={avg2} isPumping={dispIrr2} isAutoMode={isAutoMode} onToggle={() => handleTogglePump(2)} t={t} reason={getReason(avg2, temp, mode2)} />
+                    </div>
                 </div>
 
-                {/* Field Control Section */}
-                <div className="bg-white dark:bg-nature-950 p-8 rounded-3xl border border-nature-200 dark:border-nature-800 shadow-sm flex flex-col">
-                    <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8 gap-4">
-                        <div>
-                            <h3 className="text-lg font-bold text-nature-900 dark:text-white">{t('Field Logic Control')}</h3>
-                            <p className="text-sm text-nature-500">{systemAuto ? t('Independent Dual-Channel AI') : t('Manual Zone Overrides')}</p>
-                        </div>
-                        <div className="flex flex-col items-end gap-1 w-full sm:w-48">
-                            <div className="flex justify-between w-full text-[10px] font-bold text-nature-400 uppercase tracking-widest">
-                                <span>{t('Main Tank')}</span>
-                                <span className={currentData.water_level < 20 ? 'text-red-500' : 'text-blue-500'}>{currentData.water_level.toFixed(1)}%</span>
+                {/* Right Column (Logic Control) */}
+                <div className="lg:col-span-1">
+                    <div className="bg-white rounded-3xl p-6 border border-nature-200/60 shadow-sm h-full flex flex-col">
+                        <div className="flex justify-between items-start mb-8">
+                            <div>
+                                <h3 className="font-bold text-[15px] text-nature-900">{t('Field Logic Control')}</h3>
+                                <p className="text-[11px] text-nature-500 font-medium mt-1.5">{t('Independent Dual-Channel AI')}</p>
                             </div>
-                            <div className="w-full h-2 bg-nature-100 dark:bg-nature-800 rounded-full overflow-hidden border border-nature-200 dark:border-nature-800/50">
-                                <motion.div
-                                    initial={{ width: 0 }}
-                                    animate={{ width: `${currentData.water_level}%` }}
-                                    className={`h-full rounded-full ${currentData.water_level < 20 ? 'bg-red-500' : 'bg-blue-500'}`}
-                                />
-                            </div>
-                        </div>
-                    </div>
-
-                    <div className="grid grid-cols-1 gap-5 mb-8">
-                        {valves.map(valve => (
-                            <div
-                                key={valve.id}
-                                onClick={() => toggleValve(valve.id)}
-                                className={`p-6 rounded-2xl border transition-all cursor-pointer group ${valve.status === 'open' ? 'border-blue-400 dark:border-blue-800/50 bg-blue-50 dark:bg-blue-900/30 shadow-md ring-2 ring-blue-500/10' : 'border-nature-100 dark:border-nature-700/50 bg-white dark:bg-nature-950 hover:border-nature-300 dark:hover:border-nature-700'}`}
-                            >
-                                <div className="flex justify-between items-center">
-                                    <div className="flex gap-4 items-center">
-                                        <div className={`p-4 rounded-xl transition-all ${valve.status === 'open' ? 'bg-blue-500 text-white shadow-lg' : 'bg-nature-50 dark:bg-nature-900 text-nature-400 group-hover:bg-nature-100 dark:bg-nature-800'}`}>
-                                            <Droplets className="w-6 h-6" />
-                                        </div>
-                                        <div>
-                                            <h4 className="font-bold text-nature-900 dark:text-white text-base">{valve.name}</h4>
-                                            <div className="flex items-center gap-3 mt-1">
-                                                <p className="text-xs text-nature-500">{t('Soil Moisture')}: <span className={`font-bold ${(Number(valve.id === 1 ? currentData.moisture : currentData.moisture_b) || 0) < 30 ? 'text-red-500' : 'text-nature-700 dark:text-nature-200'}`}>{(Number(valve.id === 1 ? currentData.moisture : currentData.moisture_b) || 0).toFixed(1)}%</span></p>
-                                                <span className={`w-1.5 h-1.5 rounded-full ${valve.status === 'open' ? 'bg-blue-500' : 'bg-gray-300'}`}></span>
-                                                <p className="text-[10px] text-nature-400 uppercase font-bold tracking-widest">{valve.status === 'open' ? t('Irrigating') : t('Idle')}</p>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div className={`w-12 h-7 rounded-full relative transition-colors ${valve.status === 'open' ? 'bg-blue-600' : 'bg-nature-200'} ${systemAuto ? 'opacity-40' : ''}`}>
-                                        <div className={`absolute top-1 w-5 h-5 rounded-full bg-white dark:bg-nature-950 transition-all shadow-sm ${valve.status === 'open' ? 'left-6' : 'left-1'}`} />
-                                    </div>
+                            <div className="text-right">
+                                <p className="text-[9px] text-nature-400 font-bold uppercase tracking-widest mb-1">{t('MAIN TANK')}</p>
+                                <p className="text-xs font-bold text-blue-600 mb-1.5">{water.toFixed(1)}%</p>
+                                <div className="w-20 h-1.5 bg-nature-100 rounded-full overflow-hidden">
+                                    <div className={`h-full rounded-full shadow-sm ${water < 20 ? 'bg-red-500' : 'bg-blue-500'}`} style={{ width: `${water}%` }}></div>
                                 </div>
                             </div>
-                        ))}
-                    </div>
-
-                    {/* System Alerts */}
-                    <div className="mt-2 border-t border-nature-100 dark:border-nature-700/50 pt-8">
-                        <div className="flex items-center gap-3 mb-4">
-                            <div className="p-2 bg-red-50 dark:bg-red-950/50 rounded-lg text-red-600 dark:text-red-400">
-                                <AlertCircle className="w-4 h-4" />
-                            </div>
-                            <h3 className="text-sm font-bold text-nature-900 dark:text-white uppercase tracking-widest">{t('Intelligence Alerts')}</h3>
                         </div>
 
-                        <div className="space-y-3 max-h-[250px] overflow-y-auto pr-2 custom-scrollbar">
-                            <AnimatePresence mode='popLayout'>
-                                {alerts.length > 0 ? (
-                                    alerts.map(alert => (
-                                        <motion.div
-                                            key={alert.id}
-                                            initial={{ opacity: 0, y: 10 }}
-                                            animate={{ opacity: 1, y: 0 }}
-                                            exit={{ opacity: 0, scale: 0.95 }}
-                                            className={`p-4 rounded-xl border flex items-start gap-3 transition-all ${alert.type === 'error' ? 'bg-red-50 dark:bg-red-950/30 border-red-100/50 dark:border-red-900/50 text-red-800 dark:text-red-400' :
-                                                alert.type === 'warning' ? 'bg-orange-50 dark:bg-orange-950/30 border-orange-100/50 dark:border-orange-900/50 text-orange-800 dark:text-orange-400' :
-                                                    'bg-green-50 dark:bg-green-950/30 border-green-100/50 dark:border-green-900/50 text-green-800 dark:text-green-400'
-                                                }`}
-                                        >
-                                            <alert.icon className="w-4 h-4 shrink-0 mt-0.5" />
-                                            <p className="text-xs font-bold leading-relaxed">{alert.text}</p>
-                                        </motion.div>
-                                    ))
-                                ) : (
-                                    <div className="flex items-center gap-3 p-4 bg-nature-50 dark:bg-nature-900 rounded-xl border border-dashed border-nature-200 dark:border-nature-800">
-                                        <CheckCircle2 className="w-5 h-5 text-nature-300" />
-                                        <p className="text-[10px] font-bold text-nature-400 uppercase tracking-widest">{t('No active AI recommendations')}</p>
+                        <div className="space-y-4">
+                            {/* Area 1 Toggle */}
+                            <div className="flex items-center justify-between border border-[#e2e8f0] p-5 rounded-[20px] shadow-[0_2px_10px_rgba(0,0,0,0.015)] bg-white mb-4">
+                                <div className="flex items-center gap-5">
+                                    <div className="w-[48px] h-[48px] rounded-[16px] bg-[#eef3f0] flex items-center justify-center text-[#698a76] border border-[#e2e8e5]">
+                                        <Droplets className="w-[22px] h-[22px] opacity-90" />
                                     </div>
-                                )}
-                            </AnimatePresence>
+                                    <div>
+                                        <h4 className="font-extrabold text-[15px] text-[#1a211e] tracking-tight">{t('Area 1 (North Section)')}</h4>
+                                        <p className="text-[12px] text-[#8aa396] mt-1 font-medium">{t('Soil Moisture:')} <span className="font-extrabold text-[#1a211e] ml-1">{avg1.toFixed(1)}%</span> <span className="mx-2 text-[#cbd5e1]">•</span> <span className={dispIrr1 ? 'text-blue-500 font-extrabold' : 'text-[#8aa396] font-extrabold uppercase'}>{dispIrr1 ? t('PUMPING') : t('IDLE')}</span></p>
+                                    </div>
+                                </div>
+                                <label className={`relative inline-flex items-center ${!isAutoMode ? 'cursor-pointer' : 'cursor-not-allowed opacity-50'} group mr-2`}>
+                                    <input type="checkbox" className="sr-only peer" checked={dispIrr1} onChange={() => handleTogglePump(1)} disabled={isAutoMode} />
+                                    <div className="w-[46px] h-[26px] bg-[#e2e8f0] peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-[#cbd5e1] after:border after:rounded-full after:h-[22px] after:w-[22px] after:transition-all peer-checked:bg-blue-500"></div>
+                                </label>
+                            </div>
+
+                            {/* Area 2 Toggle */}
+                            <div className="flex items-center justify-between border border-[#e2e8f0] p-5 rounded-[20px] shadow-[0_2px_10px_rgba(0,0,0,0.015)] bg-white">
+                                <div className="flex items-center gap-5">
+                                    <div className="w-[48px] h-[48px] rounded-[16px] bg-[#eef3f0] flex items-center justify-center text-[#698a76] border border-[#e2e8e5]">
+                                        <Droplets className="w-[22px] h-[22px] opacity-90" />
+                                    </div>
+                                    <div>
+                                        <h4 className="font-extrabold text-[15px] text-[#1a211e] tracking-tight">{t('Area 2 (South Section)')}</h4>
+                                        <p className="text-[12px] text-[#8aa396] mt-1 font-medium">{t('Soil Moisture:')} <span className="font-extrabold text-[#1a211e] ml-1">{avg2.toFixed(1)}%</span> <span className="mx-2 text-[#cbd5e1]">•</span> <span className={dispIrr2 ? 'text-blue-500 font-extrabold' : 'text-[#8aa396] font-extrabold uppercase'}>{dispIrr2 ? t('PUMPING') : t('IDLE')}</span></p>
+                                    </div>
+                                </div>
+                                <label className={`relative inline-flex items-center ${!isAutoMode ? 'cursor-pointer' : 'cursor-not-allowed opacity-50'} group mr-2`}>
+                                    <input type="checkbox" className="sr-only peer" checked={dispIrr2} onChange={() => handleTogglePump(2)} disabled={isAutoMode} />
+                                    <div className="w-[46px] h-[26px] bg-[#e2e8f0] peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-[#cbd5e1] after:border after:rounded-full after:h-[22px] after:w-[22px] after:transition-all peer-checked:bg-blue-500"></div>
+                                </label>
+                            </div>
+                        </div>
+
+                        <div className="pt-8 mt-5 border-t border-[#f1f5f9]">
+                            <h4 className="text-[13px] font-extrabold text-[#1a211e] flex items-center gap-2 uppercase tracking-widest mb-4">
+                                <AlertCircle className="w-[18px] h-[18px] text-red-500" /> {t('INTELLIGENCE ALERTS')}
+                            </h4>
+                            <div className="bg-[#f8fafc] border border-dashed border-[#bbf7d0] rounded-[16px] p-4 flex items-center gap-3 w-full">
+                                <div className="w-6 h-6 rounded-full border border-[#cbd5e1] flex items-center justify-center bg-white"><div className="w-2.5 h-2.5 bg-[#cbd5e1] rounded-full"></div></div>
+                                <span className="text-[11px] font-extrabold text-[#64748b] tracking-wider uppercase">{t('NO ACTIVE AI RECOMMENDATIONS')}</span>
+                            </div>
                         </div>
                     </div>
                 </div>
             </div>
 
             {/* Trends Section */}
-            <div className="bg-white dark:bg-nature-950 p-8 rounded-3xl border border-nature-200 dark:border-nature-800 shadow-sm overflow-hidden mt-8">
-                <div className="flex justify-between items-center mb-8">
-                    <div className="flex items-center gap-3">
-                        <div className="p-2 bg-earth-50 rounded-lg text-earth-600">
-                            <Activity className="w-5 h-5" />
-                        </div>
-                        <h3 className="text-xl font-bold text-nature-900 dark:text-white">{t('Telemetry Trends')}</h3>
-                    </div>
-
+            <div className="bg-white rounded-3xl p-6 sm:p-8 border border-nature-200/60 shadow-sm mt-6">
+                <div className="flex items-center gap-3 mb-8">
+                    <Activity className="w-5 h-5 text-orange-400" />
+                    <h3 className="text-[15px] font-bold text-nature-900">{t('Telemetry Trends')}</h3>
                 </div>
-                <div className="h-[350px] w-full">
+                <div className="h-[260px] w-full">
                     <ResponsiveContainer width="100%" height="100%">
                         <LineChart data={chartData}>
                             <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
-                            <XAxis dataKey="time" axisLine={false} tickLine={false} tick={{ fontSize: 10, fill: '#94a3b8' }} />
-                            <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 10, fill: '#94a3b8' }} />
-                            <Tooltip contentStyle={{ backgroundColor: '#fff', borderRadius: '16px', border: '1px solid #e2e8f0' }} />
-                            <Legend iconType="circle" />
-                            <Line type="monotone" dataKey="moisture" name={t('Area 1 Moisture')} stroke="#3B82F6" strokeWidth={3} dot={false} />
-                            <Line type="monotone" dataKey="moisture_b" name={t('Area 2 Moisture')} stroke="#10B981" strokeWidth={3} dot={false} />
+                            <XAxis dataKey="time" axisLine={false} tickLine={false} tick={{ fontSize: 10, fill: '#94a3b8' }} dy={10} />
+                            <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 10, fill: '#94a3b8' }} dx={-10} />
+                            <Tooltip contentStyle={{ backgroundColor: '#fff', borderRadius: '16px', border: '1px solid #e2e8f0', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)', fontSize: '12px', fontWeight: 'bold' }} />
+                            <Line type="monotone" dataKey="avg1" name={t("Area 1 Moist")} stroke="#3B82F6" strokeWidth={3} dot={false} activeDot={{ r: 6, fill: '#3B82F6', stroke: '#fff', strokeWidth: 2 }} />
+                            <Line type="monotone" dataKey="avg2" name={t("Area 2 Moist")} stroke="#10B981" strokeWidth={3} dot={false} activeDot={{ r: 6, fill: '#10B981', stroke: '#fff', strokeWidth: 2 }} />
                         </LineChart>
                     </ResponsiveContainer>
                 </div>
             </div>
+
         </div>
     );
 }
 
-const PumpCard = ({ id, title, subtitle, isActive, moisture, irrigationNeed, t }) => (
-    <div className="bg-nature-900 text-white p-8 rounded-3xl shadow-2xl relative overflow-hidden group border border-nature-800">
-        <div className="absolute top-0 right-0 w-40 h-40 bg-blue-500/10 rounded-full blur-3xl -mr-20 -mt-20 group-hover:bg-blue-500/20 transition-all" />
+const DarkPumpCard = ({ id, title, moisture, isPumping, isAutoMode, onToggle, t, reason }) => {
+    let needLevel = t("MODERATE");
+    let needPercent = 45;
+    if (moisture < 35) { needLevel = t("HIGH"); needPercent = 85; }
+    else if (moisture > 60) { needLevel = t("LOW"); needPercent = 15; }
 
-        <div className="flex items-center justify-between mb-8 relative z-10">
-            <div className="flex items-center gap-4">
-                <div className={`p-4 rounded-2xl transition-all ${isActive ? 'bg-blue-500 text-white shadow-lg shadow-blue-500/50' : 'bg-nature-800 text-nature-400'}`}>
-                    <Power className="w-6 h-6" />
-                </div>
-                <div>
-                    <h3 className="font-bold text-xl">{title}</h3>
-                    <p className="text-nature-400 text-[10px] uppercase tracking-widest">{subtitle}</p>
-                </div>
-            </div>
-            <div className="flex flex-col items-end">
-                <div className={`px-4 py-1.5 rounded-xl text-[10px] font-bold tracking-tighter border ${isActive ? 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30' : 'bg-nature-800 text-nature-500 border-nature-700'}`}>
-                    {isActive ? t('PUMP ON') : t('STANDBY')}
-                </div>
-                {isActive ? (
-                    <p className="text-[10px] text-emerald-400 mt-2 font-bold uppercase tracking-widest animate-pulse">
-                        🚿 {t('Irrigation Started')}
-                    </p>
-                ) : (
-                    <p className="text-[10px] text-nature-500 mt-2 font-bold uppercase tracking-widest">
-                        🌱 {t('Pump Off / Moisture Adequate')}
-                    </p>
-                )}
-            </div>
-        </div>
-
-        <div className="space-y-6 relative z-10">
-            <Indicator label={t('Pump Status')} value={isActive ? t('RUNNING') : t('STANDBY')} progress={isActive ? 100 : 0} />
-            <Indicator label={t('Irrigation Need')} value={irrigationNeed} progress={irrigationNeed === t('High') ? 100 : irrigationNeed === t('Moderate') ? 60 : irrigationNeed === t('Low') ? 30 : 0} color="bg-nature-400" />
-
-            <div className="pt-6 mt-6 border-t border-nature-800 grid grid-cols-2 gap-4">
-                <div className="flex items-center gap-3 text-nature-400 bg-nature-800/50 p-3 rounded-xl border border-nature-800/50">
-                    <Activity className="w-5 h-5 text-emerald-500" />
+    return (
+        <div className="bg-[#27362f] text-white rounded-[24px] p-6 lg:p-7 shadow-xl border border-[#3b4c44] min-w-0">
+            <div className="flex justify-between items-start mb-8">
+                <div className="flex items-center gap-5">
+                    <button
+                        onClick={!isAutoMode ? onToggle : undefined}
+                        className={`w-[52px] h-[52px] rounded-[18px] flex items-center justify-center transition-all ${isPumping ? 'bg-[#3b82f6] text-white shadow-[0_0_15px_rgba(59,130,246,0.4)]' : 'bg-[#35483f] text-[#8aa396] border border-[#4c6356] hover:bg-[#3d5349] cursor-pointer'}`}
+                    >
+                        <Power className="w-[22px] h-[22px]" />
+                    </button>
                     <div>
-                        <p className="text-[9px] uppercase font-bold tracking-widest text-nature-600">{t('Soil')}</p>
-                        <p className="text-xs font-bold text-white">{moisture ? moisture.toFixed(1) : 0}%</p>
+                        <h3 className="font-bold text-[17px] text-white">{title}</h3>
+                        <p className={`text-[10px] font-bold tracking-widest mt-1.5 uppercase flex items-center gap-1.5 ${isPumping ? 'text-blue-400' : 'text-[#8aa396]'}`}>
+                            <span className="w-3 h-3 rounded-full flex items-center justify-center bg-current opacity-20"><span className="w-1.5 h-1.5 rounded-full bg-current"></span></span>
+                            {isPumping ? t('PUMP ACTIVE / INJECTING') : t('PUMP OFF / MOISTURE ADEQUATE')}
+                        </p>
                     </div>
                 </div>
-                <div className="flex items-center gap-3 text-nature-400 bg-nature-800/50 p-3 rounded-xl border border-nature-800/50">
-                    <BrainCircuit className="w-5 h-5 text-emerald-500" />
+                <div className={`px-4 py-1.5 rounded-full border text-[10px] uppercase font-bold tracking-widest ${isPumping ? 'bg-blue-900/30 border-blue-800/50 text-blue-400' : 'bg-[#1e2a24] border-[#3b4c44] text-[#8aa396]'}`}>
+                    {isPumping ? t('ACTIVE') : t('STANDBY')}
+                </div>
+            </div>
+
+            <div className="space-y-5">
+                <div className="flex justify-between items-center text-[13px] pb-4 border-b border-[#3b4c44]">
+                    <span className="text-[#8aa396] font-medium tracking-wide">{t('Pump Status')}</span>
+                    <span className={`font-bold uppercase tracking-wider ${isPumping ? 'text-blue-400' : 'text-white'}`}>{isPumping ? t('ACTIVE') : t('STANDBY')}</span>
+                </div>
+                <div className="flex justify-between items-center text-[13px] pb-4 border-b border-[#3b4c44] pt-1">
+                    <span className="text-[#8aa396] font-medium tracking-wide">{t('Irrigation Need')}</span>
+                    <span className="text-white font-bold uppercase tracking-wider">{needLevel}</span>
+                </div>
+                <div className="w-full bg-[#1e2a24] h-1.5 rounded-full overflow-hidden border border-[#3b4c44] mt-2">
+                    <div className="bg-blue-600 h-full rounded-full transition-all duration-1000" style={{ width: `${needPercent}%` }}></div>
+                </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-4 mt-8">
+                <div className="bg-[#1e2a24] p-4 lg:p-5 rounded-2xl border border-[#3b4c44] flex items-center gap-4">
+                    <Activity className="w-5 h-5 text-[#8aa396]" />
                     <div>
-                        <p className="text-[9px] uppercase font-bold tracking-widest text-nature-600">{t('Need')}</p>
-                        <p className="text-xs font-bold text-white uppercase">{irrigationNeed}</p>
+                        <p className="text-[9px] text-[#8aa396] font-bold uppercase tracking-widest mb-1">{t('SOIL')}</p>
+                        <p className="text-[15px] font-bold text-white">{moisture.toFixed(1)}%</p>
+                    </div>
+                </div>
+                <div className="bg-[#1e2a24] p-4 lg:p-5 rounded-2xl border border-[#3b4c44] flex items-center gap-4">
+                    <Droplets className="w-5 h-5 text-[#8aa396]" />
+                    <div>
+                        <p className="text-[9px] text-[#8aa396] font-bold uppercase tracking-widest mb-1">{t('NEED')}</p>
+                        <p className="text-[13px] font-bold text-white uppercase">{needLevel}</p>
                     </div>
                 </div>
             </div>
         </div>
-    </div>
-);
-
-const Indicator = ({ label, value, progress }) => (
-    <div>
-        <div className="flex justify-between text-xs mb-2">
-            <span className="text-nature-400 font-medium">{label}</span>
-            <span className="font-bold text-white tracking-widest uppercase">{value}</span>
-        </div>
-        <div className="w-full bg-nature-800 rounded-full h-1.5 overflow-hidden">
-            <motion.div
-                initial={{ width: 0 }}
-                animate={{ width: `${progress}%` }}
-                className="bg-blue-500 h-full rounded-full shadow-[0_0_10px_rgba(59,130,246,0.5)]"
-                transition={{ duration: 1 }}
-            />
-        </div>
-    </div>
-);
+    );
+};

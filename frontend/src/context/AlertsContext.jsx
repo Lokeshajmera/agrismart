@@ -433,11 +433,19 @@ export function AlertsProvider({ children }) {
             let moisture = 45;
             const { data } = await supabase
                 .from('sensor_data')
-                .select('moisture')
+                .select('soil1, soil2, soil3, soil4')
                 .eq('farmer_id', 'GLOBAL_AI_SEED')
                 .order('created_at', { ascending: false })
                 .limit(1);
-            if (data && data.length > 0 && data[0].moisture) moisture = data[0].moisture;
+
+            if (data && data.length > 0) {
+                const s = data[0];
+                let mSum = 0, mCount = 0;
+                [s.soil1, s.soil2, s.soil3, s.soil4].forEach(v => {
+                    if (v != null) { mSum += v; mCount++; }
+                });
+                if (mCount > 0) moisture = Math.round(mSum / mCount);
+            }
 
             setAlerts(generateAlerts(current, forecast));
             setRecs(generateRecommendations(current, forecast, moisture));

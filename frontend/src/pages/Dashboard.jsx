@@ -110,17 +110,25 @@ export default function Dashboard() {
             const { data, error } = await supabase
                 .from('sensor_data')
                 .select('*')
-                .eq('farmer_id', 'GLOBAL_AI_SEED')
+                .eq('farmer_id', profile.farmer_id) // Use actual farmer_id
                 .order('created_at', { ascending: false })
                 .limit(1);
 
             if (data && data.length > 0) {
                 const latest = data[0];
-                setLiveData(prev => ({
-                    ...prev,
-                    moisture: latest.moisture || prev.moisture,
-                    ph: latest.ph || prev.ph
-                }));
+                let mSum = 0, mCount = 0;
+                [latest.soil1, latest.soil2, latest.soil3, latest.soil4].forEach(v => {
+                    if (v != null) { mSum += v; mCount++; }
+                });
+
+                setLiveData(prev => {
+                    const nextMoisture = mCount > 0 ? Math.round(mSum / mCount) : prev.moisture;
+                    return {
+                        ...prev,
+                        moisture: nextMoisture,
+                        ph: 6.5
+                    };
+                });
             }
         };
 

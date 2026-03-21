@@ -1,14 +1,14 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { supabase } from '../supabaseClient';
-import { 
-    Activity, Droplet, ThermometerSun, AlertTriangle, 
+import {
+    Activity, Droplet, ThermometerSun, AlertTriangle,
     CheckCircle, Settings2, PlayCircle, PauseCircle,
     TestTube2, Waves, CloudRain, Wind
 } from 'lucide-react';
 import toast from 'react-hot-toast';
-import { 
-    LineChart, Line, XAxis, YAxis, CartesianGrid, 
-    Tooltip as RechartsTooltip, ResponsiveContainer, Legend 
+import {
+    LineChart, Line, XAxis, YAxis, CartesianGrid,
+    Tooltip as RechartsTooltip, ResponsiveContainer, Legend
 } from 'recharts';
 
 // OPENWEATHER API KEY
@@ -24,7 +24,7 @@ export default function SimulationMode() {
         water_level: 85,
         ph: 6.5
     });
-    
+
     const [liveWeather, setLiveWeather] = useState({
         temp: 25,
         humidity: 50,
@@ -45,7 +45,7 @@ export default function SimulationMode() {
         const fetchInitialData = async () => {
             try {
                 setIsLoading(true);
-                
+
                 // Fetch Hardware Sensor Data
                 const farmerId = 'GLOBAL_AI_SEED';
                 const { data, error } = await supabase
@@ -57,12 +57,28 @@ export default function SimulationMode() {
 
                 if (error) throw error;
                 if (data && data.length > 0) {
-                    setSensorHistory(data);
+                    const mappedData = data.map(d => {
+                        let mSum = 0, mCount = 0;
+                        [d.soil1, d.soil2, d.soil3, d.soil4].forEach(v => {
+                            if (v != null) { mSum += v; mCount++; }
+                        });
+                        const moisture = mCount > 0 ? Math.round(mSum / mCount) : 30;
+
+                        let tSum = 0, tCount = 0;
+                        [d.temp1, d.temp2].forEach(v => {
+                            if (v != null) { tSum += v; tCount++; }
+                        });
+                        const temperature = tCount > 0 ? Math.round(tSum / tCount) : 25;
+
+                        return { ...d, moisture, temperature, water_level: 85, ph: 6.5 };
+                    });
+
+                    setSensorHistory(mappedData);
                     setLiveData({
-                        moisture: data[0].moisture || 30,
-                        temperature: data[0].temperature || 25,
-                        water_level: data[0].water_level || 85,
-                        ph: data[0].ph || 6.5
+                        moisture: mappedData[0].moisture,
+                        temperature: mappedData[0].temperature,
+                        water_level: 85,
+                        ph: 6.5
                     });
                 } else {
                     toast.error("No sensor data found.");
@@ -111,7 +127,7 @@ export default function SimulationMode() {
                     });
                     return nextIndex;
                 });
-            }, 3000); 
+            }, 3000);
         }
         return () => clearInterval(interval);
     }, [isRunning, sensorHistory]);
@@ -121,9 +137,9 @@ export default function SimulationMode() {
         // Calculate dynamic water required (Liters) based on 19-parameter emulation
         let baseWater = 40; // High need
         let predictedWater = Math.round(
-            baseWater 
-            - (liveData.moisture * 0.4) 
-            + (liveWeather.temp * 0.5) 
+            baseWater
+            - (liveData.moisture * 0.4)
+            + (liveWeather.temp * 0.5)
             - (liveWeather.rain * 2)
             + (Math.abs(liveData.ph - 6.5) * 2) // pH stress penalty
         );
@@ -200,9 +216,9 @@ export default function SimulationMode() {
                     </h1>
                     <p className="text-gray-500 mt-1">Live machine learning intelligence running natively in your browser</p>
                 </div>
-                
+
                 <div className="mt-4 md:mt-0 flex gap-4">
-                    <button 
+                    <button
                         onClick={() => setIsRunning(!isRunning)}
                         className={`btn ${isRunning ? 'btn-error' : 'btn-emerald'} flex items-center px-6`}
                     >
@@ -222,7 +238,7 @@ export default function SimulationMode() {
                         <h2 className="text-xl font-bold text-gray-800 mb-6 flex items-center">
                             <Droplet className="w-5 h-5 mr-2 text-blue-500" /> Sensors Array
                         </h2>
-                        
+
                         <div className="space-y-6">
                             {/* Soil Moisture */}
                             <div>
@@ -249,7 +265,7 @@ export default function SimulationMode() {
                             {/* pH Level */}
                             <div>
                                 <div className="flex justify-between mb-2">
-                                    <span className="text-sm font-semibold text-gray-600 flex items-center"><TestTube2 className="w-4 h-4 mr-1 text-purple-500"/> Soil pH</span>
+                                    <span className="text-sm font-semibold text-gray-600 flex items-center"><TestTube2 className="w-4 h-4 mr-1 text-purple-500" /> Soil pH</span>
                                     <span className="text-sm font-bold text-purple-600">{liveData.ph.toFixed(2)}</span>
                                 </div>
                                 <div className="w-full bg-gray-100 rounded-full h-3 relative">
@@ -261,7 +277,7 @@ export default function SimulationMode() {
                             {/* Water Tank */}
                             <div>
                                 <div className="flex justify-between mb-2">
-                                    <span className="text-sm font-semibold text-gray-600 flex items-center"><Waves className="w-4 h-4 mr-1 text-blue-500"/> Tank Level</span>
+                                    <span className="text-sm font-semibold text-gray-600 flex items-center"><Waves className="w-4 h-4 mr-1 text-blue-500" /> Tank Level</span>
                                     <span className={`text-sm font-bold ${liveData.water_level < 20 ? 'text-red-500' : 'text-blue-600'}`}>
                                         {liveData.water_level.toFixed(1)}%
                                     </span>
@@ -280,22 +296,22 @@ export default function SimulationMode() {
                         </h2>
                         <div className="grid grid-cols-2 gap-4">
                             <div className="bg-white dark:bg-nature-950 p-3 rounded-xl border border-blue-50 flex flex-col items-center">
-                                <ThermometerSun className="w-6 h-6 text-orange-400 mb-1"/>
+                                <ThermometerSun className="w-6 h-6 text-orange-400 mb-1" />
                                 <span className="text-lg font-bold text-gray-800">{liveWeather.temp}°C</span>
                                 <span className="text-xs text-gray-500 uppercase">Temp</span>
                             </div>
                             <div className="bg-white dark:bg-nature-950 p-3 rounded-xl border border-blue-50 flex flex-col items-center">
-                                <CloudRain className="w-6 h-6 text-blue-400 mb-1"/>
+                                <CloudRain className="w-6 h-6 text-blue-400 mb-1" />
                                 <span className="text-lg font-bold text-gray-800">{liveWeather.rain} mm</span>
                                 <span className="text-xs text-gray-500 uppercase">1h Rain</span>
                             </div>
                             <div className="bg-white dark:bg-nature-950 p-3 rounded-xl border border-blue-50 flex flex-col items-center">
-                                <Activity className="w-6 h-6 text-emerald-400 mb-1"/>
+                                <Activity className="w-6 h-6 text-emerald-400 mb-1" />
                                 <span className="text-lg font-bold text-gray-800">{liveWeather.humidity}%</span>
                                 <span className="text-xs text-gray-500 uppercase">Humidity</span>
                             </div>
                             <div className="bg-white dark:bg-nature-950 p-3 rounded-xl border border-blue-50 flex flex-col items-center">
-                                <Wind className="w-6 h-6 text-gray-400 mb-1"/>
+                                <Wind className="w-6 h-6 text-gray-400 mb-1" />
                                 <span className="text-lg font-bold text-gray-800">{liveWeather.wind_speed} km/h</span>
                                 <span className="text-xs text-gray-500 uppercase">Wind</span>
                             </div>
@@ -310,14 +326,14 @@ export default function SimulationMode() {
                         <div className="absolute top-0 right-0 p-4 opacity-10">
                             <Activity className="w-32 h-32" />
                         </div>
-                        
+
                         <div className="flex flex-col md:flex-row gap-6 relative z-10">
                             <div className="flex-1">
                                 <h3 className="text-gray-400 text-sm font-semibold tracking-wider uppercase mb-1">AI Prediction Output</h3>
                                 <div className="text-5xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-cyan-400">
                                     {waterRequired} <span className="text-2xl text-gray-400 font-medium">Liters Required</span>
                                 </div>
-                                
+
                                 <div className="mt-4 space-y-2">
                                     {alerts.length > 0 ? alerts.map((alert, idx) => (
                                         <div key={idx} className="flex items-center text-orange-300 text-sm font-medium">
@@ -330,15 +346,14 @@ export default function SimulationMode() {
                                     )}
                                 </div>
                             </div>
-                            
+
                             {/* Valve Master Status */}
                             <div className="md:w-64 bg-gray-800/80 rounded-xl p-5 border border-gray-700 flex flex-col items-center justify-center">
                                 <span className="text-gray-400 text-sm font-medium mb-3">Master Valve Controller</span>
-                                <div className={`px-8 py-3 rounded-full text-xl font-bold border-2 shadow-sm uppercase tracking-wider ${
-                                    valveStatus === 'ON' ? 'bg-emerald-500/10 border-emerald-500 text-emerald-400 shadow-[0_0_15px_rgba(16,185,129,0.3)]' :
-                                    valveStatus === 'BLOCKED' ? 'bg-red-500/10 border-red-500 text-red-500' :
-                                    'bg-gray-700 border-gray-600 text-gray-300'
-                                }`}>
+                                <div className={`px-8 py-3 rounded-full text-xl font-bold border-2 shadow-sm uppercase tracking-wider ${valveStatus === 'ON' ? 'bg-emerald-500/10 border-emerald-500 text-emerald-400 shadow-[0_0_15px_rgba(16,185,129,0.3)]' :
+                                        valveStatus === 'BLOCKED' ? 'bg-red-500/10 border-red-500 text-red-500' :
+                                            'bg-gray-700 border-gray-600 text-gray-300'
+                                    }`}>
                                     {valveStatus}
                                 </div>
                             </div>
@@ -357,21 +372,21 @@ export default function SimulationMode() {
                         <h2 className="text-xl font-bold text-gray-800 border-b pb-4 mb-4 flex items-center">
                             <Activity className="w-5 h-5 mr-2 text-emerald-600" /> Hardware Telemetry Feed
                         </h2>
-                        
+
                         <div style={{ height: 350 }} className="w-full">
                             {chartData.length > 0 ? (
                                 <ResponsiveContainer width="100%" height="100%">
                                     <LineChart data={chartData}>
                                         <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#E5E7EB" />
-                                        <XAxis dataKey="time" axisLine={false} tickLine={false} tick={{fill: '#6B7280', fontSize: 12}} dy={10} />
-                                        <YAxis yAxisId="left" axisLine={false} tickLine={false} tick={{fill: '#6B7280', fontSize: 12}} dx={-10} />
-                                        <YAxis yAxisId="right" orientation="right" axisLine={false} tickLine={false} tick={{fill: '#6B7280', fontSize: 12}} dx={10} />
-                                        <RechartsTooltip 
+                                        <XAxis dataKey="time" axisLine={false} tickLine={false} tick={{ fill: '#6B7280', fontSize: 12 }} dy={10} />
+                                        <YAxis yAxisId="left" axisLine={false} tickLine={false} tick={{ fill: '#6B7280', fontSize: 12 }} dx={-10} />
+                                        <YAxis yAxisId="right" orientation="right" axisLine={false} tickLine={false} tick={{ fill: '#6B7280', fontSize: 12 }} dx={10} />
+                                        <RechartsTooltip
                                             contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
                                         />
-                                        <Legend verticalAlign="top" height={36}/>
-                                        <Line yAxisId="left" type="monotone" dataKey="Moisture" stroke="#10B981" strokeWidth={3} dot={false} activeDot={{r: 6}} />
-                                        <Line yAxisId="right" type="monotone" dataKey="Temperature" stroke="#F97316" strokeWidth={3} dot={false} activeDot={{r: 6}} />
+                                        <Legend verticalAlign="top" height={36} />
+                                        <Line yAxisId="left" type="monotone" dataKey="Moisture" stroke="#10B981" strokeWidth={3} dot={false} activeDot={{ r: 6 }} />
+                                        <Line yAxisId="right" type="monotone" dataKey="Temperature" stroke="#F97316" strokeWidth={3} dot={false} activeDot={{ r: 6 }} />
                                     </LineChart>
                                 </ResponsiveContainer>
                             ) : (

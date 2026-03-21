@@ -27,7 +27,7 @@ export const useRealtimeSensor = () => {
         if (!farmerId) return;
 
         let isMounted = true;
-        
+
         const fetchData = async () => {
             try {
                 setLoading(true);
@@ -58,11 +58,11 @@ export const useRealtimeSensor = () => {
         // ==========================================
         const channel = supabase
             .channel(`public:sensor_data:farmer_id=eq.${farmerId}`)
-            .on('postgres_changes', { 
-                event: 'INSERT', 
-                schema: 'public', 
+            .on('postgres_changes', {
+                event: 'INSERT',
+                schema: 'public',
                 table: 'sensor_data',
-                filter: `farmer_id=eq.${farmerId}` 
+                filter: `farmer_id=eq.${farmerId}`
             }, (payload) => {
                 if (isMounted) {
                     setSensorData(prev => {
