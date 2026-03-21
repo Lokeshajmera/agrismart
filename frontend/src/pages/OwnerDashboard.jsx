@@ -63,9 +63,9 @@ const OwnerDashboard = () => {
                 users: userMap[s.user_id] || null
             }));
 
-            setRecentComplaints(fetchedComplaints.slice(0, 5));
-            setRecentSuggestions(fetchedSuggestions.slice(0, 5));
-            setRecentMembers(fetchedUsers.slice(0, 5));
+            setRecentComplaints(fetchedComplaints);
+            setRecentSuggestions(fetchedSuggestions);
+            setRecentMembers(fetchedUsers);
 
             setStats({
                 users: fetchedUsers.length,
@@ -167,13 +167,13 @@ const OwnerDashboard = () => {
 
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
                     {/* Complaints */}
-                    <section className="bg-white dark:bg-nature-950 rounded-2xl shadow-sm border border-nature-200 dark:border-nature-800 overflow-hidden">
-                        <div className="p-5 border-b border-nature-100 dark:border-nature-700/50 bg-nature-50 dark:bg-nature-900 flex justify-between items-center">
+                    <section className="bg-white dark:bg-nature-950 rounded-2xl shadow-sm border border-nature-200 dark:border-nature-800 overflow-hidden flex flex-col h-[500px]">
+                        <div className="p-5 border-b border-nature-100 dark:border-nature-700/50 bg-nature-50 dark:bg-nature-900 flex justify-between items-center shrink-0">
                             <h2 className="text-lg font-bold text-nature-900 dark:text-white flex items-center gap-2">
-                                <AlertCircle className="w-5 h-5 text-red-500" /> Recent Complaints
+                                <AlertCircle className="w-5 h-5 text-red-500" /> All Complaints
                             </h2>
                         </div>
-                        <div className="divide-y divide-nature-100">
+                        <div className="divide-y divide-nature-100 overflow-y-auto grow">
                             {recentComplaints.length > 0 ? recentComplaints.map(c => (
                                 <div key={c.id} className="p-5 hover:bg-nature-50 dark:bg-nature-900 transition-colors">
                                     <div className="flex justify-between items-start mb-2">
@@ -198,18 +198,18 @@ const OwnerDashboard = () => {
                                         <span>{new Date(c.created_at).toLocaleDateString()}</span>
                                     </div>
                                 </div>
-                            )) : <div className="p-8 text-center text-nature-500">No recent complaints.</div>}
+                            )) : <div className="p-8 text-center text-nature-500">No complaints found.</div>}
                         </div>
                     </section>
 
                     {/* Suggestions */}
-                    <section className="bg-white dark:bg-nature-950 rounded-2xl shadow-sm border border-nature-200 dark:border-nature-800 overflow-hidden">
-                        <div className="p-5 border-b border-nature-100 dark:border-nature-700/50 bg-nature-50 dark:bg-nature-900 flex justify-between items-center">
+                    <section className="bg-white dark:bg-nature-950 rounded-2xl shadow-sm border border-nature-200 dark:border-nature-800 overflow-hidden flex flex-col h-[500px]">
+                        <div className="p-5 border-b border-nature-100 dark:border-nature-700/50 bg-nature-50 dark:bg-nature-900 flex justify-between items-center shrink-0">
                             <h2 className="text-lg font-bold text-nature-900 dark:text-white flex items-center gap-2">
-                                <Lightbulb className="w-5 h-5 text-yellow-500" /> New Suggestions
+                                <Lightbulb className="w-5 h-5 text-yellow-500" /> All Suggestions
                             </h2>
                         </div>
-                        <div className="divide-y divide-nature-100">
+                        <div className="divide-y divide-nature-100 overflow-y-auto grow">
                             {recentSuggestions.length > 0 ? recentSuggestions.map(s => (
                                 <div key={s.id} className="p-5 hover:bg-nature-50 dark:bg-nature-900 transition-colors">
                                     <div className="flex justify-between items-center mb-2">
@@ -227,18 +227,18 @@ const OwnerDashboard = () => {
                                     </div>
                                     <p className="text-nature-600 text-sm">{s.message}</p>
                                 </div>
-                            )) : <div className="p-8 text-center text-nature-500">No recent suggestions.</div>}
+                            )) : <div className="p-8 text-center text-nature-500">No suggestions found.</div>}
                         </div>
                     </section>
 
                     {/* Members List */}
-                    <section className="bg-white dark:bg-nature-950 rounded-2xl shadow-sm border border-nature-200 dark:border-nature-800 overflow-hidden">
-                        <div className="p-5 border-b border-nature-100 dark:border-nature-700/50 bg-nature-50 dark:bg-nature-900 flex justify-between items-center">
+                    <section className="bg-white dark:bg-nature-950 rounded-2xl shadow-sm border border-nature-200 dark:border-nature-800 overflow-hidden flex flex-col h-[500px]">
+                        <div className="p-5 border-b border-nature-100 dark:border-nature-700/50 bg-nature-50 dark:bg-nature-900 flex justify-between items-center shrink-0">
                             <h2 className="text-lg font-bold text-nature-900 dark:text-white flex items-center gap-2">
-                                <Users className="w-5 h-5 text-blue-500" /> New Members
+                                <Users className="w-5 h-5 text-blue-500" /> All Members
                             </h2>
                         </div>
-                        <div className="divide-y divide-nature-100">
+                        <div className="divide-y divide-nature-100 overflow-y-auto grow">
                             {recentMembers.length > 0 ? recentMembers.map(m => (
                                 <div key={m.id} className="p-4 flex items-center justify-between hover:bg-nature-50 dark:bg-nature-900 transition-colors">
                                     <div className="flex items-center gap-3">
@@ -255,7 +255,7 @@ const OwnerDashboard = () => {
                                         <p className="text-xs text-nature-400">{new Date(m.created_at).toLocaleDateString()}</p>
                                     </div>
                                 </div>
-                            )) : <div className="p-8 text-center text-nature-500">No recent members.</div>}
+                            )) : <div className="p-8 text-center text-nature-500">No members found.</div>}
                         </div>
                     </section>
 
