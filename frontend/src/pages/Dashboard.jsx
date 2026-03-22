@@ -46,7 +46,7 @@ import { useAlerts } from '../context/AlertsContext';
 export default function Dashboard() {
  const { t } = useTranslation();
  const { user } = useAuth();
- const [profile, setProfile] = useState({ name: 'Farmer', farmer_id: '---' });
+ const [profile, setProfile] = useState({ name: 'Farmer', farmer_id: '---', district: 'Pune', state: 'Maharashtra' });
  const [showSoilInfo, setShowSoilInfo] = useState(false);
  const { isOnline } = useOfflineStore();
  const { alerts, recs = [] } = useAlerts();
@@ -56,7 +56,7 @@ export default function Dashboard() {
  if (user) {
  const { data, error } = await supabase
  .from('users')
- .select('name, farmer_id')
+ .select('name, farmer_id, district, state')
  .eq('id', user.id)
  .single();
  if (!error && data) setProfile(data);
@@ -81,7 +81,8 @@ export default function Dashboard() {
  const fetchWeather = async () => {
  try {
  const API_KEY = "e5c8c35726d52c53ed66735380eae2e9";
- const url = `https://api.openweathermap.org/data/2.5/weather?q=Pune&appid=${API_KEY}&units=metric`;
+ const queryLoc = profile.district ? profile.district : 'Pune';
+ const url = `https://api.openweathermap.org/data/2.5/weather?q=${queryLoc}&appid=${API_KEY}&units=metric`;
  const response = await fetch(url);
  const data = await response.json();
 
@@ -102,7 +103,7 @@ export default function Dashboard() {
  fetchWeather();
  const interval = setInterval(fetchWeather, 300000); // Poll every 5 mins
  return () => clearInterval(interval);
- }, []);
+ }, [profile.district]);
 
  // 2. Fetch Real Sensor Data (Moisture, pH)
  useEffect(() => {
@@ -231,7 +232,7 @@ export default function Dashboard() {
                     <Leaf className="w-5 h-5 text-green-500" /> {profile.name} {t("'s Farm")}
                   </div>
  <p className="text-xs text-nature-500 dark:text-white mt-1 flex items-center gap-1">
- <MapPin className="w-3 h-3" /> Maharashtra, India
+ <MapPin className="w-3 h-3" /> {profile.district ? `${profile.district}, ${profile.state}` : 'Maharashtra, India'}
  </p>
  </div>
  <div className="bg-nature-50 dark:bg-nature-900 p-2 rounded-lg border border-nature-100 dark:border-nature-700/50 flex items-center gap-2">

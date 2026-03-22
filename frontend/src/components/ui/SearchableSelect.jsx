@@ -24,9 +24,18 @@ export default function SearchableSelect({ options, value, onChange, placeholder
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, [value]);
 
-  const filteredOptions = options.filter(option => 
-    option.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const isSearchTermSameAsValue = value && searchTerm.trim().toLowerCase() === value.trim().toLowerCase();
+  
+  let filteredOptions = isSearchTermSameAsValue 
+    ? [...options] 
+    : options.filter(option => option.toLowerCase().includes(searchTerm.toLowerCase()));
+
+  if (value && filteredOptions.includes(value)) {
+    filteredOptions = [
+      value,
+      ...filteredOptions.filter(opt => opt !== value)
+    ];
+  }
 
   useEffect(() => {
     if (isOpen) {
@@ -100,11 +109,17 @@ export default function SearchableSelect({ options, value, onChange, placeholder
             placeholder={placeholder}
             value={searchTerm}
             onChange={(e) => {
-              setSearchTerm(e.target.value);
+              const newVal = e.target.value;
+              setSearchTerm(newVal);
               setIsOpen(true);
-              onChange(''); 
+              if (newVal === '') {
+                onChange(''); 
+              }
             }}
-            onFocus={() => setIsOpen(true)}
+            onFocus={(e) => {
+              setIsOpen(true);
+              e.target.select();
+            }}
             onKeyDown={handleKeyDown}
           />
           <button

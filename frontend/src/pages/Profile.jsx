@@ -10,11 +10,12 @@ import SearchableSelect from '../components/ui/SearchableSelect';
 export default function Profile() {
   const { t } = useTranslation();
 
- const { user } = useAuth();
- const [profile, setProfile] = useState(null);
- const [loading, setLoading] = useState(true);
- const [saving, setSaving] = useState(false);
- // Form fields
+  const { user } = useAuth();
+  const [profile, setProfile] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [isEditing, setIsEditing] = useState(false);
+  // Form fields
  const [name, setName] = useState('');
  const [phone, setPhone] = useState('+91');
  const [state, setState] = useState('');
@@ -150,6 +151,7 @@ export default function Profile() {
  if (error) throw error;
 
  toast.success('Profile saved successfully');
+ setIsEditing(false);
  fetchProfile();
  } catch (error) {
  console.error('Error saving profile:', error);
@@ -172,22 +174,42 @@ export default function Profile() {
  return (
  <div className="max-w-3xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
  <div className="bg-white dark:bg-nature-950 shadow rounded-lg">
- <div className="px-4 py-5 sm:px-6 bg-nature-50 dark:bg-nature-900 border-b border-nature-200 dark:border-nature-800 flex justify-between items-center rounded-t-lg">
- <div>
- <h3 className="text-lg leading-6 font-medium text-nature-900 dark:text-white">
- {isProfileComplete ? 'Farmer Profile' : 'Complete Your Profile'}
- </h3>
- <p className="mt-1 max-w-2xl text-sm text-nature-500 dark:text-white">
- {t("Personal details and system identifiers.")}
- </p>
- </div>
- {isProfileComplete && profile.farmer_id && (
- <div className="bg-earth-100 px-3 py-1 rounded-full text-earth-800 text-sm font-semibold flex items-center gap-1">
- <Hash className="w-4 h-4" />
- {profile.farmer_id}
- </div>
- )}
- </div>
+  <div className="px-4 py-5 sm:px-6 bg-nature-50 dark:bg-nature-900 border-b border-nature-200 dark:border-nature-800 flex justify-between items-center rounded-t-lg">
+  <div>
+  <h3 className="text-lg leading-6 font-medium text-nature-900 dark:text-white">
+  {isProfileComplete ? 'Farmer Profile' : 'Complete Your Profile'}
+  </h3>
+  <p className="mt-1 max-w-2xl text-sm text-nature-500 dark:text-white">
+  {t("Personal details and system identifiers.")}
+  </p>
+  </div>
+  <div className="flex items-center gap-3">
+  {isProfileComplete && profile.farmer_id && (
+  <div className="bg-earth-100 px-3 py-1 rounded-full text-earth-800 text-sm font-semibold flex items-center gap-1">
+  <Hash className="w-4 h-4" />
+  {profile.farmer_id}
+  </div>
+  )}
+  {isProfileComplete && (
+  <button
+    type="button"
+    onClick={() => {
+      if (isEditing) {
+         setName(profile?.name || user?.user_metadata?.name || '');
+         setPhone(profile?.phone || user?.user_metadata?.phone || '');
+         setState(profile?.state || '');
+         setDistrict(profile?.district || '');
+         setErrors({});
+      }
+      setIsEditing(!isEditing);
+    }}
+    className="text-sm font-medium text-earth-600 hover:text-earth-700 dark:text-earth-400 bg-white dark:bg-nature-950 px-3 py-1.5 rounded-md border border-nature-200 dark:border-nature-800 shadow-sm transition-colors"
+  >
+    {isEditing ? t("Cancel") : t("Edit Details")}
+  </button>
+  )}
+  </div>
+  </div>
  <div className="px-4 py-5 sm:p-6">
  {!isProfileComplete && (
  <div className="mb-6 bg-yellow-50 border-l-4 border-yellow-400 p-4">
@@ -223,14 +245,15 @@ export default function Profile() {
  <span className="inline-flex items-center px-3 rounded-l-md border border-r-0 border-nature-300 bg-nature-50 dark:bg-nature-900 text-nature-500 dark:text-white sm:text-sm">
  <User className="h-4 w-4" />
  </span>
- <input
- type="text"
- required
- value={name}
- onChange={(e) => { setName(e.target.value); setErrors({...errors, name: ''}); }}
- className={`flex-1 min-w-0 block w-full px-3 py-2 rounded-none rounded-r-md border focus:ring-earth-500 sm:text-sm ${errors.name ? 'border-red-500 focus:border-red-500' : 'border-nature-300 focus:border-earth-500'}`}
- placeholder="Rahul Kumar"
- />
+  <input
+  type="text"
+  required
+  value={name}
+  disabled={isProfileComplete && !isEditing}
+  onChange={(e) => { setName(e.target.value); setErrors({...errors, name: ''}); }}
+  className={`flex-1 min-w-0 block w-full px-3 py-2 rounded-none rounded-r-md border focus:ring-earth-500 sm:text-sm ${errors.name ? 'border-red-500 focus:border-red-500' : 'border-nature-300 focus:border-earth-500'} ${isProfileComplete && !isEditing ? 'bg-nature-50 dark:bg-nature-900 text-nature-500 cursor-not-allowed' : ''}`}
+  placeholder="Rahul Kumar"
+  />
  </div>
  {errors.name && <p className="text-red-500 text-xs mt-1.5">{errors.name}</p>}
  </div>
@@ -242,16 +265,17 @@ export default function Profile() {
  <Phone className="h-4 w-4" />
  +91
  </span>
- <input
- type="tel"
- required
- value={phone?.startsWith('+91') ? phone.slice(3) : (phone || '')}
- onChange={(e) => { const val = e.target.value.replace(/\D/g, '').slice(0, 10);
- setPhone('+91' + val); setErrors({...errors, phone: ''}); }}
- className={`flex-1 min-w-0 block w-full px-3 py-2 rounded-none rounded-r-md border focus:ring-earth-500 sm:text-sm ${errors.phone ? 'border-red-500 focus:border-red-500' : 'border-nature-300 focus:border-earth-500'}`}
- placeholder="9876543210"
- maxLength={10}
- />
+  <input
+  type="tel"
+  required
+  disabled={isProfileComplete && !isEditing}
+  value={phone?.startsWith('+91') ? phone.slice(3) : (phone || '')}
+  onChange={(e) => { const val = e.target.value.replace(/\D/g, '').slice(0, 10);
+  setPhone('+91' + val); setErrors({...errors, phone: ''}); }}
+  className={`flex-1 min-w-0 block w-full px-3 py-2 rounded-none rounded-r-md border focus:ring-earth-500 sm:text-sm ${errors.phone ? 'border-red-500 focus:border-red-500' : 'border-nature-300 focus:border-earth-500'} ${isProfileComplete && !isEditing ? 'bg-nature-50 dark:bg-nature-900 text-nature-500 cursor-not-allowed' : ''}`}
+  placeholder="9876543210"
+  maxLength={10}
+  />
  </div>
  {errors.phone && <p className="text-red-500 text-xs mt-1.5">{errors.phone}</p>}
  </div>
@@ -259,25 +283,26 @@ export default function Profile() {
  <div>
  <div className="flex justify-between items-center mb-1">
  <label className="block text-sm font-medium text-nature-700 dark:text-white ">{t("Location Details")} <span className="text-red-500">*</span></label>
- <button
- type="button"
- onClick={detectLocation}
- disabled={detectingLocation}
- className="text-xs font-semibold text-earth-600 hover:text-earth-700 dark:text-earth-400 flex items-center gap-1 disabled:opacity-50"
- >
- {detectingLocation ? <Loader2 className="w-3 h-3 animate-spin"/> : <Compass className="w-3 h-3" />}
- {t(detectingLocation ? "Detecting..." : "Detect Location")}
- </button>
+  <button
+  type="button"
+  onClick={detectLocation}
+  disabled={detectingLocation || (isProfileComplete && !isEditing)}
+  className="text-xs font-semibold text-earth-600 hover:text-earth-700 dark:text-earth-400 flex items-center gap-1 disabled:opacity-50"
+  >
+  {detectingLocation ? <Loader2 className="w-3 h-3 animate-spin"/> : <Compass className="w-3 h-3" />}
+  {t(detectingLocation ? "Detecting..." : "Detect Location")}
+  </button>
  </div>
  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
  <div>
             <div className="mt-1 relative w-full">
-              <SearchableSelect
+               <SearchableSelect
                 icon={<MapPin className="h-4 w-4" />}
                 options={Object.keys(INDIA_STATES_DISTRICTS)}
                 value={state}
                 placeholder={t("State (e.g. Maharashtra)")}
                 error={errors.state}
+                disabled={isProfileComplete && !isEditing}
                 onChange={(val) => {
                   setState(val);
                   setErrors({...errors, state: ''});
@@ -294,13 +319,13 @@ export default function Profile() {
           </div>
           <div>
             <div className="mt-1 relative w-full">
-              <SearchableSelect
+               <SearchableSelect
                 icon={<MapPin className="h-4 w-4" />}
                 options={districtsAvailable}
                 value={district}
                 placeholder={t("District (e.g. Nashik)")}
                 error={errors.district}
-                disabled={!state}
+                disabled={!state || (isProfileComplete && !isEditing)}
                 onChange={(val) => {
                   setDistrict(val);
                   setErrors({...errors, district: ''});
@@ -312,15 +337,17 @@ export default function Profile() {
         </div>
       </div>
 
- <div className="pt-4 flex justify-end">
- <button
- type="submit"
- disabled={saving}
- className="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-earth-600 hover:bg-earth-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-earth-500 disabled:opacity-50"
- >
- {saving ? 'Saving...' : (isProfileComplete ? 'Update Details' : 'Complete Setup')}
- </button>
- </div>
+  <div className="pt-4 flex justify-end">
+  {(!isProfileComplete || isEditing) && (
+    <button
+    type="submit"
+    disabled={saving}
+    className="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-earth-600 hover:bg-earth-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-earth-500 disabled:opacity-50"
+    >
+    {saving ? 'Saving...' : (isProfileComplete ? 'Save Changes' : 'Complete Setup')}
+    </button>
+  )}
+  </div>
  </form>
  </div>
  </div>
