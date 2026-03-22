@@ -2,7 +2,7 @@ require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
 const supabase = require('./supabase');
-const { startEngine } = require('./mqttService');
+const { startEngine, overridePump } = require('./mqttService');
 
 const app = express();
 
@@ -40,6 +40,16 @@ const isAdmin = async (req, res, next) => {
 // Routes
 app.get('/api/health', (req, res) => {
     res.json({ status: 'Platform API is running', timestamp: new Date() });
+});
+
+// Fast-Path IoT Override
+app.post('/api/pump', authenticateUser, async (req, res) => {
+    try {
+        await overridePump(req.body);
+        res.json({ success: true, message: 'Command transmitted securely over MQTT' });
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
 });
 
 // Authentication

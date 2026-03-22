@@ -42,46 +42,77 @@ import { supabase } from '../supabaseClient';
 import { useTranslation } from 'react-i18next';
 import { useOfflineStore } from '../store/useOfflineStore';
 import { useAlerts } from '../context/AlertsContext';
+import { Sprout } from 'lucide-react'; // needed for fallback UX
 
-export default function Dashboard() {
- const { t } = useTranslation();
- const { user } = useAuth();
- const [profile, setProfile] = useState({ name: 'Farmer', farmer_id: '---', district: 'Pune', state: 'Maharashtra' });
- const [showSoilInfo, setShowSoilInfo] = useState(false);
- const { isOnline } = useOfflineStore();
- const { alerts, recs = [] } = useAlerts();
+ export default function Dashboard() {
+  const { t } = useTranslation();
+  const { user } = useAuth();
+  const [profile, setProfile] = useState({ name: 'Farmer', farmer_id: '---', district: 'Pune', state: 'Maharashtra' });
+  const [farmSetup, setFarmSetup] = useState(null);
+  const [setupLoading, setSetupLoading] = useState(true);
+  const [showSoilInfo, setShowSoilInfo] = useState(false);
+  const { isOnline } = useOfflineStore();
+  const { alerts, recs = [] } = useAlerts();
 
- useEffect(() => {
- const fetchProfile = async () => {
- if (user) {
- const { data, error } = await supabase
- .from('users')
- .select('name, farmer_id, district, state')
- .eq('id', user.id)
- .single();
- if (!error && data) setProfile(data);
- }
- };
- fetchProfile();
- }, [user]);
+  useEffect(() => {
+    const fetchBaseData = async () => {
+      if (user) {
+        setSetupLoading(true);
+        try {
+          const [profileRes, setupRes] = await Promise.all([
+            supabase.from('users').select('name, farmer_id, district, state').eq('id', user.id).single(),
+            supabase.from('farm_setup').select('*').eq('user_id', user.id).single()
+          ]);
+          
+          if (!profileRes.error && profileRes.data) setProfile(profileRes.data);
+          if (!setupRes.error && setupRes.data) setFarmSetup(setupRes.data);
+        } catch (err) {
+          console.error(err);
+        } finally {
+          setSetupLoading(false);
+        }
+      }
+    };
+    fetchBaseData();
+  }, [user]);
 
- // Simulated live data mixed with REAL telemetry
- const [liveData, setLiveData] = useState({
- temp: 26.0,
- moisture: 31,
- irrigationUsage: 78,
- humidity: 68,
- wind: 11.1,
- soilTemp: 23,
- ph: 6.2
- });
+  const [liveData, setLiveData] = useState({
+    temp: 26.0,
+    moisture: 31,
+    irrigationUsage: 78,
+    humidity: 68,
+    wind: 11.1,
+    soilTemp: 23,
+    ph: 6.2,
+    area1Moisture: 31,
+    area2Moisture: 31
+  });
+
+  const calculateAreaAverages = (latest, setup) => {
+    const soilVals = [latest.soil1, latest.soil2, latest.soil3, latest.soil4];
+    
+    let a1Sum = 0, a1Count = 0;
+    for(let i=0; i < setup.area1_sensors; i++) {
+       if (soilVals[i] != null) { a1Sum += soilVals[i]; a1Count++; }
+    }
+    const a1Moisture = a1Count > 0 ? Math.round(a1Sum / a1Count) : 0;
+
+    let a2Sum = 0, a2Count = 0;
+    const startIdx = setup.area1_sensors;
+    for(let i=0; i < setup.area2_sensors; i++) {
+       if (soilVals[startIdx + i] != null) { a2Sum += soilVals[startIdx + i]; a2Count++; }
+    }
+    const a2Moisture = a2Count > 0 ? Math.round(a2Sum / a2Count) : 0;
+
+    return { a1Moisture, a2Moisture };
+  };
 
  // 1. Fetch Real Weather Data (Temp, Humidity, Wind)
  useEffect(() => {
  const fetchWeather = async () => {
  try {
  const API_KEY = "e5c8c35726d52c53ed66735380eae2e9";
- const queryLoc = profile.district ? profile.district : 'Pune';
+ const queryLoc = farmSetup?.district || profile.district || 'Pune';
  const url = `https://api.openweathermap.org/data/2.5/weather?q=${queryLoc}&appid=${API_KEY}&units=metric`;
  const response = await fetch(url);
  const data = await response.json();
@@ -89,7 +120,7 @@ export default function Dashboard() {
  if (data.main) {
  setLiveData(prev => ({
  ...prev,
- temp: data.main.temp,
+ temp: Math.round(data.main.temp),
  humidity: data.main.humidity,
  wind: data.wind.speed,
  soilTemp: Math.round(data.main.temp - 2) // Approximate soil temp
@@ -103,7 +134,7 @@ export default function Dashboard() {
  fetchWeather();
  const interval = setInterval(fetchWeather, 300000); // Poll every 5 mins
  return () => clearInterval(interval);
- }, [profile.district]);
+ }, [profile.district, farmSetup?.district]);
 
  // 2. Fetch Real Sensor Data (Moisture, pH)
  useEffect(() => {
@@ -118,28 +149,61 @@ export default function Dashboard() {
 
  if (data && data.length > 0) {
  const latest = data[0];
- let mSum = 0, mCount = 0;
- [latest.soil1, latest.soil2, latest.soil3, latest.soil4].forEach(v => {
- if (v != null) { mSum += v; mCount++; }
- });
+ 
+ if (farmSetup) {
+   const { a1Moisture, a2Moisture } = calculateAreaAverages(latest, farmSetup);
+   setLiveData(prev => ({
+     ...prev,
+     moisture: Math.round((a1Moisture + a2Moisture) / (a1Moisture>0 && a2Moisture>0 ? 2 : 1)),
+     ph: 6.5,
+     area1Moisture: a1Moisture,
+     area2Moisture: a2Moisture
+   }));
+ } else {
+   let mSum = 0, mCount = 0;
+   [latest.soil1, latest.soil2, latest.soil3, latest.soil4].forEach(v => {
+     if (v != null) { mSum += v; mCount++; }
+   });
 
- setLiveData(prev => {
- const nextMoisture = mCount > 0 ? Math.round(mSum / mCount) : prev.moisture;
- return {
- ...prev,
- moisture: nextMoisture,
- ph: 6.5
- };
- });
+   setLiveData(prev => ({
+     ...prev,
+     moisture: mCount > 0 ? Math.round(mSum / mCount) : prev.moisture,
+     ph: 6.5
+   }));
+ }
  }
  };
 
  fetchTelemetry();
  const interval = setInterval(fetchTelemetry, 10000); // Poll every 10 seconds
  return () => clearInterval(interval);
- }, [user]);
+ }, [user, farmSetup]);
 
- return (
+  const getZoneStatus = (moisture) => {
+     if (moisture < 20 || moisture > 80) return { color: 'bg-red-50 dark:bg-red-900/20 border-red-200 dark:border-red-800', text: 'text-red-600', status: 'Irrigation ON' };
+     if (moisture < 35 || moisture > 65) return { color: 'bg-yellow-50 dark:bg-yellow-900/20 border-yellow-200 dark:border-yellow-800', text: 'text-yellow-600', status: 'Warning' };
+     return { color: 'bg-green-50 dark:bg-green-900/20 border-green-200 dark:border-green-800', text: 'text-green-600', status: 'Optimal' };
+  };
+
+  if (setupLoading) {
+    return (
+       <div className="min-h-screen bg-transparent flex flex-col items-center justify-center p-6 text-center">
+         <div className="w-8 h-8 rounded-full border-4 border-earth-200 border-t-earth-600 animate-spin"></div>
+       </div>
+    );
+  }
+
+  if (!setupLoading && !farmSetup) {
+     return (
+       <div className="min-h-screen bg-transparent flex flex-col items-center justify-center p-6 text-center">
+         <Sprout className="w-16 h-16 text-nature-300 dark:text-nature-700 mb-4" />
+         <h2 className="text-2xl font-bold text-nature-900 dark:text-white mb-2">{t("Farm Not Configured Yet")}</h2>
+         <p className="text-nature-600 dark:text-nature-400 max-w-md">{t("Your farm layout has not been established by the director. Please contact support or wait for your farm to be mapped to the sensors.")}</p>
+       </div>
+     );
+  }
+
+  return (
  <div className="min-h-screen bg-transparent text-nature-700 dark:text-white font-sans p-2">
 
  {/* Top Toolbar */}
@@ -222,56 +286,49 @@ export default function Dashboard() {
 
  {/* COLUMN 1 (Left) */}
  <div className="md:col-span-12 lg:col-span-4 flex flex-col gap-4">
+  {/* Farm Info Header */}
+  <div className="bg-white dark:bg-nature-950/80 backdrop-blur-md rounded-2xl p-5 border border-nature-200 dark:border-nature-800 shadow-md transition relative overflow-hidden group mb-4">
+  <div className="absolute top-0 right-0 w-32 h-32 bg-earth-100 dark:bg-earth-900/30 rounded-bl-full blur-2xl opacity-50 dark:opacity-20 pointer-events-none"></div>
+  <div className="flex justify-between items-start relative z-10">
+  <div>
+                   <div className="flex items-center gap-2 mb-2 text-xl font-bold text-nature-900 dark:text-white">
+                     <Wheat className="w-5 h-5 text-earth-600" /> {farmSetup?.farm_name || profile.name + "'s Farm"}
+                   </div>
+  <p className="text-xs font-semibold text-nature-500 dark:text-nature-400 flex items-center gap-1">
+  <MapPin className="w-3 h-3" /> {farmSetup?.district ? `${farmSetup.district}, ${farmSetup.state}` : (profile.district ? `${profile.district}, ${profile.state}` : 'Maharashtra, India')}
+  </p>
+  </div>
+  <div className="bg-nature-50 dark:bg-nature-900 p-2 rounded-lg border border-nature-100 dark:border-nature-700/50 flex items-center gap-2">
+  <CloudSun className="w-5 h-5 text-orange-400" />
+  <span className="text-nature-900 dark:text-white font-bold transition-all">{liveData.temp}°C</span>
+  </div>
+  </div>
+  </div>
 
- {/* Farm Info */}
- <div className="bg-white dark:bg-nature-950/80 backdrop-blur-md rounded-2xl p-5 border border-nature-200 dark:border-nature-800 shadow-md hover:shadow-lg transition relative overflow-hidden group">
- <div className="absolute top-0 right-0 w-32 h-32 bg-earth-100 dark:bg-earth-900/30 rounded-bl-full blur-2xl opacity-50 dark:opacity-20 pointer-events-none"></div>
- <div className="flex justify-between items-start mb-4 relative z-10">
- <div>
-                  <div className="flex items-center gap-2 mb-4 text-xl font-bold text-nature-900 dark:text-white">
-                    <Leaf className="w-5 h-5 text-green-500" /> {profile.name} {t("'s Farm")}
-                  </div>
- <p className="text-xs text-nature-500 dark:text-white mt-1 flex items-center gap-1">
- <MapPin className="w-3 h-3" /> {profile.district ? `${profile.district}, ${profile.state}` : 'Maharashtra, India'}
- </p>
- </div>
- <div className="bg-nature-50 dark:bg-nature-900 p-2 rounded-lg border border-nature-100 dark:border-nature-700/50 flex items-center gap-2">
- <CloudSun className="w-5 h-5 text-orange-400" />
- <span className="text-nature-900 dark:text-white font-bold transition-all">{liveData.temp}°C</span>
- </div>
- </div>
-
- <div className="mt-6 border-t border-nature-100 dark:border-nature-700/50 pt-4">
- <div className="flex justify-between items-center mb-2">
- <div className="flex items-center gap-2">
- <Droplets className="w-4 h-4 text-blue-500" />
- <span className="text-sm font-medium text-nature-700 dark:text-white ">{t('Irrigation')}</span>
- </div>
- <span className="text-xl font-bold text-nature-900 dark:text-white transition-all">{liveData.irrigationUsage}%</span>
- </div>
- <div className="w-full bg-nature-100 dark:bg-nature-800 rounded-full h-2 mb-2 overflow-hidden">
- <div className="bg-gradient-to-r from-earth-400 to-earth-500 h-2 rounded-full transition-all duration-1000" style={{ width: `${liveData.irrigationUsage}%` }}></div>
- </div>
- <div className="flex justify-between text-xs text-nature-500 dark:text-white">
- <span>{t('Optimal Moisture')}</span>
- <span className="text-green-600 flex items-center gap-1"><CheckCircle2 className="w-3 h-3" /> {t('Active')}</span>
- <span>{t('Root Zone')}</span>
- </div>
- </div>
-
- <Link to="/app/map" className="absolute inset-0 z-20" aria-label="Go to Map"></Link>
-
- <div className="mt-4 bg-nature-50 dark:bg-nature-900 rounded-xl p-3 border border-nature-100 dark:border-nature-700/50 flex justify-between items-center relative z-30 pointer-events-none">
- <div className="flex items-center gap-2">
- <ThermometerSun className="w-4 h-4 text-orange-500" />
- <span className="text-sm font-medium text-nature-700 dark:text-white ">{t('Soil Moisture')}</span>
- </div>
- <div className="text-right">
- <span className="text-lg font-bold text-nature-900 dark:text-white transition-all">{liveData.moisture}%</span>
- <p className="text-[10px] text-green-600 flex items-center gap-1"><span className="w-1.5 h-1.5 rounded-full bg-green-500"></span> {t('Moderate')}</p>
- </div>
- </div>
- </div>
+  {/* Zones Grid */}
+  <div className="grid grid-cols-2 gap-4 mb-4">
+    {[
+      { name: farmSetup?.area1_name || 'Zone A', moisture: liveData.area1Moisture, active: farmSetup?.area1_sensors > 0 },
+      { name: farmSetup?.area2_name || 'Zone B', moisture: liveData.area2Moisture, active: farmSetup?.area2_sensors > 0 }
+    ].filter(z => z.active).map((zone, i) => {
+       const stat = getZoneStatus(zone.moisture || 0);
+       return (
+       <div key={i} className={`bg-white dark:bg-nature-950/80 backdrop-blur-md rounded-2xl p-4 border shadow-sm ${stat.color} transition-all`}>
+         <div className="flex justify-between items-center mb-2">
+           <h4 className="font-bold text-nature-900 dark:text-white text-sm flex items-center gap-1.5"><MapIcon className="w-3.5 h-3.5 text-nature-500" /> {zone.name}</h4>
+           <span className="text-xl font-black text-nature-900 dark:text-white">{zone.moisture || 0}%</span>
+         </div>
+         <div className="flex justify-between items-center mt-3 pt-3 border-t border-nature-200/50 dark:border-nature-800/50 text-xs font-semibold">
+           <span className="text-nature-500">{t("Status")}:</span>
+           <span className={`${stat.text} flex items-center gap-1`}>
+             {stat.status === 'Optimal' ? <CheckCircle2 className="w-3.5 h-3.5" /> : (stat.status === 'Warning' ? <AlertTriangle className="w-3.5 h-3.5" /> : <Droplets className="w-3.5 h-3.5" />)}
+             {t(stat.status)}
+           </span>
+         </div>
+       </div>
+       )
+    })}
+  </div>
 
  {/* Soil Condition */}
  <div className="bg-white dark:bg-nature-950/80 backdrop-blur-md rounded-2xl p-5 border border-nature-200 dark:border-nature-800 shadow-sm relative flex flex-col items-center">

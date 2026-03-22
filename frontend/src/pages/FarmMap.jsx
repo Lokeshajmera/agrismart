@@ -1,9 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
-import { MapContainer, TileLayer, Polygon, Marker, Popup, Circle, useMap } from 'react-leaflet';
+import { MapContainer, TileLayer, Polygon, Marker, Popup, Circle, useMap, Tooltip } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 import L from 'leaflet';
 import { useAuth } from '../context/AuthContext';
+import { supabase } from '../supabaseClient';
+import { MapPin, Sprout } from 'lucide-react';
 
 // Fix for default Leaflet markers
 delete L.Icon.Default.prototype._getIconUrl;
@@ -61,55 +63,117 @@ const defaultRegions = {
 const WEATHER_API_KEY = 'e5c8c35726d52c53ed66735380eae2e9';
 
 function MapController({ center }) {
- const map = useMap();
- useEffect(() => {
- map.flyTo(center, 15, { animate: true, duration: 1.5 });
- }, [center, map]);
- return null;
+  const map = useMap();
+  useEffect(() => {
+    map.flyTo(center, 15, { animate: false });
+  }, [center, map]);
+  return null;
+}
+
+function MapInvalidator() {
+  const map = useMap();
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      map.invalidateSize();
+    }, 250);
+    return () => clearTimeout(timer);
+  }, [map]);
+  return null;
 }
 
 export default function FarmMap() {
   const { t } = useTranslation();
-  const { userProfile } = useAuth();
+  const { userProfile, user } = useAuth();
   
   const [regions, setRegions] = useState(defaultRegions);
   const [selectedRegionKey, setSelectedRegionKey] = useState('mh');
+  const [isMapLocating, setIsMapLocating] = useState(true);
 
   useEffect(() => {
     const fetchUserLocation = async () => {
-      if (userProfile?.district) {
+      setIsMapLocating(true);
+      if (user && userProfile?.district) {
         try {
-          const res = await fetch(`https://api.openweathermap.org/geo/1.0/direct?q=${userProfile.district},IN&limit=1&appid=${WEATHER_API_KEY}`);
-          const data = await res.json();
-          if (data && data.length > 0) {
-            const { lat, lon, name } = data[0];
-            const myRegion = {
-              name: `Your Regional Farm (${name})`,
-              center: [lat, lon],
-              boundary: [
-                [lat + 0.005, lon - 0.005],
-                [lat + 0.005, lon + 0.005],
-                [lat - 0.005, lon + 0.005],
-                [lat - 0.005, lon - 0.005]
-              ],
-              sensors: [
-                { id: 99, pos: [lat + 0.001, lon - 0.001], type: 'Moisture', status: 'optimal', val: '45%' },
-                { id: 100, pos: [lat - 0.002, lon + 0.001], type: 'Temp', status: 'warning', val: '34°C' }
-              ],
-              dryZone: [lat - 0.002, lon + 0.001]
-            };
-            setRegions(prev => ({ 'my_farm': myRegion, ...prev }));
-            setSelectedRegionKey('my_farm');
+          // Check explicit farm_setup configured by Owner First
+          const { data: setupData, error: setupErr } = await supabase.from('farm_setup').select('*').eq('user_id', user.id).single();
+
+          if (setupData && setupData.coordinates && Array.isArray(setupData.coordinates) && setupData.coordinates.length > 0) {
+             const coords = setupData.coordinates;
+             
+             // Extract geographical center by averaging all coordinates to fly the camera
+             const centerLat = coords.reduce((sum, c) => sum + c[0], 0) / coords.length;
+             const centerLng = coords.reduce((sum, c) => sum + c[1], 0) / coords.length;
+             
+             // Build sensor payload natively mapping the explicit Owner plot points
+             const generatedSensors = [];
+             
+             for (let i = 0; i < coords.length; i++) {
+                generatedSensors.push({
+                   id: i + 1,
+                   pos: coords[i],
+                   type: i % 2 === 0 ? 'Moisture' : 'Temp',
+                   status: 'optimal',
+                   val: i % 2 === 0 ? '45%' : '26°C'
+                });
+             }
+             
+             const customRegion = {
+                name: setupData.farm_name || "Assigned Farm Layout",
+                center: [centerLat, centerLng],
+                boundary: coords, // Tracing the explicit Polygon!
+                sensors: generatedSensors,
+                dryZone: null
+             };
+             
+             setRegions(prev => ({ 'my_farm': customRegion, ...prev }));
+             setSelectedRegionKey('my_farm');
+          } else {
+             // Fallback to legacy OpenWeatherMap Geographic district resolution
+             const res = await fetch(`https://api.openweathermap.org/geo/1.0/direct?q=${userProfile.district},IN&limit=1&appid=${WEATHER_API_KEY}`);
+             const data = await res.json();
+             if (data && data.length > 0) {
+               const { lat, lon, name } = data[0];
+               const myRegion = {
+                 name: `Your Regional Farm (${name})`,
+                 center: [lat, lon],
+                 boundary: [
+                   [lat + 0.005, lon - 0.005],
+                   [lat + 0.005, lon + 0.005],
+                   [lat - 0.005, lon + 0.005],
+                   [lat - 0.005, lon - 0.005]
+                 ],
+                 sensors: [
+                   { id: 99, pos: [lat + 0.001, lon - 0.001], type: 'Moisture', status: 'optimal', val: '45%' },
+                   { id: 100, pos: [lat - 0.002, lon + 0.001], type: 'Temp', status: 'warning', val: '34°C' }
+                 ],
+                 dryZone: [lat - 0.002, lon + 0.001]
+               };
+               setRegions(prev => ({ 'my_farm': myRegion, ...prev }));
+               setSelectedRegionKey('my_farm');
+             }
           }
         } catch (e) {
           console.error("Failed to fetch user regional coordinates for map", e);
+        } finally {
+          setIsMapLocating(false);
         }
+      } else {
+         setIsMapLocating(false);
       }
     };
     fetchUserLocation();
-  }, [userProfile]);
+  }, [userProfile, user]);
 
  const region = regions[selectedRegionKey] || defaultRegions['mh'];
+ 
+ if (isMapLocating) {
+    return (
+       <div className="flex flex-col items-center justify-center p-12 text-center h-[70vh]">
+         <div className="w-8 h-8 rounded-full border-4 border-earth-200 border-t-earth-600 animate-spin"></div>
+         <p className="text-nature-500 mt-4 font-bold">{t("Generating Spatial Mapping Arrays...")}</p>
+       </div>
+    );
+ }
 
  return (
  <div className="space-y-6 animate-in fade-in duration-500 h-full flex flex-col">
@@ -119,15 +183,10 @@ export default function FarmMap() {
  <p className="text-nature-500 dark:text-white mt-1">{t("Real-time geospatial data, NDVI layers, and sensor locations.")}</p>
  </div>
  <div className="flex flex-wrap items-center gap-3 bg-white dark:bg-nature-950 p-2 rounded-xl border border-nature-200 dark:border-nature-800 shadow-sm">
- <select
- className="bg-nature-50 dark:bg-nature-900 border border-nature-200 dark:border-nature-800 text-nature-800 dark:text-white text-sm rounded-lg focus:ring-earth-500 focus:border-earth-500 block px-3 py-2 font-medium cursor-pointer"
- value={selectedRegionKey}
- onChange={(e) => setSelectedRegionKey(e.target.value)}
- >
- {Object.entries(regions).map(([key, data]) => (
- <option key={key} value={key}>{data.name}</option>
- ))}
- </select>
+ <div className="flex items-center gap-2 bg-nature-100 dark:bg-nature-800 border border-nature-200 dark:border-nature-700 text-nature-800 dark:text-white text-sm rounded-lg px-3 py-2 font-bold pointer-events-none">
+   <MapPin className="w-4 h-4 text-earth-600" />
+   {region.name}
+ </div>
  <div className="hidden sm:block w-px h-6 bg-nature-200 mx-1"></div>
  <button className="bg-earth-500 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-earth-600 transition-colors shadow-sm whitespace-nowrap cursor-pointer">
  {t("NDVI Layer")}
@@ -154,6 +213,7 @@ export default function FarmMap() {
  <div className="bg-white dark:bg-nature-950 p-2 rounded-2xl border border-nature-200 dark:border-nature-800 shadow-sm flex-1 min-h-[500px] relative z-0">
  <MapContainer center={region.center} zoom={15} className="h-full w-full rounded-xl z-0">
  <MapController center={region.center} />
+ <MapInvalidator />
  <TileLayer
  attribution='&copy; <a href="https://www.openstreetmap.org/copyright">{t("OpenStreetMap")}</a> contributors'
  url="https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}"
@@ -176,6 +236,9 @@ export default function FarmMap() {
 
  {region.sensors.map(sensor => (
  <Marker key={sensor.id} position={sensor.pos}>
+ <Tooltip permanent direction="top" className="font-bold bg-white text-nature-900 shadow-md border-0 rounded text-xs px-2 py-0.5">
+ {t("Sensor")} {sensor.id}
+ </Tooltip>
  <Popup className="rounded-xl overflow-hidden shadow-lg border-none">
  <div className="p-1">
   <h4 className="font-bold text-nature-900 dark:text-white border-b pb-1 mb-2">{t("Sensor")} #{sensor.id}</h4>
