@@ -1,12 +1,12 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { useLiveTranslation } from '../hooks/useLiveTranslation';
+import { useTranslation } from 'react-i18next';
 import { useLocation, useNavigate, Link } from 'react-router-dom';
 import { Sprout } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { toast } from 'react-hot-toast';
 
 export default function VerifyOtp() {
-  const { tLive } = useLiveTranslation();
+  const { t } = useTranslation();
 
  const [otp, setOtp] = useState(['', '', '', '', '', '']);
  const [timer, setTimer] = useState(30);
@@ -32,8 +32,7 @@ export default function VerifyOtp() {
  }
  }, [timer]);
 
- const handleChange = () => {
-  const { tLive } = useLiveTranslation();
+ const handleChange = (index, value) => {
 
  if (isNaN(value)) return;
  const newOtp = [...otp];
@@ -101,14 +100,14 @@ export default function VerifyOtp() {
  <div className="flex justify-center mb-6">
  <Link to="/" className="flex items-center gap-2 text-2xl font-bold text-nature-900 dark:text-white">
  <Sprout className="w-8 h-8 text-earth-500" />
- <span>{tLive("Agri")}<span className="text-earth-500">{tLive("Smart")}</span></span>
+ <span>{t("Agri")}<span className="text-earth-500">{t("Smart")}</span></span>
  </Link>
  </div>
  <h2 className="text-center text-3xl font-extrabold text-nature-900 dark:text-white">
  Verify your {type === 'email' ? 'Email' : 'Mobile Number'}
  </h2>
  <p className="mt-2 text-center text-sm text-nature-600 dark:text-white">
- {tLive("We sent a code to")} <span className="font-medium text-nature-900 dark:text-white">{type === 'email' ? email : phone}</span>
+ {t("We sent a code to")} <span className="font-medium text-nature-900 dark:text-white">{type === 'email' ? email : phone}</span>
  </p>
  </div>
 
@@ -144,7 +143,7 @@ export default function VerifyOtp() {
  <div className="mt-6 text-center">
  {timer > 0 ? (
  <p className="text-sm text-nature-600 dark:text-white">
- {tLive("Resend code in")} <span className="font-medium text-earth-600">{timer}s</span>
+ {t("Resend code in")} <span className="font-medium text-earth-600">{timer}s</span>
  </p>
  ) : (
  <button
@@ -152,7 +151,7 @@ export default function VerifyOtp() {
  disabled={loading}
  className="text-sm font-medium text-earth-600 hover:text-earth-500"
  >
- {tLive("Resend OTP")}
+ {t("Resend OTP")}
  </button>
  )}
  </div>

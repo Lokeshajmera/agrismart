@@ -1,10 +1,10 @@
 import React from 'react';
-import { useLiveTranslation } from '../hooks/useLiveTranslation';
+import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
 import { Sprout, BarChart3, Droplets, Map, Brain, Shield, ArrowRight, Mail, Phone, MapPin } from 'lucide-react';
 
 export default function LandingPage() {
-  const { tLive } = useLiveTranslation();
+  const { t } = useTranslation();
 
  return (
  <div className="min-h-screen bg-nature-50 dark:bg-nature-900 font-sans text-nature-900 dark:text-white scroll-smooth">
@@ -12,11 +12,11 @@ export default function LandingPage() {
  <nav className="fixed top-0 left-0 right-0 h-16 bg-white dark:bg-nature-950/80 backdrop-blur-md border-b border-nature-200 dark:border-nature-800 z-50 px-4 md:px-8 flex justify-between items-center">
  <div className="flex items-center gap-2 text-xl font-bold">
  <Sprout className="w-6 h-6 text-earth-500" />
- <span>{tLive("Agri")}<span className="text-earth-500">{tLive("Smart")}</span></span>
+ <span>{t("Agri")}<span className="text-earth-500">{t("Smart")}</span></span>
  </div>
  <div className="flex items-center gap-4">
- <Link to="/login" className="text-sm font-medium text-nature-700 dark:text-white hover:text-earth-600 transition-colors">{tLive("Login")}</Link>
- <Link to="/signup" className="text-sm font-medium bg-earth-500 text-white px-4 py-2 rounded-lg hover:bg-earth-600 transition-colors shadow-sm">{tLive("Get Started")}</Link>
+ <Link to="/login" className="text-sm font-medium text-nature-700 dark:text-white hover:text-earth-600 transition-colors">{t("Login")}</Link>
+ <Link to="/signup" className="text-sm font-medium bg-earth-500 text-white px-4 py-2 rounded-lg hover:bg-earth-600 transition-colors shadow-sm">{t("Get Started")}</Link>
  </div>
  </nav>
 
@@ -29,17 +29,17 @@ export default function LandingPage() {
  <div className="max-w-5xl mx-auto text-center relative z-10">
  <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-nature-100 dark:bg-nature-800 text-nature-700 dark:text-white text-sm font-medium mb-6 animate-fade-in-up">
  <span className="w-2 h-2 rounded-full bg-earth-500 animate-pulse"></span>
- {tLive("AI-Powered Precision Agriculture")}
+ {t("AI-Powered Precision Agriculture")}
  </div>
  <h1 className="text-4xl md:text-6xl font-extrabold tracking-tight mb-6 leading-tight">
- {tLive("AI-Driven Smart Irrigation System for")} <span className="text-transparent bg-clip-text bg-gradient-to-r from-earth-500 to-earth-700">{tLive("Farms")}</span>
+ {t("AI-Driven Smart Irrigation System for")} <span className="text-transparent bg-clip-text bg-gradient-to-r from-earth-500 to-earth-700">{t("Farms")}</span>
  </h1>
  <p className="text-lg md:text-xl text-nature-600 dark:text-white mb-10 max-w-2xl mx-auto leading-relaxed">
- {tLive("Maximize yield and minimize water waste using IoT sensors, satellite imagery, and advanced AI models trained for Indian climate conditions.")}
+ {t("Maximize yield and minimize water waste using IoT sensors, satellite imagery, and advanced AI models trained for Indian climate conditions.")}
  </p>
  <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
  <Link to="/signup" className="w-full sm:w-auto px-8 py-3 rounded-lg bg-nature-800 text-white font-medium hover:bg-nature-900 transition-colors flex items-center justify-center gap-2">
- {tLive("Start Farm Setup")} <ArrowRight className="w-4 h-4" />
+ {t("Start Farm Setup")} <ArrowRight className="w-4 h-4" />
  </Link>
  </div>
  </div>
@@ -51,15 +51,15 @@ export default function LandingPage() {
  <div className="grid grid-cols-1 md:grid-cols-3 gap-8 text-center">
  <div>
  <p className="text-3xl font-bold text-earth-600 mb-1">40%</p>
- <p className="text-sm font-medium text-nature-500 dark:text-white uppercase tracking-wide">{tLive("Water Saved")}</p>
+ <p className="text-sm font-medium text-nature-500 dark:text-white uppercase tracking-wide">{t("Water Saved")}</p>
  </div>
  <div>
  <p className="text-3xl font-bold text-earth-600 mb-1">25%</p>
- <p className="text-sm font-medium text-nature-500 dark:text-white uppercase tracking-wide">{tLive("Yield Increase")}</p>
+ <p className="text-sm font-medium text-nature-500 dark:text-white uppercase tracking-wide">{t("Yield Increase")}</p>
  </div>
  <div>
  <p className="text-3xl font-bold text-earth-600 mb-1">24/7</p>
- <p className="text-sm font-medium text-nature-500 dark:text-white uppercase tracking-wide">{tLive("AI Monitoring")}</p>
+ <p className="text-sm font-medium text-nature-500 dark:text-white uppercase tracking-wide">{t("AI Monitoring")}</p>
  </div>
  </div>
  </div>
@@ -68,8 +68,8 @@ export default function LandingPage() {
  {/* Features Section */}
  <section className="py-20 px-4 md:px-8 max-w-6xl mx-auto">
  <div className="text-center mb-16">
- <h2 className="text-3xl font-bold mb-4">{tLive("Complete Crop Intelligence")}</h2>
- <p className="text-nature-600 dark:text-white max-w-2xl mx-auto">{tLive("Everything you need to automate your irrigation system and monitor your farm's health from anywhere.")}</p>
+ <h2 className="text-3xl font-bold mb-4">{t("Complete Crop Intelligence")}</h2>
+ <p className="text-nature-600 dark:text-white max-w-2xl mx-auto">{t("Everything you need to automate your irrigation system and monitor your farm's health from anywhere.")}</p>
  </div>
 
  <div className="grid md:grid-cols-3 gap-8">
@@ -95,28 +95,28 @@ export default function LandingPage() {
  {/* Architecture Overview */}
  <section className="py-20 bg-nature-900 text-white">
  <div className="max-w-6xl mx-auto px-4 md:px-8 text-center">
- <h2 className="text-3xl font-bold mb-12">{tLive("How It Works")}</h2>
+ <h2 className="text-3xl font-bold mb-12">{t("How It Works")}</h2>
  <div className="flex flex-col md:flex-row items-center justify-center gap-8 md:gap-4 relative">
  <div className="bg-nature-800 p-6 rounded-xl border border-nature-700 w-full md:w-1/3 z-10 relative">
  <div className="text-earth-400 mb-3"><Droplets className="w-8 h-8 mx-auto" /></div>
- <h4 className="font-bold mb-2 text-lg">{tLive("1. Sensors Collect Data")}</h4>
- <p className="text-sm text-nature-300 dark:text-white">{tLive("IoT nodes gather moisture, weather, and soil temp across your field.")}</p>
+ <h4 className="font-bold mb-2 text-lg">{t("1. Sensors Collect Data")}</h4>
+ <p className="text-sm text-nature-300 dark:text-white">{t("IoT nodes gather moisture, weather, and soil temp across your field.")}</p>
  </div>
 
  <div className="hidden md:block w-16 border-t-2 border-dashed border-nature-600 flex-shrink-0"></div>
 
  <div className="bg-nature-800 p-6 rounded-xl border border-nature-700 w-full md:w-1/3 z-10 relative">
  <div className="text-earth-400 mb-3"><Brain className="w-8 h-8 mx-auto" /></div>
- <h4 className="font-bold mb-2 text-lg">{tLive("2. AI Processes Insights")}</h4>
- <p className="text-sm text-nature-300 dark:text-white">{tLive("Cloud AI combines sensor data with satellite NDVI and weather APIs.")}</p>
+ <h4 className="font-bold mb-2 text-lg">{t("2. AI Processes Insights")}</h4>
+ <p className="text-sm text-nature-300 dark:text-white">{t("Cloud AI combines sensor data with satellite NDVI and weather APIs.")}</p>
  </div>
 
  <div className="hidden md:block w-16 border-t-2 border-dashed border-nature-600 flex-shrink-0"></div>
 
  <div className="bg-nature-800 p-6 rounded-xl border border-nature-700 w-full md:w-1/3 z-10 relative">
  <div className="text-earth-400 mb-3"><Sprout className="w-8 h-8 mx-auto" /></div>
- <h4 className="font-bold mb-2 text-lg">{tLive("3. Automated Action")}</h4>
- <p className="text-sm text-nature-300 dark:text-white">{tLive("Smart valves trigger precise watering only where and when needed.")}</p>
+ <h4 className="font-bold mb-2 text-lg">{t("3. Automated Action")}</h4>
+ <p className="text-sm text-nature-300 dark:text-white">{t("Smart valves trigger precise watering only where and when needed.")}</p>
  </div>
  </div>
  </div>
@@ -125,29 +125,29 @@ export default function LandingPage() {
  {/* CTA Footer */}
  <footer className="bg-earth-900 border-t border-earth-800 pt-16 pb-8 text-earth-100/70">
  <div className="max-w-6xl mx-auto px-4 md:px-8 text-center">
- <h2 className="text-2xl font-bold text-white mb-6">{tLive("Ready to upgrade your farm?")}</h2>
+ <h2 className="text-2xl font-bold text-white mb-6">{t("Ready to upgrade your farm?")}</h2>
  <Link to="/signup" className="inline-block px-8 py-3 rounded-lg bg-earth-500 text-white font-bold hover:bg-earth-600 transition-colors mb-12 shadow-lg shadow-earth-500/20">
- {tLive("Create Free Account")}
+ {t("Create Free Account")}
  </Link>
 
  {/* Contact Info Overview */}
  <div className="flex flex-col sm:flex-row justify-center items-center gap-6 md:gap-12 mb-12 text-sm">
- <div className="flex items-center gap-3"><div className="p-2 bg-earth-800 rounded-full"><Mail className="w-4 h-4 text-earth-400" /></div> {tLive("support@agrismart.com")}</div>
- <div className="flex items-center gap-3"><div className="p-2 bg-earth-800 rounded-full"><Phone className="w-4 h-4 text-earth-400" /></div> {tLive("+91 XXXXX XXXXX")}</div>
- <div className="flex items-center gap-3"><div className="p-2 bg-earth-800 rounded-full"><MapPin className="w-4 h-4 text-earth-400" /></div> {tLive("India")}</div>
+ <div className="flex items-center gap-3"><div className="p-2 bg-earth-800 rounded-full"><Mail className="w-4 h-4 text-earth-400" /></div> {t("support@agrismart.com")}</div>
+ <div className="flex items-center gap-3"><div className="p-2 bg-earth-800 rounded-full"><Phone className="w-4 h-4 text-earth-400" /></div> {t("+91 XXXXX XXXXX")}</div>
+ <div className="flex items-center gap-3"><div className="p-2 bg-earth-800 rounded-full"><MapPin className="w-4 h-4 text-earth-400" /></div> {t("India")}</div>
  </div>
 
  <div className="border-t border-earth-800/50 pt-8 flex flex-col md:flex-row items-center justify-between text-sm">
  <div className="flex items-center gap-2 font-bold text-white mb-4 md:mb-0">
  <Sprout className="w-5 h-5 text-earth-400" />
- <span>{tLive("Agri")}<span className="text-earth-400">{tLive("Smart")}</span></span>
+ <span>{t("Agri")}<span className="text-earth-400">{t("Smart")}</span></span>
  </div>
- <p>{tLive("© 2026 AgriSmart. Made for the Hackathon.")}</p>
+ <p>{t("© 2026 AgriSmart. Made for the Hackathon.")}</p>
  <div className="flex gap-4 mt-4 md:mt-0 items-center">
- <Link to="/contact" className="hover:text-white cursor-pointer transition-colors">{tLive("Contact")}</Link>
- <Link to="/legal" className="hover:text-white cursor-pointer transition-colors">{tLive("Terms & Privacy")}</Link>
+ <Link to="/contact" className="hover:text-white cursor-pointer transition-colors">{t("Contact")}</Link>
+ <Link to="/legal" className="hover:text-white cursor-pointer transition-colors">{t("Terms & Privacy")}</Link>
  <Link to="/owner-login" className="hover:text-earth-400 font-bold ml-4 border-l border-earth-700 pl-4 transition-colors">
- {tLive("Director/Owner Login")}
+ {t("Director/Owner Login")}
  </Link>
  </div>
  </div>

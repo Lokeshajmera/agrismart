@@ -1,12 +1,12 @@
 import React, { useState } from 'react';
-import { useLiveTranslation } from '../hooks/useLiveTranslation';
+import { useTranslation } from 'react-i18next';
 import { useNavigate, Link } from 'react-router-dom';
 import { Sprout, Lock } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { toast } from 'react-hot-toast';
 
 export default function ResetPassword() {
-  const { tLive } = useLiveTranslation();
+  const { t } = useTranslation();
 
  const [password, setPassword] = useState('');
  const [loading, setLoading] = useState(false);
@@ -34,11 +34,11 @@ export default function ResetPassword() {
  <div className="flex justify-center mb-6">
  <Link to="/" className="flex items-center gap-2 text-2xl font-bold text-nature-900 dark:text-white">
  <Sprout className="w-8 h-8 text-earth-500" />
- <span>{tLive("Agri")}<span className="text-earth-500">{tLive("Smart")}</span></span>
+ <span>{t("Agri")}<span className="text-earth-500">{t("Smart")}</span></span>
  </Link>
  </div>
  <h2 className="text-center text-3xl font-extrabold text-nature-900 dark:text-white">
- {tLive("Enter new password")}
+ {t("Enter new password")}
  </h2>
  </div>
 
@@ -46,7 +46,7 @@ export default function ResetPassword() {
  <div className="bg-white dark:bg-nature-950 py-8 px-4 shadow-sm border border-nature-200 dark:border-nature-800 sm:rounded-xl sm:px-10">
  <form className="space-y-6" onSubmit={handleSubmit}>
  <div>
- <label className="block text-sm font-medium text-nature-700 dark:text-white ">{tLive("New Password")}</label>
+ <label className="block text-sm font-medium text-nature-700 dark:text-white ">{t("New Password")}</label>
  <div className="mt-1 relative">
  <Lock className="absolute left-3 top-2.5 h-4 w-4 text-nature-400 dark:text-white" />
  <input

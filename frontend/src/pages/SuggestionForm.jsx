@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-import { useLiveTranslation } from '../hooks/useLiveTranslation';
 import { Lightbulb, Send } from 'lucide-react';
 import axios from 'axios';
 import { toast } from 'react-hot-toast';
@@ -9,10 +8,8 @@ import { supabase } from '../supabaseClient';
 const API_URL = `http://${window.location.hostname}:5000/api`;
 
 const SuggestionForm = () => {
-  const { tLive } = useLiveTranslation();
-
- const { t } = useTranslation();
- const [message, setMessage] = useState('');
+  const { t } = useTranslation();
+  const [message, setMessage] = useState('');
  const [loading, setLoading] = useState(false);
 
  const handleSubmit = async (e) => {
@@ -44,13 +41,13 @@ const SuggestionForm = () => {
  </div>
  <div>
  <h1 className="text-2xl font-bold text-nature-900 dark:text-white">{t('suggestions')}</h1>
- <p className="text-nature-600 dark:text-white">{tLive("Help us improve the platform with your ideas")}</p>
+ <p className="text-nature-600 dark:text-white">{t("Help us improve the platform with your ideas")}</p>
  </div>
  </div>
 
  <form onSubmit={handleSubmit} className="space-y-6">
  <div>
- <label className="block text-sm font-medium text-nature-700 dark:text-white mb-1">{tLive("Your Suggestion")}</label>
+ <label className="block text-sm font-medium text-nature-700 dark:text-white mb-1">{t("Your Suggestion")}</label>
  <textarea required
  rows={5}
  value={message}

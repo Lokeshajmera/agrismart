@@ -1,12 +1,12 @@
 import React, { useMemo } from 'react';
-import { useLiveTranslation } from '../hooks/useLiveTranslation';
+import { useTranslation } from 'react-i18next';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { ThermometerSun, Droplets, Wind, Play, Square, Loader2 } from 'lucide-react';
 import { useRealtimeSensor } from '../hooks/useRealtimeSensor';
 import { useOfflineStore } from '../store/useOfflineStore';
 
 export default function SensorMonitoring() {
-  const { tLive } = useLiveTranslation();
+  const { t } = useTranslation();
 
  const { sensorData, loading, lastPing } = useRealtimeSensor();
  const { isOnline } = useOfflineStore();
@@ -34,15 +34,15 @@ export default function SensorMonitoring() {
  <div className="space-y-6 animate-in fade-in duration-500">
  <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
  <div>
- <h1 className="text-2xl font-bold text-nature-900 dark:text-white tracking-tight">{tLive("Sensor Network")}</h1>
- <p className="text-nature-500 dark:text-white mt-1">{tLive("Live telemetry from deployed IoT devices.")}</p>
+ <h1 className="text-2xl font-bold text-nature-900 dark:text-white tracking-tight">{t("Sensor Network")}</h1>
+ <p className="text-nature-500 dark:text-white mt-1">{t("Live telemetry from deployed IoT devices.")}</p>
  </div>
  </div>
 
  {loading && sensorData.length === 0 ? (
  <div className="flex flex-col items-center justify-center p-12 bg-white dark:bg-nature-950 rounded-2xl border border-nature-200 dark:border-nature-800">
  <Loader2 className="w-8 h-8 text-earth-500 animate-spin mb-4" />
- <p className="text-nature-600 dark:text-white">{tLive("Syncing with hardware network...")}</p>
+ <p className="text-nature-600 dark:text-white">{t("Syncing with hardware network...")}</p>
  </div>
  ) : (
  <>
@@ -62,17 +62,17 @@ export default function SensorMonitoring() {
  {latest && isOnline ? (
  <>
  <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse"></span>
- <span className="text-xs font-semibold text-green-700">{tLive("Live")}</span>
+ <span className="text-xs font-semibold text-green-700">{t("Live")}</span>
  </>
  ) : latest && !isOnline ? (
  <>
  <span className="w-2 h-2 rounded-full bg-yellow-500"></span>
- <span className="text-xs font-semibold text-yellow-700">{tLive("Cached")}</span>
+ <span className="text-xs font-semibold text-yellow-700">{t("Cached")}</span>
  </>
  ) : (
  <>
  <span className="w-2 h-2 rounded-full bg-gray-400"></span>
- <span className="text-xs font-semibold text-gray-500">{tLive("Offline")}</span>
+ <span className="text-xs font-semibold text-gray-500">{t("Offline")}</span>
  </>
  )}
  </div>
@@ -89,7 +89,7 @@ export default function SensorMonitoring() {
  <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
  <div className="bg-white dark:bg-nature-950 p-6 rounded-2xl border border-nature-200 dark:border-nature-800 shadow-sm">
  <div className="flex justify-between items-center mb-6">
- <h3 className="text-lg font-bold text-nature-900 dark:text-white">{tLive("Live Telemetry (Last 20)")}</h3>
+ <h3 className="text-lg font-bold text-nature-900 dark:text-white">{t("Live Telemetry (Last 20)")}</h3>
  <span className="text-xs font-medium text-nature-500 dark:text-white bg-nature-50 dark:bg-nature-900 px-2 py-1 rounded">
  {lastPing ? `Last Ping: ${lastPing.toLocaleTimeString()}` : 'Waiting for ping...'}
  </span>
@@ -108,21 +108,21 @@ export default function SensorMonitoring() {
  </ResponsiveContainer>
  ) : (
  <div className="h-full flex items-center justify-center text-nature-400 dark:text-white text-sm">
- {tLive("Waiting for device connectivity...")}
+ {t("Waiting for device connectivity...")}
  </div>
  )}
  </div>
  </div>
 
  <div className="bg-white dark:bg-nature-950 p-6 rounded-2xl border border-nature-200 dark:border-nature-800 shadow-sm overflow-hidden flex flex-col">
- <h3 className="text-lg font-bold text-nature-900 dark:text-white mb-4">{tLive("Device Roster")}</h3>
+ <h3 className="text-lg font-bold text-nature-900 dark:text-white mb-4">{t("Device Roster")}</h3>
  <div className="flex-1 overflow-y-auto">
  <table className="w-full text-sm text-left">
  <thead className="text-xs text-nature-500 dark:text-white uppercase bg-nature-50 dark:bg-nature-900">
  <tr>
- <th className="px-4 py-3 rounded-tl-lg">{tLive("Device ID")}</th>
- <th className="px-4 py-3">{tLive("Type")}</th>
- <th className="px-4 py-3">{tLive("Status")}</th>
+ <th className="px-4 py-3 rounded-tl-lg">{t("Device ID")}</th>
+ <th className="px-4 py-3">{t("Type")}</th>
+ <th className="px-4 py-3">{t("Status")}</th>
  </tr>
  </thead>
  <tbody>

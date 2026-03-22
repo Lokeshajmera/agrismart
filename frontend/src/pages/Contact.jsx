@@ -1,10 +1,10 @@
 import React from 'react';
-import { useLiveTranslation } from '../hooks/useLiveTranslation';
+import { useTranslation } from 'react-i18next';
 import { Link, useLocation } from 'react-router-dom';
 import { Mail, Phone, MapPin, ArrowLeft, Sprout } from 'lucide-react';
 
 export default function Contact() {
-  const { tLive } = useLiveTranslation();
+  const { t } = useTranslation();
 
  const location = useLocation();
  const isDashboard = location.pathname.includes('/app');
@@ -17,7 +17,7 @@ export default function Contact() {
  <Link to="/" className="flex items-center gap-2 text-xl font-bold group">
  <ArrowLeft className="w-5 h-5 text-nature-400 dark:text-white group-hover:-translate-x-1 transition-transform" />
  <Sprout className="w-6 h-6 text-earth-500 ml-2" />
- <span>{tLive("Agri")}<span className="text-earth-500">{tLive("Smart")}</span></span>
+ <span>{t("Agri")}<span className="text-earth-500">{t("Smart")}</span></span>
  </Link>
  </nav>
  )}
@@ -25,10 +25,10 @@ export default function Contact() {
  <div className={`max-w-4xl mx-auto ${isDashboard ? 'px-2' : 'px-4 py-16 sm:py-24'}`}>
  <div className="text-center mb-12 animate-in fade-in slide-in-from-bottom-4 duration-500">
  <h1 className="text-3xl md:text-5xl font-extrabold tracking-tight mb-4">
- {tLive("Get in")} <span className="text-transparent bg-clip-text bg-gradient-to-r from-earth-500 to-earth-700">{tLive("Touch")}</span>
+ {t("Get in")} <span className="text-transparent bg-clip-text bg-gradient-to-r from-earth-500 to-earth-700">{t("Touch")}</span>
  </h1>
  <p className="text-nature-600 dark:text-white max-w-xl mx-auto text-lg leading-relaxed">
- {tLive("Have questions about our Smart Irrigation system? Our support team is here to help you optimize your farm.")}
+ {t("Have questions about our Smart Irrigation system? Our support team is here to help you optimize your farm.")}
  </p>
  </div>
 
@@ -43,10 +43,10 @@ export default function Contact() {
  <div className="w-14 h-14 rounded-full bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform shadow-sm">
  <Mail className="w-6 h-6" />
  </div>
- <h3 className="text-lg font-bold mb-2">{tLive("Email Us")}</h3>
- <p className="text-nature-500 dark:text-white text-sm mb-4">{tLive("For general inquiries and technical support.")}</p>
+ <h3 className="text-lg font-bold mb-2">{t("Email Us")}</h3>
+ <p className="text-nature-500 dark:text-white text-sm mb-4">{t("For general inquiries and technical support.")}</p>
  <a href="mailto:support@agrismart.com" className="font-semibold text-earth-600 dark:text-earth-400 hover:text-earth-700 transition-colors mt-auto">
- {tLive("support@agrismart.com")}
+ {t("support@agrismart.com")}
  </a>
  </div>
 
@@ -55,10 +55,10 @@ export default function Contact() {
  <div className="w-14 h-14 rounded-full bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform shadow-sm">
  <Phone className="w-6 h-6" />
  </div>
- <h3 className="text-lg font-bold mb-2">{tLive("Call Us")}</h3>
- <p className="text-nature-500 dark:text-white text-sm mb-4">{tLive("Mon-Fri from 9am to 6pm IST.")}</p>
+ <h3 className="text-lg font-bold mb-2">{t("Call Us")}</h3>
+ <p className="text-nature-500 dark:text-white text-sm mb-4">{t("Mon-Fri from 9am to 6pm IST.")}</p>
  <a href="tel:+91XXXXXXXXXX" className="font-semibold text-earth-600 dark:text-earth-400 hover:text-earth-700 transition-colors mt-auto">
- {tLive("+91 XXXXX XXXXX")}
+ {t("+91 XXXXX XXXXX")}
  </a>
  </div>
 
@@ -67,10 +67,10 @@ export default function Contact() {
  <div className="w-14 h-14 rounded-full bg-orange-100 dark:bg-orange-900/30 text-orange-600 dark:text-orange-400 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform shadow-sm">
  <MapPin className="w-6 h-6" />
  </div>
- <h3 className="text-lg font-bold mb-2">{tLive("Visit Us")}</h3>
- <p className="text-nature-500 dark:text-white text-sm mb-4">{tLive("Our headquarters and research facility.")}</p>
+ <h3 className="text-lg font-bold mb-2">{t("Visit Us")}</h3>
+ <p className="text-nature-500 dark:text-white text-sm mb-4">{t("Our headquarters and research facility.")}</p>
  <span className="font-semibold text-earth-600 dark:text-earth-400 mt-auto">
- {tLive("India")}
+ {t("India")}
  </span>
  </div>
  </div>

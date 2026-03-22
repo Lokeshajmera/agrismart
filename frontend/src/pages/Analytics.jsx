@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo, useRef } from 'react';
-import { useLiveTranslation } from '../hooks/useLiveTranslation';
+import { useTranslation } from 'react-i18next';
 import { AreaChart, Area, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from 'recharts';
 import { TrendingDown, Droplets, Leaf, Activity, Play, Pause, RefreshCcw, Database } from 'lucide-react';
 import { supabase } from '../supabaseClient';
@@ -7,80 +7,55 @@ import { useAuth } from '../context/AuthContext';
 import AnalyticsReport from '../components/AnalyticsReport';
 
 export default function Analytics() {
-  const { tLive } = useLiveTranslation();
+  const { t } = useTranslation();
+  const chartData = useMemo(() => {
+    if (liveData.length === 0) return [];
+    const grouped = [];
+    for (let i = 0; i < liveData.length; i += 6) {
+      const chunk = liveData.slice(i, i + 6);
+      const sum = chunk.reduce((acc, curr) => ({
+        moisture: acc.moisture + (Number(curr.soil1) || 0),
+        moisture_b: acc.moisture_b + (Number(curr.soil2) || 0),
+        temperature: acc.temperature + (Number(curr.temp1) || 0),
+        humidity: acc.humidity + (Number(curr.hum1) || 0)
+      }), { moisture: 0, moisture_b: 0, temperature: 0, humidity: 0 });
+      const time = new Date(chunk[0].created_at).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' });
+      grouped.push({
+        time,
+        moisture: Math.round(sum.moisture / chunk.length),
+        moisture_b: Math.round(sum.moisture_b / chunk.length),
+        temperature: Math.round((sum.temperature / chunk.length) * 10) / 10,
+        humidity: Math.round(sum.humidity / chunk.length)
+      });
+    }
+    return grouped;
+  }, [liveData]);
 
- const { user } = useAuth();
- const [liveData, setLiveData] = useState([]);
- const [isPolling, setIsPolling] = useState(true);
+  const avgMoisture = useMemo(() => {
+    if (chartData.length === 0) return 0;
+    return Math.round(chartData.reduce((acc, curr) => acc + curr.moisture, 0) / chartData.length);
+  }, [chartData]);
 
- const fetchLiveHistory = async () => {
- setIsPolling(true);
- const { data, error } = await supabase
- .from('sensor_data')
- .select('*')
- .order('id', { ascending: false })
- .limit(60);
-
- if (!error && data && data.length > 0) {
- setLiveData(data.reverse());
- }
- setIsPolling(false);
- };
-
- useEffect(() => {
- fetchLiveHistory();
- const interval = setInterval(fetchLiveHistory, 8000);
- return () => clearInterval(interval);
- }, []);
-
- const chartData = useMemo(() => {
- if (liveData.length === 0) return [];
- const grouped = [];
- for (let i = 0; i < liveData.length; i += 6) {
- const chunk = liveData.slice(i, i + 6);
- const sum = chunk.reduce((acc, curr) => ({
- moisture: acc.moisture + (Number(curr.soil1) || 0),
- moisture_b: acc.moisture_b + (Number(curr.soil2) || 0),
- temperature: acc.temperature + (Number(curr.temp1) || 0),
- humidity: acc.humidity + (Number(curr.hum1) || 0)
- }), { moisture: 0, moisture_b: 0, temperature: 0, humidity: 0 });
- const time = new Date(chunk[0].created_at).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' });
- grouped.push({
- time,
- moisture: Math.round(sum.moisture / chunk.length),
- moisture_b: Math.round(sum.moisture_b / chunk.length),
- temperature: Math.round((sum.temperature / chunk.length) * 10) / 10,
- humidity: Math.round(sum.humidity / chunk.length)
- });
- }
- return grouped;
- }, [liveData]);
-
- const avgMoisture = useMemo(() => {
- if (chartData.length === 0) return 0;
- return Math.round(chartData.reduce((acc, curr) => acc + curr.moisture, 0) / chartData.length);
- }, [chartData]);
-
- return (
+  return (
  <div className="space-y-6 animate-in fade-in duration-500 max-w-7xl mx-auto p-2">
 
  {/* Header with Live Sync Status */}
  <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 bg-white dark:bg-nature-950 p-6 rounded-3xl border border-nature-200 dark:border-nature-800 shadow-sm">
  <div>
  <h1 className="text-2xl font-bold text-nature-900 dark:text-white tracking-tight flex items-center gap-2">
- <Activity className="w-6 h-6 text-earth-500 animate-pulse" /> {tLive("Live Analytics Dashboard")}
+ <Activity className="w-6 h-6 text-earth-500 animate-pulse" /> {t("Live Analytics Dashboard")}
  </h1>
- <p className="text-nature-500 dark:text-white mt-1">{tLive("Real-time incoming ESP32 sensor telemetry streams.")}</p>
+ <p className="text-nature-500 dark:text-white mt-1">{t("Real-time incoming ESP32 sensor telemetry streams.")}</p>
  </div>
 
  <div className="flex items-center gap-3 w-full md:w-auto p-2 bg-nature-50 dark:bg-nature-900 rounded-2xl border border-nature-200 dark:border-nature-800">
  {liveData.length === 0 ? (
  <div className="px-6 py-2 bg-nature-100 dark:bg-nature-800 text-nature-600 dark:text-white rounded-xl font-bold flex items-center justify-center gap-2">
- <RefreshCcw className="w-4 h-4 animate-spin-slow" /> {tLive("Loading Data...")}
+ <RefreshCcw className="w-4 h-4 animate-spin-slow" /> {t("Loading Data...")}
  </div>
  ) : (
  <div className="px-4 py-2 bg-blue-50 border border-blue-100 text-blue-700 rounded-xl font-bold flex items-center justify-center gap-2">
- <Database className="w-4 h-4 animate-pulse" /> {tLive("Live Telemetry")}
+ <Database className="w-4 h-4 animate-pulse" /> {t("Live Telemetry")}
  </div>
  )}
  </div>
@@ -92,34 +67,34 @@ export default function Analytics() {
  <div className="absolute top-0 right-0 w-32 h-32 bg-white dark:bg-nature-950 rounded-full blur-3xl opacity-10 group-hover:opacity-20 transition-opacity"></div>
  <div className="flex items-center gap-2 text-white/80 mb-2">
  <Droplets className="w-5 h-5" />
- <h3 className="font-bold">{tLive("Avg Soil Moisture")}</h3>
+ <h3 className="font-bold">{t("Avg Soil Moisture")}</h3>
  </div>
  <p className="text-4xl font-extrabold mb-1 relative z-10">{avgMoisture}%</p>
  <p className="text-sm text-white/90 flex items-center gap-1 relative z-10">
- <TrendingDown className="w-4 h-4" /> {tLive("Moving average of live window")}
+ <TrendingDown className="w-4 h-4" /> {t("Moving average of live window")}
  </p>
  </div>
 
  <div className="bg-white dark:bg-nature-950 p-6 rounded-2xl shadow-sm border border-nature-200 dark:border-nature-800">
  <div className="flex items-center gap-2 text-green-600 mb-2">
  <Leaf className="w-5 h-5" />
- <h3 className="font-bold text-nature-900 dark:text-white">{tLive("Crop Health Index")}</h3>
+ <h3 className="font-bold text-nature-900 dark:text-white">{t("Crop Health Index")}</h3>
  </div>
- <p className="text-4xl font-extrabold text-nature-900 dark:text-white mb-1">{tLive("Optimal")}</p>
- <p className="text-sm text-nature-500 dark:text-white flex items-center gap-1">{tLive("Correlated with telemetry")}</p>
+ <p className="text-4xl font-extrabold text-nature-900 dark:text-white mb-1">{t("Optimal")}</p>
+ <p className="text-sm text-nature-500 dark:text-white flex items-center gap-1">{t("Correlated with telemetry")}</p>
  </div>
 
  <div className="bg-white dark:bg-nature-950 p-6 rounded-2xl shadow-sm border border-nature-200 dark:border-nature-800">
- <h3 className="font-bold text-nature-900 dark:text-white mb-2">{tLive("Telemetry Status")}</h3>
+ <h3 className="font-bold text-nature-900 dark:text-white mb-2">{t("Telemetry Status")}</h3>
  <p className="text-4xl font-extrabold text-nature-900 dark:text-white flex items-center gap-2 mb-1">
- {tLive("Active")}
+ {t("Active")}
  <span className="relative flex h-3 w-3">
  <span className="absolute inline-flex h-full w-full rounded-full opacity-75 bg-green-400 animate-ping"></span>
  <span className="relative inline-flex rounded-full h-3 w-3 bg-green-500"></span>
  </span>
  </p>
  <p className="text-sm text-nature-500 dark:text-white">
- {tLive("Listening to live ESP32")}
+ {t("Listening to live ESP32")}
  </p>
  </div>
  </div>
@@ -130,7 +105,7 @@ export default function Analytics() {
  {/* 1. Primary Chart: Moisture */}
  <div className="bg-white dark:bg-nature-950 p-6 rounded-2xl shadow-sm border border-nature-200 dark:border-nature-800 lg:col-span-2">
  <div className="flex justify-between items-center mb-6">
- <h3 className="text-lg font-bold text-nature-900 dark:text-white">{tLive("Soil Moisture Dynamics")}</h3>
+ <h3 className="text-lg font-bold text-nature-900 dark:text-white">{t("Soil Moisture Dynamics")}</h3>
  </div>
  <div className="w-full overflow-x-auto pb-2 scrollbar-hide" style={{ touchAction: 'pan-x pan-y', WebkitOverflowScrolling: 'touch' }}>
  <div className="h-80 min-w-[700px]">
@@ -153,7 +128,7 @@ export default function Analytics() {
  </AreaChart>
  </ResponsiveContainer>
  ) : (
- <div className="w-full h-full flex items-center justify-center"><p className="text-nature-400 dark:text-white font-bold">{tLive("Waiting for data...")}</p></div>
+ <div className="w-full h-full flex items-center justify-center"><p className="text-nature-400 dark:text-white font-bold">{t("Waiting for data...")}</p></div>
  )}
  </div>
  </div>
@@ -161,7 +136,7 @@ export default function Analytics() {
 
  {/* 2. Secondary Chart: Air Humidity & Temp */}
  <div className="bg-white dark:bg-nature-950 p-6 rounded-2xl shadow-sm border border-nature-200 dark:border-nature-800 lg:col-span-2">
- <h3 className="text-lg font-bold text-nature-900 dark:text-white mb-6">{tLive("Environmental Dynamics (Temperature & Humidity)")}</h3>
+ <h3 className="text-lg font-bold text-nature-900 dark:text-white mb-6">{t("Environmental Dynamics (Temperature & Humidity)")}</h3>
  <div className="w-full overflow-x-auto pb-2 scrollbar-hide" style={{ touchAction: 'pan-x pan-y', WebkitOverflowScrolling: 'touch' }}>
  <div className="h-64 min-w-[700px]">
  {chartData.length > 0 ? (

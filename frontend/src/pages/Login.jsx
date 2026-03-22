@@ -1,12 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { useLiveTranslation } from '../hooks/useLiveTranslation';
+import { useTranslation } from 'react-i18next';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { Sprout, Mail, Lock, ArrowLeft } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { toast } from 'react-hot-toast';
 
 export default function Login() {
-  const { tLive } = useLiveTranslation();
+  const { t } = useTranslation();
 
  const navigate = useNavigate();
  const location = useLocation();
@@ -60,18 +60,18 @@ export default function Login() {
  return (
  <div className="min-h-screen bg-nature-50 dark:bg-nature-900 flex flex-col justify-center sm:px-6 lg:px-8 relative">
  <Link to="/" className="absolute top-6 left-6 flex items-center gap-2 text-nature-500 dark:text-white hover:text-earth-600 font-medium transition-colors">
- <ArrowLeft className="w-4 h-4" /> {tLive("Back to Home")}
+ <ArrowLeft className="w-4 h-4" /> {t("Back to Home")}
  </Link>
 
  <div className="sm:mx-auto sm:w-full sm:max-w-md">
  <div className="flex justify-center mb-6">
  <Link to="/" className="flex items-center gap-2 text-2xl font-bold text-nature-900 dark:text-white">
  <Sprout className="w-8 h-8 text-earth-500" />
- <span>{tLive("Agri")}<span className="text-earth-500">{tLive("Smart")}</span></span>
+ <span>{t("Agri")}<span className="text-earth-500">{t("Smart")}</span></span>
  </Link>
  </div>
  <h2 className="text-center text-3xl font-extrabold text-nature-900 dark:text-white">
- {tLive("Sign in to your account")}
+ {t("Sign in to your account")}
  </h2>
  </div>
 
@@ -84,7 +84,7 @@ export default function Login() {
  activeTab === 'password' ? 'bg-white dark:bg-nature-950 text-nature-900 dark:text-white shadow-sm' : 'text-nature-600 dark:text-white hover:text-nature-900 dark:text-white'
  }`}
  >
- {tLive("Password")}
+ {t("Password")}
  </button>
  <button
  onClick={() => setActiveTab('email-otp')}
@@ -92,13 +92,13 @@ export default function Login() {
  activeTab === 'email-otp' ? 'bg-white dark:bg-nature-950 text-nature-900 dark:text-white shadow-sm' : 'text-nature-600 dark:text-white hover:text-nature-900 dark:text-white'
  }`}
  >
- {tLive("Email OTP")}
+ {t("Email OTP")}
  </button>
  </div>
 
  <form className="space-y-6" onSubmit={handleLogin}>
  <div>
- <label className="block text-sm font-medium text-nature-700 dark:text-white ">{tLive("Email address")}</label>
+ <label className="block text-sm font-medium text-nature-700 dark:text-white ">{t("Email address")}</label>
  <div className="mt-1 relative">
  <Mail className="absolute left-3 top-2.5 h-4 w-4 text-nature-400 dark:text-white" />
  <input required type="email" value={email}
@@ -110,7 +110,7 @@ export default function Login() {
 
  {activeTab === 'password' && (
  <div>
- <label className="block text-sm font-medium text-nature-700 dark:text-white ">{tLive("Password")}</label>
+ <label className="block text-sm font-medium text-nature-700 dark:text-white ">{t("Password")}</label>
  <div className="mt-1 relative">
  <Lock className="absolute left-3 top-2.5 h-4 w-4 text-nature-400 dark:text-white" />
  <input required type="password" value={password}
@@ -125,7 +125,7 @@ export default function Login() {
  <div className="flex items-center justify-end">
  <div className="text-sm">
  <Link to="/forgot-password" className="font-medium text-earth-600 hover:text-earth-500">
- {tLive("Forgot password?")}
+ {t("Forgot password?")}
  </Link>
  </div>
  </div>

@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import { useLiveTranslation } from '../hooks/useLiveTranslation';
 import { User, Shield, Languages, Lock, Save } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { supabase } from '../supabaseClient';
@@ -9,8 +8,6 @@ import { toast } from 'react-hot-toast';
 const API_URL = `http://${window.location.hostname}:5000/api`;
 
 export default function Settings() {
-  const { tLive } = useLiveTranslation();
-
  const { t, i18n } = useTranslation();
  const [activeTab, setActiveTab] = useState('profile');
  const [profile, setProfile] = useState({ name: '', phone: '' });
@@ -68,7 +65,6 @@ export default function Settings() {
  };
 
  const handleLanguageSave = () => {
-  const { tLive } = useLiveTranslation();
 
  i18n.changeLanguage(selectedLang);
  toast.success('Language updated successfully');
@@ -84,7 +80,7 @@ export default function Settings() {
  <div className="max-w-4xl mx-auto space-y-8 animate-in fade-in duration-500 p-6">
  <div>
  <h1 className="text-3xl font-bold text-nature-900 dark:text-white tracking-tight">{t('settings')}</h1>
- <p className="text-nature-500 dark:text-white mt-1">{tLive("Manage your account and preferences.")}</p>
+ <p className="text-nature-500 dark:text-white mt-1">{t("Manage your account and preferences.")}</p>
  </div>
 
  <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
@@ -112,11 +108,11 @@ export default function Settings() {
  {activeTab === 'profile' && (
  <div className="bg-white dark:bg-nature-950 rounded-2xl border border-nature-200 dark:border-nature-800 shadow-sm p-6">
  <h2 className="text-lg font-bold mb-6 text-nature-900 dark:text-white flex items-center gap-2">
- <User className="w-5 h-5 text-earth-500" /> {tLive("Profile Info")}
+ <User className="w-5 h-5 text-earth-500" /> {t("Profile Info")}
  </h2>
  <form onSubmit={handleProfileUpdate} className="space-y-4">
  <div>
- <label className="block text-sm font-medium text-nature-700 dark:text-white mb-1">{tLive("Full Name")}</label>
+ <label className="block text-sm font-medium text-nature-700 dark:text-white mb-1">{t("Full Name")}</label>
  <input
  type="text"
  value={profile.name}
@@ -125,7 +121,7 @@ export default function Settings() {
  />
  </div>
  <div>
- <label className="block text-sm font-medium text-nature-700 dark:text-white mb-1">{tLive("Mobile Number")}</label>
+ <label className="block text-sm font-medium text-nature-700 dark:text-white mb-1">{t("Mobile Number")}</label>
  <input
  type="tel"
  value={profile.phone}
@@ -138,7 +134,7 @@ export default function Settings() {
  disabled={loading}
  className="flex items-center gap-2 bg-earth-600 text-white font-bold px-6 py-2 rounded-xl hover:bg-earth-700 transition-colors disabled:opacity-50"
  >
- <Save className="w-4 h-4" /> {tLive("Save Profile")}
+ <Save className="w-4 h-4" /> {t("Save Profile")}
  </button>
  </form>
  </div>
@@ -148,11 +144,11 @@ export default function Settings() {
  {activeTab === 'security' && (
  <div className="bg-white dark:bg-nature-950 rounded-2xl border border-nature-200 dark:border-nature-800 shadow-sm p-6">
  <h2 className="text-lg font-bold mb-6 text-nature-900 dark:text-white flex items-center gap-2">
- <Shield className="w-5 h-5 text-earth-500" /> {tLive("Change Password")}
+ <Shield className="w-5 h-5 text-earth-500" /> {t("Change Password")}
  </h2>
  <form onSubmit={handlePasswordUpdate} className="space-y-4">
  <div>
- <label className="block text-sm font-medium text-nature-700 dark:text-white mb-1">{tLive("New Password")}</label>
+ <label className="block text-sm font-medium text-nature-700 dark:text-white mb-1">{t("New Password")}</label>
  <input
  type="password"
  value={passwords.new}
@@ -161,7 +157,7 @@ export default function Settings() {
  />
  </div>
  <div>
- <label className="block text-sm font-medium text-nature-700 dark:text-white mb-1">{tLive("Confirm New Password")}</label>
+ <label className="block text-sm font-medium text-nature-700 dark:text-white mb-1">{t("Confirm New Password")}</label>
  <input
  type="password"
  value={passwords.confirm}
@@ -174,7 +170,7 @@ export default function Settings() {
  disabled={loading}
  className="flex items-center gap-2 bg-earth-600 text-white font-bold px-6 py-2 rounded-xl hover:bg-earth-700 transition-colors disabled:opacity-50"
  >
- <Lock className="w-4 h-4" /> {tLive("Update Password")}
+ <Lock className="w-4 h-4" /> {t("Update Password")}
  </button>
  </form>
  </div>
@@ -184,7 +180,7 @@ export default function Settings() {
  {activeTab === 'language' && (
  <div className="bg-white dark:bg-nature-950 rounded-2xl border border-nature-200 dark:border-nature-800 shadow-sm p-6">
  <h2 className="text-lg font-bold mb-6 text-nature-900 dark:text-white flex items-center gap-2">
- <Languages className="w-5 h-5 text-earth-500" /> {tLive("Language Preference")}
+ <Languages className="w-5 h-5 text-earth-500" /> {t("Language Preference")}
  </h2>
  <div className="space-y-4">
  <div>
@@ -194,16 +190,16 @@ export default function Settings() {
  onChange={(e) => setSelectedLang(e.target.value)}
  className="w-full border border-nature-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-earth-500 outline-none bg-white dark:bg-nature-950"
  >
- <option value="en">{tLive("English")}</option>
- <option value="hi">{tLive("Hindi (हिंदी)")}</option>
- <option value="mr">{tLive("Marathi (मराठी)")}</option>
+ <option value="en">{t("English")}</option>
+ <option value="hi">{t("Hindi (हिंदी)")}</option>
+ <option value="mr">{t("Marathi (मराठी)")}</option>
  </select>
  </div>
  <button
  onClick={handleLanguageSave}
  className="flex items-center gap-2 bg-earth-600 text-white font-bold px-6 py-2 rounded-xl hover:bg-earth-700 transition-colors"
  >
- <Save className="w-4 h-4" /> {tLive("Save Language")}
+ <Save className="w-4 h-4" /> {t("Save Language")}
  </button>
  </div>
  </div>

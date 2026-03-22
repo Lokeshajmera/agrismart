@@ -1,5 +1,4 @@
 import React, { useEffect, useState } from 'react';
-import { useLiveTranslation } from '../hooks/useLiveTranslation';
 import axios from 'axios';
 import { toast } from 'react-hot-toast';
 import { useTranslation } from 'react-i18next';
@@ -9,10 +8,8 @@ import { supabase } from '../supabaseClient';
 const API_URL = `http://${window.location.hostname}:5000/api`;
 
 const AdminDashboard = () => {
-  const { tLive } = useLiveTranslation();
-
- const { t } = useTranslation();
- const [farmers, setFarmers] = useState([]);
+  const { t } = useTranslation();
+  const [farmers, setFarmers] = useState([]);
  const [complaints, setComplaints] = useState([]);
  const [suggestions, setSuggestions] = useState([]);
  const [loading, setLoading] = useState(true);
@@ -50,14 +47,14 @@ const AdminDashboard = () => {
  }
  };
 
- if (loading) return <div className="p-6">{tLive("Loading admin data...")}</div>;
+ if (loading) return <div className="p-6">{t("Loading admin data...")}</div>;
 
   return (
  <div className="p-6 space-y-8 bg-nature-50 dark:bg-nature-900 min-h-screen">
  <header className="flex justify-between items-center mb-8">
  <div>
  <h1 className="text-3xl font-bold text-nature-900 dark:text-white">{t('admin')}</h1>
- <p className="text-nature-600 dark:text-white">{tLive("Platform Overview & Management")}</p>
+ <p className="text-nature-600 dark:text-white">{t("Platform Overview & Management")}</p>
  </div>
  </header>
 
@@ -89,7 +86,7 @@ const AdminDashboard = () => {
  <div className="p-6 border-b border-nature-100 dark:border-nature-700/50 flex justify-between items-center">
  <h2 className="text-xl font-bold flex items-center gap-2">
  <AlertCircle className="w-5 h-5 text-red-500" />
- {tLive("Recent Complaints")}
+ {t("Recent Complaints")}
  </h2>
  </div>
  <div className="divide-y divide-nature-100">
@@ -106,7 +103,7 @@ const AdminDashboard = () => {
  <p className="text-sm text-nature-600 dark:text-white mb-2">{c.message}</p>
  <span className="text-xs text-nature-400 dark:text-white">{new Date(c.created_at).toLocaleDateString()}</span>
  </div>
- )) : <p className="p-6 text-center text-nature-400 dark:text-white">{tLive("No complaints found")}</p>}
+ )) : <p className="p-6 text-center text-nature-400 dark:text-white">{t("No complaints found")}</p>}
  </div>
  </section>
 
@@ -115,7 +112,7 @@ const AdminDashboard = () => {
  <div className="p-6 border-b border-nature-100 dark:border-nature-700/50">
  <h2 className="text-xl font-bold flex items-center gap-2">
  <Lightbulb className="w-5 h-5 text-yellow-500" />
- {tLive("Farmer Feedback")}
+ {t("Farmer Feedback")}
  </h2>
  </div>
  <div className="divide-y divide-nature-100">
@@ -127,7 +124,7 @@ const AdminDashboard = () => {
  </div>
  <p className="text-sm text-nature-600 dark:text-white">{s.message}</p>
  </div>
- )) : <p className="p-6 text-center text-nature-400 dark:text-white">{tLive("No suggestions found")}</p>}
+ )) : <p className="p-6 text-center text-nature-400 dark:text-white">{t("No suggestions found")}</p>}
  </div>
  </section>
  </div>

@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { useLiveTranslation } from '../hooks/useLiveTranslation';
+import { useTranslation } from 'react-i18next';
 import axios from 'axios';
 import { toast } from 'react-hot-toast';
 import { Users, AlertCircle, Lightbulb, Bell, LogOut, Sprout, CheckCircle, Trash2 } from 'lucide-react';
@@ -9,7 +9,7 @@ import { supabase } from '../supabaseClient';
 const API_URL = `http://${window.location.hostname}:5000/api`;
 
 const OwnerDashboard = () => {
-  const { tLive } = useLiveTranslation();
+  const { t } = useTranslation();
 
  const navigate = useNavigate();
  const [stats, setStats] = useState({ users: 0, pendingComplaints: 0, suggestions: 0 });
@@ -122,7 +122,7 @@ const OwnerDashboard = () => {
  navigate('/');
  };
 
- if (loading) return <div className="p-8 flex justify-center text-nature-600 dark:text-white">{tLive("Loading Director Dashboard...")}</div>;
+ if (loading) return <div className="p-8 flex justify-center text-nature-600 dark:text-white">{t("Loading Director Dashboard...")}</div>;
 
   return (
  <div className="min-h-screen bg-nature-50 dark:bg-nature-900">
@@ -130,21 +130,21 @@ const OwnerDashboard = () => {
  <nav className="bg-white dark:bg-nature-950 border-b border-nature-200 dark:border-nature-800 px-6 py-4 flex justify-between items-center sticky top-0 z-10">
  <div className="flex items-center gap-2">
  <Sprout className="w-8 h-8 text-earth-600" />
- <span className="text-xl font-bold text-nature-900 dark:text-white">{tLive("Agri")}<span className="text-earth-600">{tLive("Smart")}</span> <span className="text-nature-500 dark:text-white font-medium ml-2">{tLive("Director Portal")}</span></span>
+ <span className="text-xl font-bold text-nature-900 dark:text-white">{t("Agri")}<span className="text-earth-600">{t("Smart")}</span> <span className="text-nature-500 dark:text-white font-medium ml-2">{t("Director Portal")}</span></span>
  </div>
  <div className="flex items-center gap-4">
- <span className="text-sm font-medium text-nature-700 dark:text-white bg-nature-100 dark:bg-nature-800 px-3 py-1 rounded-full">{tLive("xyz@gmail.com")}</span>
+ <span className="text-sm font-medium text-nature-700 dark:text-white bg-nature-100 dark:bg-nature-800 px-3 py-1 rounded-full">{t("xyz@gmail.com")}</span>
  <button onClick={handleLogout} className="flex items-center gap-2 text-nature-600 dark:text-white hover:text-red-600 transition-colors">
  <LogOut className="w-5 h-5" />
- <span className="text-sm font-medium">{tLive("Exit")}</span>
+ <span className="text-sm font-medium">{t("Exit")}</span>
  </button>
  </div>
  </nav>
 
  <div className="max-w-7xl mx-auto p-6 space-y-8 mt-4">
  <header>
- <h1 className="text-3xl font-bold text-nature-900 dark:text-white mb-2">{tLive("Welcome, Director")}</h1>
- <p className="text-nature-600 dark:text-white">{tLive("Here is the latest overview of the AgriSmart platform.")}</p>
+ <h1 className="text-3xl font-bold text-nature-900 dark:text-white mb-2">{t("Welcome, Director")}</h1>
+ <p className="text-nature-600 dark:text-white">{t("Here is the latest overview of the AgriSmart platform.")}</p>
  </header>
 
  {/* Quick Stats Grid */}
@@ -154,7 +154,7 @@ const OwnerDashboard = () => {
  <Users className="w-7 h-7" />
  </div>
  <div>
- <p className="text-sm text-nature-500 dark:text-white font-medium uppercase tracking-wide">{tLive("Total Members")}</p>
+ <p className="text-sm text-nature-500 dark:text-white font-medium uppercase tracking-wide">{t("Total Members")}</p>
  <p className="text-3xl font-bold text-nature-900 dark:text-white">{stats.users}</p>
  </div>
  </div>
@@ -163,7 +163,7 @@ const OwnerDashboard = () => {
  <AlertCircle className="w-7 h-7" />
  </div>
  <div>
- <p className="text-sm text-nature-500 dark:text-white font-medium uppercase tracking-wide">{tLive("Pending Issues")}</p>
+ <p className="text-sm text-nature-500 dark:text-white font-medium uppercase tracking-wide">{t("Pending Issues")}</p>
  <p className="text-3xl font-bold text-nature-900 dark:text-white">{stats.pendingComplaints}</p>
  </div>
  </div>
@@ -172,7 +172,7 @@ const OwnerDashboard = () => {
  <Lightbulb className="w-7 h-7" />
  </div>
  <div>
- <p className="text-sm text-nature-500 dark:text-white font-medium uppercase tracking-wide">{tLive("New Suggestions")}</p>
+ <p className="text-sm text-nature-500 dark:text-white font-medium uppercase tracking-wide">{t("New Suggestions")}</p>
  <p className="text-3xl font-bold text-nature-900 dark:text-white">{stats.suggestions}</p>
  </div>
  </div>
@@ -183,7 +183,7 @@ const OwnerDashboard = () => {
  <section className="bg-white dark:bg-nature-950 rounded-2xl shadow-sm border border-nature-200 dark:border-nature-800 overflow-hidden flex flex-col h-[500px]">
  <div className="p-5 border-b border-nature-100 dark:border-nature-700/50 bg-nature-50 dark:bg-nature-900 flex justify-between items-center shrink-0">
  <h2 className="text-lg font-bold text-nature-900 dark:text-white flex items-center gap-2">
- <AlertCircle className="w-5 h-5 text-red-500" /> {tLive("All Complaints")}
+ <AlertCircle className="w-5 h-5 text-red-500" /> {t("All Complaints")}
  </h2>
  </div>
  <div className="divide-y divide-nature-100 overflow-y-auto grow">
@@ -226,7 +226,7 @@ const OwnerDashboard = () => {
  <span>{new Date(c.created_at).toLocaleDateString()}</span>
  </div>
  </div>
- )) : <div className="p-8 text-center text-nature-500 dark:text-white">{tLive("No complaints found.")}</div>}
+ )) : <div className="p-8 text-center text-nature-500 dark:text-white">{t("No complaints found.")}</div>}
  </div>
  </section>
 
@@ -234,7 +234,7 @@ const OwnerDashboard = () => {
  <section className="bg-white dark:bg-nature-950 rounded-2xl shadow-sm border border-nature-200 dark:border-nature-800 overflow-hidden flex flex-col h-[500px]">
  <div className="p-5 border-b border-nature-100 dark:border-nature-700/50 bg-nature-50 dark:bg-nature-900 flex justify-between items-center shrink-0">
  <h2 className="text-lg font-bold text-nature-900 dark:text-white flex items-center gap-2">
- <Lightbulb className="w-5 h-5 text-yellow-500" /> {tLive("All Suggestions")}
+ <Lightbulb className="w-5 h-5 text-yellow-500" /> {t("All Suggestions")}
  </h2>
  </div>
  <div className="divide-y divide-nature-100 overflow-y-auto grow">
@@ -254,7 +254,7 @@ const OwnerDashboard = () => {
  </div>
  <p className="text-nature-600 dark:text-white text-sm">{s.message}</p>
  </div>
- )) : <div className="p-8 text-center text-nature-500 dark:text-white">{tLive("No suggestions found.")}</div>}
+ )) : <div className="p-8 text-center text-nature-500 dark:text-white">{t("No suggestions found.")}</div>}
  </div>
  </section>
 
@@ -262,7 +262,7 @@ const OwnerDashboard = () => {
  <section className="bg-white dark:bg-nature-950 rounded-2xl shadow-sm border border-nature-200 dark:border-nature-800 overflow-hidden flex flex-col h-[500px]">
  <div className="p-5 border-b border-nature-100 dark:border-nature-700/50 bg-nature-50 dark:bg-nature-900 flex justify-between items-center shrink-0">
  <h2 className="text-lg font-bold text-nature-900 dark:text-white flex items-center gap-2">
- <Users className="w-5 h-5 text-blue-500" /> {tLive("All Members")}
+ <Users className="w-5 h-5 text-blue-500" /> {t("All Members")}
  </h2>
  </div>
  <div className="divide-y divide-nature-100 overflow-y-auto grow">
@@ -282,7 +282,7 @@ const OwnerDashboard = () => {
  <p className="text-xs text-nature-400 dark:text-white">{new Date(m.created_at).toLocaleDateString()}</p>
  </div>
  </div>
- )) : <div className="p-8 text-center text-nature-500 dark:text-white">{tLive("No members found.")}</div>}
+ )) : <div className="p-8 text-center text-nature-500 dark:text-white">{t("No members found.")}</div>}
  </div>
  </section>
 

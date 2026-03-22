@@ -6,21 +6,46 @@ const AuthContext = createContext({});
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [session, setSession] = useState(null);
+  const [userProfile, setUserProfile] = useState(null);
   const [loading, setLoading] = useState(true);
+
+  const fetchUserProfile = async (userId) => {
+    try {
+      const { data, error } = await supabase.from('users').select('*').eq('id', userId).single();
+      if (!error && data) {
+         setUserProfile(data);
+      } else {
+         setUserProfile(null);
+      }
+    } catch (e) {
+      console.error('Error fetching user profile:', e);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
     // Get session on mount
     supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session);
       setUser(session?.user ?? null);
-      setLoading(false);
+      if (session?.user) {
+         fetchUserProfile(session.user.id);
+      } else {
+         setLoading(false);
+      }
     });
 
     // Listen for auth changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       setSession(session);
       setUser(session?.user ?? null);
-      setLoading(false);
+      if (session?.user) {
+         fetchUserProfile(session.user.id);
+      } else {
+         setUserProfile(null);
+         setLoading(false);
+      }
     });
 
     return () => subscription.unsubscribe();
@@ -70,6 +95,7 @@ export const AuthProvider = ({ children }) => {
   const value = {
     user,
     session,
+    userProfile, // Exposed to children
     loading,
     signup,
     loginWithPassword,

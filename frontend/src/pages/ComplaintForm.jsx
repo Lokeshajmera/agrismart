@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { useLiveTranslation } from '../hooks/useLiveTranslation';
+
 import { MessageSquare, Send, AlertCircle, Clock, CheckCircle, Trash2 } from 'lucide-react';
 import axios from 'axios';
 import { toast } from 'react-hot-toast';
@@ -9,8 +9,6 @@ import { supabase } from '../supabaseClient';
 const API_URL = `http://${window.location.hostname}:5000/api`;
 
 const ComplaintForm = () => {
-  const { tLive } = useLiveTranslation();
-
  const { t } = useTranslation();
  const [message, setMessage] = useState('');
  const [category, setCategory] = useState('technical');
@@ -98,31 +96,31 @@ const ComplaintForm = () => {
  </div>
  <div>
  <h1 className="text-2xl font-bold text-nature-900 dark:text-white">{t('complaints')}</h1>
- <p className="text-nature-600 dark:text-white">{tLive("Submit your issues or request urgent help")}</p>
+  <p className="text-nature-600 dark:text-white">{t("Submit your issues or request urgent help")}</p>
  </div>
  </div>
 
  <form onSubmit={handleSubmit} className="space-y-6">
  <div>
- <label className="block text-sm font-medium text-nature-700 dark:text-white mb-1">{tLive("Category")}</label>
+  <label className="block text-sm font-medium text-nature-700 dark:text-white mb-1">{t("Category")}</label>
  <select value={category}
  onChange={(e) => setCategory(e.target.value)}
  className="w-full px-4 py-2 border border-nature-300 rounded-lg focus:ring-earth-500 focus:border-earth-500"
  >
- <option value="technical">{tLive("Technical Issue")}</option>
- <option value="irrigation">{tLive("Irrigation Problem")}</option>
- <option value="sensor">{tLive("Sensor Malfunction")}</option>
- <option value="other">{tLive("Other")}</option>
+  <option value="technical">{t("Technical Issue")}</option>
+  <option value="irrigation">{t("Irrigation Problem")}</option>
+  <option value="sensor">{t("Sensor Malfunction")}</option>
+  <option value="other">{t("Other")}</option>
  </select>
  </div>
 
  <div>
- <label className="block text-sm font-medium text-nature-700 dark:text-white mb-1">{tLive("Message")}</label>
+  <label className="block text-sm font-medium text-nature-700 dark:text-white mb-1">{t("Message")}</label>
  <textarea required
  rows={5}
  value={message}
  onChange={(e) => setMessage(e.target.value)}
- placeholder="Describe your issue in detail..."
+  placeholder={t("Describe your issue in detail...")}
  className="w-full px-4 py-2 border border-nature-300 rounded-lg focus:ring-earth-500 focus:border-earth-500"
  />
  </div>
@@ -131,7 +129,7 @@ const ComplaintForm = () => {
  disabled={loading}
  className="w-full flex items-center justify-center gap-2 py-3 px-4 bg-earth-600 text-white rounded-lg font-medium hover:bg-earth-700 transition-colors disabled:opacity-50"
  >
- {loading ? 'Submitting...' : (
+  {loading ? t('Submitting...') : (
  <>
  <Send className="w-4 h-4" />
  {t('submit')}
@@ -143,11 +141,11 @@ const ComplaintForm = () => {
 
  {/* My Complaints Section */}
  <div className="mt-8 mb-12">
- <h2 className="text-xl font-bold text-nature-900 dark:text-white mb-4">{tLive("My Complaints")}</h2>
+  <h2 className="text-xl font-bold text-nature-900 dark:text-white mb-4">{t("My Complaints")}</h2>
  {complaints.length === 0 ? (
  <div className="bg-nature-50 dark:bg-nature-900/50 rounded-xl p-8 text-center border border-nature-200 dark:border-nature-800">
  <MessageSquare className="w-12 h-12 text-nature-300 dark:text-white mx-auto mb-3" />
- <p className="text-nature-600 dark:text-white ">{tLive("You haven't submitted any complaints yet.")}</p>
+  <p className="text-nature-600 dark:text-white ">{t("You haven't submitted any complaints yet.")}</p>
  </div>
  ) : (
  <div className="space-y-4">
@@ -158,7 +156,7 @@ const ComplaintForm = () => {
  <span className="font-mono bg-earth-100 text-earth-700 dark:bg-earth-900/30 dark:text-earth-400 px-2 py-0.5 rounded text-xs font-bold tracking-wider">
  CMP{c.id.toString().padStart(3, '0')}
  </span>
- <h3 className="font-bold text-nature-900 dark:text-white capitalize text-lg">{c.category} Issue</h3>
+  <h3 className="font-bold text-nature-900 dark:text-white capitalize text-lg">{c.category} {t("Issue")}</h3>
  </div>
  <p className="text-nature-600 dark:text-white text-sm mb-3 max-w-2xl leading-relaxed">{c.message}</p>
  <p className="text-xs text-nature-400 dark:text-white font-medium">{new Date(c.created_at).toLocaleString()}</p>
@@ -166,7 +164,7 @@ const ComplaintForm = () => {
  <div className="shrink-0 flex flex-col sm:flex-row items-end sm:items-center gap-2">
  <div className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold border ${c.status === 'resolved' ? 'bg-green-50 text-green-700 border-green-200 dark:bg-green-900/20 dark:border-green-800/50 dark:text-green-400' : 'bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-900/20 dark:border-amber-800/50 dark:text-amber-400'}`}>
  {c.status === 'resolved' ? <CheckCircle className="w-3.5 h-3.5" /> : <Clock className="w-3.5 h-3.5" />}
- {c.status === 'resolved' ? 'Resolved' : 'Pending'}
+  {c.status === 'resolved' ? t('Resolved') : t('Pending')}
  </div>
  {c.status === 'resolved' && (
  <button onClick={() => handleDelete(c.id)}

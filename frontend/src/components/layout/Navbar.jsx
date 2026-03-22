@@ -1,17 +1,17 @@
 import React, { useState, useRef, useEffect, useMemo } from 'react';
-import { Bell, User, Menu, Settings, LogOut, Map, AlertTriangle, Droplets, ThermometerSun, Search, Languages, Leaf, ChevronDown, Wheat, IndianRupee, Sun, Moon, Zap, Cpu, CloudRain } from 'lucide-react';
+import { Bell, User, Menu, Settings, LogOut, Map, AlertTriangle, Droplets, ThermometerSun, Search, Languages, Leaf, ChevronDown, Wheat, IndianRupee, Sun, Moon, Zap, Cpu, CloudRain, MapPin } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { supabase } from '../../supabaseClient';
-import { useLiveTranslation } from '../../hooks/useLiveTranslation';
+import { useTranslation } from 'react-i18next';
 import { useAlerts } from '../../context/AlertsContext';
 import { useTheme } from '../../context/ThemeContext';
 import axios from 'axios';
 import { toast } from 'react-hot-toast';
 
 export default function Navbar({ setIsMobileMenuOpen }) {
- const { tLive: t, i18n } = useLiveTranslation();
- const { user } = useAuth();
+ const { t, i18n } = useTranslation();
+ const { user, userProfile } = useAuth();
  const { theme, toggleTheme } = useTheme();
  const navigate = useNavigate();
  const { unreadCount, alerts } = useAlerts();
@@ -181,10 +181,15 @@ export default function Navbar({ setIsMobileMenuOpen }) {
  </div>
  </div>
 
- <div className="hidden lg:flex flex-1 items-center gap-8">
- <h1 className="text-xl text-nature-600 dark:text-white tracking-wide hidden xl:block">
- {t('Dashboard')}
- </h1>
+ <div className="hidden lg:flex flex-1 items-center gap-6">
+ 
+ {userProfile?.district && (
+ <div className="flex items-center gap-1.5 px-3 py-1.5 bg-earth-50 dark:bg-earth-900/30 text-earth-700 dark:text-earth-400 rounded-full border border-earth-200 dark:border-earth-800/50 text-sm font-medium hover:bg-earth-100 transition-colors cursor-default" title="Your Active Region">
+ <MapPin className="w-4 h-4" />
+ <span className="truncate max-w-[180px]">{userProfile.district}{userProfile.state ? `, ${userProfile.state}` : ''}</span>
+ </div>
+ )}
+
  {/* Search Bar */}
  <div ref={searchRef} className="relative w-full max-w-sm xl:max-w-xs">
  <form onSubmit={handleSearch}>

@@ -13,10 +13,10 @@ import { motion, AnimatePresence } from 'framer-motion';
 import toast from 'react-hot-toast';
 import { supabase } from '../supabaseClient';
 import { useAuth } from '../context/AuthContext';
-import { useLiveTranslation } from '../hooks/useLiveTranslation';
+import { useTranslation } from 'react-i18next';
 
 export default function IrrigationControl() {
- const { tLive: t } = useLiveTranslation();
+ const { t } = useTranslation();
  const { user } = useAuth();
 
  // Live Data State
@@ -26,6 +26,10 @@ export default function IrrigationControl() {
  // AI Logic Local States (Replaces DB columns as requested)
  const [mode1, setMode1] = useState('auto');
  const [mode2, setMode2] = useState('auto');
+
+ // Strict Optimistic UI Locks to bypass polling jitter
+ const [optimisticPump1, setOptimisticPump1] = useState(null);
+ const [optimisticPump2, setOptimisticPump2] = useState(null);
 
  // External Data State (Weather Fallback)
  const [weather, setWeather] = useState({ temp: 28, humidity: 60, rain: 0, city: 'Pune' });
@@ -101,42 +105,32 @@ export default function IrrigationControl() {
  };
 
  // --- FRONTEND AI MATRIX ENGINE ---
- // Safely replaces the backend interval. Executes precisely on mode or liveData change.
- useEffect(() => {
- if (!currentData) return;
-
- const temp = Number(currentData.temp1) || weather.temp;
- const avg1 = getAvg1(currentData);
- const avg2 = getAvg2(currentData);
-
- const evaluateArea = (avg, currentMode, currentIrr) => {
- if (currentMode === 'manual') return currentIrr; // DO NOT override user
- if (avg > 70) return false; // OVERWATER -> Force OFF
- if (temp > 28 && avg < 45) return true; // Priority ON
- if (temp < 15 && avg < 45) return false; // Block OFF
- if (avg < 35) return true; // Low Moist -> ON
- if (avg > 60) return false; // Optimal -> OFF
- return currentIrr;
- };
-
- const newIrr1 = evaluateArea(avg1, mode1, currentData.irrigation1 || false);
- const newIrr2 = evaluateArea(avg2, mode2, currentData.irrigation2 || false);
-
- // Only explicitly update the database columns if the intelligent matrix determines a state change!
- if (newIrr1 !== (currentData.irrigation1 || false) || newIrr2 !== (currentData.irrigation2 || false)) {
- supabase.from('sensor_data')
- .update({ irrigation1: newIrr1, irrigation2: newIrr2 })
- .eq('id', currentData.id)
- .then(() => fetchLiveStream()); // Optimistic UI refresh
- }
- }, [currentData, mode1, mode2, weather.temp]);
+ // CRITICAL FIX: The React duplicate of the AI engine has been permanently terminated. 
+ // Why? If the user had a second dashboard tab open (or on a mobile phone), the background 
+ // tab's React state would initialize `mode1` to 'auto'. Chrome background-tab throttling 
+ // would then un-throttle it every few minutes, forcing this identical block of code to execute.
+ // Since soil moisture is 100%, the sleepy background tab would forcefully evaluate `avg > 70` 
+ // and mercilessly inject `irrigation1: false` into Supabase against the user's active manual tab!
+ // All intelligent sensor-parsing logic is now strictly enforced 100% by the Node.js Engine!
 
 
  // Database Sync Actions
- const handleModeChange = (areaId, newMode) => {
- if (areaId === 1) setMode1(newMode);
- if (areaId === 2) setMode2(newMode);
- toast.success(`Area ${areaId} switched to ${newMode.toUpperCase()} mode!`);
+ const handleModeChange = async (areaId, newMode) => {
+    if (areaId === 1) setMode1(newMode);
+    if (areaId === 2) setMode2(newMode);
+    
+    try {
+        console.log(`[DEBUG UI] Fast-path routing Area ${areaId} to Mode: ${newMode}...`);
+        const token = (await supabase.auth.getSession()).data.session?.access_token;
+        await fetch('http://localhost:5000/api/pump', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+            body: JSON.stringify({ areaId, mode: newMode })
+        });
+        toast.success(`Area ${areaId} switched to ${newMode.toUpperCase()} mode!`);
+    } catch(err) {
+        toast.error("Cloud sync failed.");
+    }
  };
 
  const handleTogglePump = async (areaId) => {
@@ -149,18 +143,36 @@ export default function IrrigationControl() {
  return;
  }
 
- const newState = !currentData[irrCol];
- // Optimistic UI update for instantaneous feedback
- const updatedData = [...liveData];
- updatedData[updatedData.length - 1] = { ...currentData, [irrCol]: newState };
- setLiveData(updatedData);
+ // The ultimate source of truth is the current UI representation, not raw memory.
+ // Evaluate dispIrr dynamically to get the current visible state
+ const currentUIState = areaId === 1 ? dispIrr1 : dispIrr2;
+ const newState = !currentUIState;
+
+ // Instantly hard-lock the UI for exactly 8 seconds (covers 1.5 complete polling cycles)
+ if (areaId === 1) setOptimisticPump1(newState);
+ if (areaId === 2) setOptimisticPump2(newState);
+ setTimeout(() => {
+     if (areaId === 1) setOptimisticPump1(null);
+     if (areaId === 2) setOptimisticPump2(null);
+ }, 8000);
 
  try {
- await supabase.from('sensor_data').update({ [irrCol]: newState }).eq('id', currentData.id);
- toast.success(`Area ${areaId} Pump is now ${newState ? 'ON' : 'OFF'}`);
+     console.log(`[DEBUG UI] Fast-path executing Pump ${areaId} Override -> ${newState === true ? 'ON' : 'OFF'}...`);
+     const token = (await supabase.auth.getSession()).data.session?.access_token;
+     await fetch('http://localhost:5000/api/pump', {
+         method: 'POST',
+         headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+         // CRITICAL FIX: Explicitly enforce the UI's Manual Mode onto the Node engine 
+         // on every single click. If Node.js recently crashed and suffered 'amnesia' 
+         // back to Auto mode, this brutally re-educates it instantly!
+         body: JSON.stringify({ areaId, pump: newState, mode: currentMode })
+     });
+     toast.success(`Pump Override Sent Instantly!`);
  } catch (err) {
- toast.error('Failed to command pump.');
- fetchLiveStream(); // Revert optimism on failure
+     toast.error('Failed to command pump.');
+     // Revert optimism manually on fail
+     if (areaId === 1) setOptimisticPump1(null);
+     if (areaId === 2) setOptimisticPump2(null);
  }
  };
 
@@ -189,16 +201,43 @@ export default function IrrigationControl() {
 
  const avg1 = getAvg1(activeData);
  const avg2 = getAvg2(activeData);
- const dispIrr1 = activeData.irrigation1 || false;
- const dispIrr2 = activeData.irrigation2 || false;
 
- const isAutoMode = mode1 === 'auto' && mode2 === 'auto';
- const toggleGlobalMode = () => {
- const newMode = isAutoMode ? 'manual' : 'auto';
- setMode1(newMode);
- setMode2(newMode);
- toast.success(`Switched to ${newMode.toUpperCase()} mode!`);
- };
+ // Look back in history to prevent UI flickering if the freshest row hasn't been processed yet 
+ // (Supabase defaults to false, so it's never null! We MUST use the `processed` flag instead)
+ const lastStable1 = liveData.slice().reverse().find(d => d.processed === true)?.irrigation1 || false;
+ const lastStable2 = liveData.slice().reverse().find(d => d.processed === true)?.irrigation2 || false;
+
+ // Calculate physical database truth
+ const rawDispIrr1 = activeData.processed === true ? activeData.irrigation1 : lastStable1;
+ const rawDispIrr2 = activeData.processed === true ? activeData.irrigation2 : lastStable2;
+
+ // Apply UX strict locks: Prioritize optimistic state if it exists
+ const dispIrr1 = optimisticPump1 !== null ? optimisticPump1 : rawDispIrr1;
+ const dispIrr2 = optimisticPump2 !== null ? optimisticPump2 : rawDispIrr2;
+
+  const isAutoMode = mode1 === 'auto' && mode2 === 'auto';
+  const toggleGlobalMode = async () => {
+    const newMode = isAutoMode ? 'manual' : 'auto';
+    setMode1(newMode);
+    setMode2(newMode);
+    
+    // CRITICAL FIX: Immediately release manual locks so AI state pushes instantly
+    if (newMode === 'auto') {
+        setOptimisticPump1(null);
+        setOptimisticPump2(null);
+    }
+    
+    try {
+        console.log(`[DEBUG UI] Fast-path firing Global Swap: ${newMode}`);
+        const token = (await supabase.auth.getSession()).data.session?.access_token;
+        await fetch('http://localhost:5000/api/pump', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+            body: JSON.stringify({ areaId: 'global', mode: newMode })
+        });
+        toast.success(`Switched to ${newMode.toUpperCase()} mode!`);
+    } catch (err) {}
+  };
 
  return (
  <div className="max-w-[1400px] mx-auto p-4 md:p-6 animate-in fade-in duration-500">

@@ -17,12 +17,12 @@ import {
  Headset
 } from 'lucide-react';
 import clsx from 'clsx';
-import { useLiveTranslation } from '../../hooks/useLiveTranslation';
+import { useTranslation } from 'react-i18next';
 import { useAuth } from '../../context/AuthContext';
 import { supabase } from '../../supabaseClient';
 
 export default function Sidebar({ isMobileMenuOpen, setIsMobileMenuOpen }) {
- const { tLive: t } = useLiveTranslation();
+ const { t } = useTranslation();
  const { user } = useAuth();
  const [role, setRole] = useState('user');
 

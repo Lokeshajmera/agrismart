@@ -1,12 +1,12 @@
 import React, { useState } from 'react';
-import { useLiveTranslation } from '../hooks/useLiveTranslation';
+import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
 import { Sprout, Mail } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { toast } from 'react-hot-toast';
 
 export default function ForgotPassword() {
-  const { tLive } = useLiveTranslation();
+  const { t } = useTranslation();
 
  const [email, setEmail] = useState('');
  const [loading, setLoading] = useState(false);
@@ -34,11 +34,11 @@ export default function ForgotPassword() {
  <div className="flex justify-center mb-6">
  <Link to="/" className="flex items-center gap-2 text-2xl font-bold text-nature-900 dark:text-white">
  <Sprout className="w-8 h-8 text-earth-500" />
- <span>{tLive("Agri")}<span className="text-earth-500">{tLive("Smart")}</span></span>
+ <span>{t("Agri")}<span className="text-earth-500">{t("Smart")}</span></span>
  </Link>
  </div>
  <h2 className="text-center text-3xl font-extrabold text-nature-900 dark:text-white">
- {tLive("Reset your password")}
+ {t("Reset your password")}
  </h2>
  </div>
 
@@ -47,7 +47,7 @@ export default function ForgotPassword() {
  {!success ? (
  <form className="space-y-6" onSubmit={handleSubmit}>
  <div>
- <label className="block text-sm font-medium text-nature-700 dark:text-white ">{tLive("Email address")}</label>
+ <label className="block text-sm font-medium text-nature-700 dark:text-white ">{t("Email address")}</label>
  <div className="mt-1 relative">
  <Mail className="absolute left-3 top-2.5 h-4 w-4 text-nature-400 dark:text-white" />
  <input
@@ -73,14 +73,14 @@ export default function ForgotPassword() {
  ) : (
  <div className="text-center">
  <p className="text-sm text-nature-600 dark:text-white mb-4">
- {tLive("Check your email for a link to reset your password. If it doesn't appear within a few minutes, check your spam folder.")}
+ {t("Check your email for a link to reset your password. If it doesn't appear within a few minutes, check your spam folder.")}
  </p>
  </div>
  )}
 
  <div className="mt-6 text-center">
  <Link to="/login" className="font-medium text-earth-600 hover:text-earth-500">
- {tLive("Return to sign in")}
+ {t("Return to sign in")}
  </Link>
  </div>
  </div>

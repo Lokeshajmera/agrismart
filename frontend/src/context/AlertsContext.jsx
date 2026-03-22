@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import { Cloud, CloudRain, Thermometer, Wind, Zap, Droplets, Sun, TrendingDown, Bug, Plane, IndianRupee, Wheat, Leaf } from 'lucide-react';
 import { supabase } from '../supabaseClient';
+import { useAuth } from './AuthContext';
 
 const WEATHER_API_KEY = 'e5c8c35726d52c53ed66735380eae2e9';
 const CITY = 'Pune';
@@ -413,6 +414,7 @@ function generateRecommendations(weather, forecast, soilMoisture) {
 }
 
 export function AlertsProvider({ children }) {
+    const { userProfile } = useAuth();
     const [alerts, setAlerts] = useState([]);
     const [recs, setRecs] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -421,22 +423,30 @@ export function AlertsProvider({ children }) {
 
     const fetchAndGenerate = useCallback(async () => {
         try {
+            const cityQuery = userProfile?.district || CITY;
             const [currentRes, forecastRes] = await Promise.all([
-                fetch(`https://api.openweathermap.org/data/2.5/weather?q=${CITY}&appid=${WEATHER_API_KEY}&units=metric`),
-                fetch(`https://api.openweathermap.org/data/2.5/forecast?q=${CITY}&appid=${WEATHER_API_KEY}&units=metric`),
+                fetch(`https://api.openweathermap.org/data/2.5/weather?q=${cityQuery}&appid=${WEATHER_API_KEY}&units=metric`),
+                fetch(`https://api.openweathermap.org/data/2.5/forecast?q=${cityQuery}&appid=${WEATHER_API_KEY}&units=metric`),
             ]);
             const current = await currentRes.json();
             const forecast = await forecastRes.json();
             setWeatherData(current);
 
-            // Fetch soil moisture
+            // Fetch soil moisture dynamically for the district
             let moisture = 45;
-            const { data } = await supabase
-                .from('sensor_data')
-                .select('soil1, soil2, soil3, soil4')
-                .eq('farmer_id', 'GLOBAL_AI_SEED')
-                .order('created_at', { ascending: false })
-                .limit(1);
+            let query = supabase.from('sensor_data').select('soil1, soil2, soil3, soil4').order('created_at', { ascending: false }).limit(20);
+            
+            if (userProfile?.district) {
+               const { data: usersData } = await supabase.from('users').select('farmer_id').eq('district', userProfile.district);
+               if (usersData && usersData.length > 0) {
+                  const ids = usersData.map(u => u.farmer_id).filter(Boolean);
+                  if (ids.length > 0) query = query.in('farmer_id', ids);
+               }
+            } else {
+               query = query.eq('farmer_id', 'GLOBAL_AI_SEED');
+            }
+
+            const { data } = await query;
 
             if (data && data.length > 0) {
                 const s = data[0];
@@ -455,7 +465,7 @@ export function AlertsProvider({ children }) {
         } finally {
             setLoading(false);
         }
-    }, []);
+    }, [userProfile]);
 
     useEffect(() => {
         fetchAndGenerate();

@@ -2,12 +2,14 @@ import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { Download, FileText, Calendar, Filter, Loader2, TrendingUp, TrendingDown, FileSpreadsheet, Activity, Leaf } from 'lucide-react';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from 'recharts';
 import { supabase } from '../supabaseClient';
+import { useLiveTranslation } from '../hooks/useLiveTranslation';
 import { useAuth } from '../context/AuthContext';
 import { jsPDF } from 'jspdf';
 import html2canvas from 'html2canvas-pro';
 
 export default function AnalyticsReport() {
- const { user } = useAuth();
+ const { tLive: t } = useLiveTranslation();
+  const { user } = useAuth();
  const [farmerId, setFarmerId] = useState(null);
  const [timeRange, setTimeRange] = useState('1d');
  const [startDate, setStartDate] = useState('');
@@ -164,9 +166,9 @@ export default function AnalyticsReport() {
  <div>
  <h2 className="text-xl font-bold text-nature-900 dark:text-white flex items-center gap-2">
  <FileText className="w-6 h-6 text-green-600" />
- Downloadable Analytics Report
+ {t("Downloadable Analytics Report")}
  </h2>
- <p className="text-sm text-nature-500 dark:text-white">Generate professional insights across selected telemetry windows.</p>
+ <p className="text-sm text-nature-500 dark:text-white">{t("Generate professional insights across selected telemetry windows.")}</p>
  </div>
 
  <div className="flex flex-wrap items-center gap-3">
@@ -177,7 +179,7 @@ export default function AnalyticsReport() {
  onClick={() => setTimeRange(range)}
  className={`px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${timeRange === range ? 'bg-white dark:bg-nature-950 shadow text-green-700' : 'text-nature-600 dark:text-white hover:text-green-600'}`}
  >
- {range === '1h' ? 'Last 1 Hour' : range === '1d' ? 'Last 1 Day' : range === '7d' ? 'Last 7 Days' : 'Custom'}
+ {range === '1h' ? t('Last 1 Hour') : range === '1d' ? t('Last 1 Day') : range === '7d' ? t('Last 7 Days') : t('Custom')}
  </button>
  ))}
  </div>
@@ -192,11 +194,11 @@ export default function AnalyticsReport() {
 
  <div className="flex gap-2">
  <button onClick={downloadCSV} disabled={!metrics || isGenerating} className="flex items-center gap-2 px-4 py-2 bg-blue-50 text-blue-700 font-bold rounded-xl hover:bg-blue-100 transition-colors border border-blue-200 disabled:opacity-50 cursor-pointer">
- <FileSpreadsheet className="w-4 h-4" /> CSV
+ <FileSpreadsheet className="w-4 h-4" /> {t('CSV')}
  </button>
  <button onClick={downloadPDF} disabled={!metrics || isGenerating} className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white font-bold rounded-xl hover:bg-green-700 transition-colors shadow-sm disabled:opacity-50 cursor-pointer">
  {isGenerating ? <Loader2 className="w-4 h-4 animate-spin" /> : <Download className="w-4 h-4" />}
- {isGenerating ? 'Generating...' : 'Download PDF'}
+ {isGenerating ? t('Generating...') : t('Download PDF')}
  </button>
  </div>
  </div>
@@ -205,13 +207,13 @@ export default function AnalyticsReport() {
  {isLoading ? (
  <div className="h-64 flex flex-col items-center justify-center border-2 border-dashed border-nature-200 dark:border-nature-800 rounded-xl">
  <Loader2 className="w-8 h-8 text-green-500 animate-spin mb-2" />
- <p className="text-nature-500 dark:text-white font-medium">Querying selected range...</p>
+ <p className="text-nature-500 dark:text-white font-medium">{t("Querying selected range...")}</p>
  </div>
  ) : !metrics ? (
  <div className="h-64 flex flex-col items-center justify-center border-2 border-dashed border-nature-200 dark:border-nature-800 rounded-xl bg-nature-50 dark:bg-nature-900/50">
  <Filter className="w-8 h-8 text-nature-400 dark:text-white mb-2" />
- <p className="text-nature-900 dark:text-white font-bold">No data available for selected range</p>
- <p className="text-nature-500 dark:text-white text-sm">Try widening your time window or selecting a different date.</p>
+ <p className="text-nature-900 dark:text-white font-bold">{t("No data available for selected range")}</p>
+ <p className="text-nature-500 dark:text-white text-sm">{t("Try widening your time window or selecting a different date.")}</p>
  </div>
  ) : (
  <div className="bg-white dark:bg-nature-950 border-2 border-nature-200 dark:border-nature-800 rounded-xl overflow-x-auto scrollbar-hide relative" style={{ touchAction: 'pan-x pan-y', WebkitOverflowScrolling: 'touch' }}>
@@ -224,54 +226,54 @@ export default function AnalyticsReport() {
  <p className="text-nature-500 dark:text-white font-medium">Smart Irrigation Platform</p>
  </div>
  <div className="text-right">
- <h2 className="text-xl font-bold text-nature-900 dark:text-white">Farm Analytics Report</h2>
- <p className="text-nature-500 dark:text-white text-sm">Generated: {new Date().toLocaleString()}</p>
+ <h2 className="text-xl font-bold text-nature-900 dark:text-white">{t("Farm Analytics Report")}</h2>
+ <p className="text-nature-500 dark:text-white text-sm">{t("Generated:")} {new Date().toLocaleString()}</p>
  </div>
  </div>
 
  <div className="bg-nature-50 dark:bg-nature-900 p-4 rounded-lg border border-nature-200 dark:border-nature-800 mb-6 flex justify-between">
  <div>
- <p className="text-xs text-nature-500 dark:text-white uppercase font-bold tracking-wider mb-1">Account Holder</p>
+ <p className="text-xs text-nature-500 dark:text-white uppercase font-bold tracking-wider mb-1">{t("Account Holder")}</p>
  <p className="font-bold text-nature-900 dark:text-white">{user?.user_metadata?.name || 'Registered User'}</p>
  <p className="text-sm text-nature-600 dark:text-white">{user?.email}</p>
  </div>
  <div className="text-right">
- <p className="text-xs text-nature-500 dark:text-white uppercase font-bold tracking-wider mb-1">Assigned Telemetry Array</p>
+ <p className="text-xs text-nature-500 dark:text-white uppercase font-bold tracking-wider mb-1">{t("Assigned Telemetry Array")}</p>
  <p className="font-mono bg-white dark:bg-nature-950 px-2 py-1 rounded text-sm border font-bold text-nature-700 dark:text-white ">{farmerId || 'GLOBAL'}</p>
  </div>
  </div>
 
  <div className="grid grid-cols-4 gap-4 mb-8">
  <div className="border border-blue-200 bg-blue-50/50 p-4 rounded-lg">
- <p className="text-xs text-blue-600 uppercase font-bold mb-1">Avg Moisture</p>
+ <p className="text-xs text-blue-600 uppercase font-bold mb-1">{t("Avg Moisture")}</p>
  <p className="text-2xl font-black text-nature-900 dark:text-white">{metrics.avgMoisture}%</p>
  <p className="text-xs text-blue-600 font-medium mt-1">{metrics.moistureTrend}</p>
  </div>
  <div className="border border-red-200 bg-red-50/50 p-4 rounded-lg">
- <p className="text-xs text-red-600 uppercase font-bold mb-1">Avg Temperature</p>
+ <p className="text-xs text-red-600 uppercase font-bold mb-1">{t("Avg Temperature")}</p>
  <p className="text-2xl font-black text-nature-900 dark:text-white">{metrics.avgTemp}°C</p>
  </div>
  <div className="border border-cyan-200 bg-cyan-50/50 p-4 rounded-lg">
- <p className="text-xs text-cyan-600 uppercase font-bold mb-1">Avg Tank Level</p>
+ <p className="text-xs text-cyan-600 uppercase font-bold mb-1">{t("Avg Tank Level")}</p>
  <p className="text-2xl font-black text-nature-900 dark:text-white">{metrics.avgWater}%</p>
  </div>
  <div className="border border-green-200 bg-green-50/50 p-4 rounded-lg">
- <p className="text-xs text-green-600 uppercase font-bold mb-1">Irrigation Events</p>
+ <p className="text-xs text-green-600 uppercase font-bold mb-1">{t("Irrigation Events")}</p>
  <p className="text-2xl font-black text-nature-900 dark:text-white">{metrics.irrigationEvents}</p>
- <p className="text-xs text-green-600 font-medium mt-1">Detected Spikes</p>
+ <p className="text-xs text-green-600 font-medium mt-1">{t("Detected Spikes")}</p>
  </div>
  </div>
 
  <div className="bg-green-600 text-white p-4 rounded-lg mb-8 flex items-center gap-3 shadow-sm">
  <Activity className="w-5 h-5 flex-shrink-0" />
  <div>
- <p className="text-xs text-green-100 uppercase font-bold tracking-wider mb-0.5">Algorithmic Insight</p>
+ <p className="text-xs text-green-100 uppercase font-bold tracking-wider mb-0.5">{t("Algorithmic Insight")}</p>
  <p className="font-medium">{metrics.insightMsg}</p>
  </div>
  </div>
 
  <div className="mb-8">
- <h3 className="font-bold text-nature-900 dark:text-white border-b pb-2 mb-4">Moisture vs Time</h3>
+ <h3 className="font-bold text-nature-900 dark:text-white border-b pb-2 mb-4">{t("Moisture vs Time")}</h3>
  <div className="h-64 w-full">
  <ResponsiveContainer width="100%" height="100%">
  <AreaChart data={metrics.chartData} margin={{ top: 5, right: 0, left: -20, bottom: 0 }}>
@@ -285,7 +287,7 @@ export default function AnalyticsReport() {
  </div>
 
  <div className="mb-8">
- <h3 className="font-bold text-nature-900 dark:text-white border-b pb-2 mb-4">Temperature vs Time</h3>
+ <h3 className="font-bold text-nature-900 dark:text-white border-b pb-2 mb-4">{t("Temperature vs Time")}</h3>
  <div className="h-48 w-full">
  <ResponsiveContainer width="100%" height="100%">
  <AreaChart data={metrics.chartData} margin={{ top: 5, right: 0, left: -20, bottom: 0 }}>
@@ -300,16 +302,16 @@ export default function AnalyticsReport() {
 
  <div>
  <h3 className="font-bold text-nature-900 dark:text-white border-b pb-2 mb-4">
- Raw Telemetry Snippet (Latest 6 Rows)
+ {t("Raw Telemetry Snippet (Latest 6 Rows)")}
  </h3>
  <div className="rounded-lg border border-nature-200 dark:border-nature-800 overflow-hidden">
  <table className="w-full text-sm text-left">
  <thead className="bg-nature-50 dark:bg-nature-900 text-nature-500 dark:text-white uppercase text-xs font-bold">
  <tr>
- <th className="px-4 py-3">Timestamp</th>
- <th className="px-4 py-3">Moisture (%)</th>
- <th className="px-4 py-3">Temperature (°C)</th>
- <th className="px-4 py-3">Water Level (%)</th>
+ <th className="px-4 py-3">{t("Timestamp")}</th>
+ <th className="px-4 py-3">{t("Moisture (%)")}</th>
+ <th className="px-4 py-3">{t("Temperature (°C)")}</th>
+ <th className="px-4 py-3">{t("Water Level (%)")}</th>
  </tr>
  </thead>
  <tbody>
@@ -325,7 +327,7 @@ export default function AnalyticsReport() {
  </table>
  </div>
  {metrics.chartData.length > 6 && (
- <p className="text-xs text-nature-400 dark:text-white mt-3 text-center italic">* Displaying latest 6 rows for PDF stability. Please download CSV to view all {metrics.chartData.length} records.</p>
+ <p className="text-xs text-nature-400 dark:text-white mt-3 text-center italic">{t("* Displaying latest 6 rows for PDF stability. Please download CSV to view all")} {metrics.chartData.length} records.</p>
  )}
  </div>
  </div>

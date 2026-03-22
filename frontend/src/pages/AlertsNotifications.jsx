@@ -1,10 +1,11 @@
 import React, { useState } from 'react';
-import { useLiveTranslation } from '../hooks/useLiveTranslation';
+import { useTranslation } from 'react-i18next';
 import {
  AlertTriangle, Info, CheckCircle, Clock, CloudRain,
  Thermometer, Wind, Zap, Droplets, Sun, RefreshCw, BellOff
 } from 'lucide-react';
 import { useAlerts } from '../context/AlertsContext';
+import { useAuth } from '../context/AuthContext';
 
 const ICON_MAP = {
  thermometer: Thermometer,
@@ -31,9 +32,9 @@ function timeAgo(date) {
 }
 
 export default function AlertsNotifications() {
-  const { tLive } = useLiveTranslation();
-
- const { alerts, loading, lastUpdated, markAllRead, refresh } = useAlerts();
+  const { t } = useTranslation();
+  const { userProfile } = useAuth();
+  const { alerts, loading, lastUpdated, markAllRead, refresh } = useAlerts();
  const [refreshing, setRefreshing] = useState(false);
 
  const handleRefresh = async () => {
@@ -47,9 +48,9 @@ export default function AlertsNotifications() {
  {/* Header */}
  <div className="flex flex-wrap justify-between items-start gap-4 mb-6">
  <div>
- <h1 className="text-2xl font-bold text-nature-900 dark:text-white tracking-tight">{tLive("Alerts & Notifications")}</h1>
+ <h1 className="text-2xl font-bold text-nature-900 dark:text-white tracking-tight">{t("Alerts & Notifications")}</h1>
  <p className="text-nature-500 dark:text-white mt-1 text-sm">
- {tLive("Real-time weather alerts for your farm. Auto-refreshes every 10 minutes.")}
+ {t("Real-time weather alerts for your farm. Auto-refreshes every 10 minutes.")}
  </p>
  {lastUpdated && (
  <p className="text-[11px] text-nature-400 dark:text-white mt-0.5 flex items-center gap-1">
@@ -70,14 +71,14 @@ export default function AlertsNotifications() {
  title="Refresh now"
  >
  <RefreshCw className={`w-4 h-4 ${refreshing ? 'animate-spin' : ''}`} />
- {refreshing ? 'Refreshing...' : 'Refresh'}
+ {refreshing ? t('Refreshing...') : t('Refresh')}
  </button>
  {alerts.length > 0 && (
  <button
  onClick={markAllRead}
  className="flex items-center gap-1.5 text-sm font-medium text-white bg-earth-600 hover:bg-earth-700 active:scale-95 px-4 py-2 rounded-lg transition-all shadow-sm cursor-pointer"
  >
- <CheckCircle className="w-4 h-4" /> {tLive("Mark all as read")}
+ <CheckCircle className="w-4 h-4" /> {t("Mark all as read")}
  </button>
  )}
  </div>
@@ -87,7 +88,7 @@ export default function AlertsNotifications() {
  {loading && (
  <div className="flex flex-col items-center justify-center py-16 text-nature-400 dark:text-white gap-3">
  <RefreshCw className="w-8 h-8 animate-spin" />
- <p className="text-sm font-medium">{tLive("Fetching live weather data...")}</p>
+ <p className="text-sm font-medium">{t("Fetching live weather data...")}</p>
  </div>
  )}
 
@@ -97,13 +98,13 @@ export default function AlertsNotifications() {
  <div className="w-16 h-16 rounded-full bg-green-50 border border-green-200 flex items-center justify-center">
  <BellOff className="w-8 h-8 text-green-500" />
  </div>
- <p className="text-lg font-bold text-nature-700 dark:text-white ">{tLive("No Active Alerts")}</p>
- <p className="text-sm text-nature-400 dark:text-white">{tLive("All notifications have been cleared. Alerts will appear here when weather conditions change.")}</p>
+ <p className="text-lg font-bold text-nature-700 dark:text-white ">{t("No Active Alerts")}</p>
+ <p className="text-sm text-nature-400 dark:text-white">{t("All notifications have been cleared. Alerts will appear here when weather conditions change.")}</p>
  <button
  onClick={refresh}
  className="mt-2 flex items-center gap-1.5 text-sm font-medium text-earth-600 hover:underline"
  >
- <RefreshCw className="w-3.5 h-3.5" /> {tLive("Check again")}
+ <RefreshCw className="w-3.5 h-3.5" /> {t("Check again")}
  </button>
  </div>
  )}
@@ -129,21 +130,21 @@ export default function AlertsNotifications() {
  <div className="flex justify-between items-start mb-1 gap-2">
  <h3 className={`font-bold text-sm ${isCritical ? 'text-red-900' : 'text-nature-900 dark:text-white'}`}>
  {isCritical && <span className="mr-1">🚨</span>}
- {alert.title}
+ {t(alert.title)}
  </h3>
  <span className="text-[11px] text-nature-400 dark:text-white flex items-center gap-1 whitespace-nowrap shrink-0">
  <Clock className="w-3 h-3" />
  {timeAgo(alert.time)}
  </span>
  </div>
- <p className="text-nature-700 dark:text-white text-sm leading-relaxed">{alert.msg}</p>
+ <p className="text-nature-700 dark:text-white text-sm leading-relaxed">{t(alert.msg)}</p>
  <span className={`inline-block mt-2 text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full ${
  alert.type === 'critical' ? 'bg-red-100 text-red-700' :
  alert.type === 'warning' ? 'bg-orange-100 text-orange-700' :
  alert.type === 'success' ? 'bg-green-100 text-green-700' :
  'bg-blue-100 text-blue-700'
  }`}>
- {alert.type}
+ {t(alert.type)}
  </span>
  </div>
  </div>
@@ -155,7 +156,7 @@ export default function AlertsNotifications() {
  {/* Source Note */}
  {!loading && (
  <p className="text-center text-[11px] text-nature-400 dark:text-white pt-4 border-t border-nature-100 dark:border-nature-700/50">
- {tLive("⛅ Weather data sourced from OpenWeatherMap · Pune, Maharashtra")}
+ ⛅ Weather data sourced from OpenWeatherMap · {userProfile?.district || 'Pune'}{userProfile?.state ? `, ${userProfile.state}` : ', Maharashtra'}
  </p>
  )}
  </div>

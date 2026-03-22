@@ -39,12 +39,12 @@ const CircularProgress = ({ value, label, subLabel, color, size = 120, strokeWid
 
 import { useAuth } from '../context/AuthContext';
 import { supabase } from '../supabaseClient';
-import { useLiveTranslation } from '../hooks/useLiveTranslation';
+import { useTranslation } from 'react-i18next';
 import { useOfflineStore } from '../store/useOfflineStore';
 import { useAlerts } from '../context/AlertsContext';
 
 export default function Dashboard() {
- const { tLive: t } = useLiveTranslation();
+ const { t } = useTranslation();
  const { user } = useAuth();
  const [profile, setProfile] = useState({ name: 'Farmer', farmer_id: '---' });
  const [showSoilInfo, setShowSoilInfo] = useState(false);
@@ -227,9 +227,9 @@ export default function Dashboard() {
  <div className="absolute top-0 right-0 w-32 h-32 bg-earth-100 dark:bg-earth-900/30 rounded-bl-full blur-2xl opacity-50 dark:opacity-20 pointer-events-none"></div>
  <div className="flex justify-between items-start mb-4 relative z-10">
  <div>
- <h2 className="text-xl font-bold text-nature-900 dark:text-white flex items-center gap-2">
- <Leaf className="w-5 h-5 text-green-500" /> {profile.name}'s Farm
- </h2>
+                  <div className="flex items-center gap-2 mb-4 text-xl font-bold text-nature-900 dark:text-white">
+                    <Leaf className="w-5 h-5 text-green-500" /> {profile.name} {t("'s Farm")}
+                  </div>
  <p className="text-xs text-nature-500 dark:text-white mt-1 flex items-center gap-1">
  <MapPin className="w-3 h-3" /> Maharashtra, India
  </p>

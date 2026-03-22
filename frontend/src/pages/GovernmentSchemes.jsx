@@ -170,19 +170,19 @@ export default function GovernmentSchemes() {
  {/* Search & Filters */}
  <div className="flex flex-col md:flex-row gap-4 bg-white dark:bg-nature-950 p-4 rounded-xl border border-nature-200 dark:border-nature-800 shadow-sm mt-8">
  <div className="relative flex-1">
- <Search className="w-5 h-5 text-nature-400 dark:text-white absolute left-3 top-1/2 -translate-y-1/2" />
+ <Search className="w-5 h-5 text-nature-400 dark:text-nature-500 absolute left-3 top-1/2 -translate-y-1/2" />
  <input
  type="text"
  placeholder={lang === 'en' ? "Search schemes by name..." : "नाम से योजनाएं खोजें..."}
- className="w-full pl-10 pr-4 py-2 border border-nature-300 rounded-lg focus:outline-none focus:border-earth-500 focus:ring-1 focus:ring-earth-500 text-sm"
+ className="w-full pl-10 pr-4 py-2 bg-transparent text-nature-900 dark:text-white placeholder-nature-400 dark:placeholder-nature-500 border border-nature-300 dark:border-nature-700 rounded-lg focus:outline-none focus:border-earth-500 focus:ring-1 focus:ring-earth-500 text-sm transition-colors"
  value={search}
  onChange={(e) => setSearch(e.target.value)}
  />
  </div>
  <div className="flex items-center gap-2">
- <Filter className="w-5 h-5 text-nature-500 dark:text-white hidden md:block" />
+ <Filter className="w-5 h-5 text-nature-500 dark:text-nature-400 hidden md:block" />
  <select
- className="border border-nature-300 rounded-lg px-4 py-2 text-sm focus:outline-none focus:border-earth-500 focus:ring-1 focus:ring-earth-500 bg-white dark:bg-nature-950 min-w-[180px]"
+ className="border border-nature-300 dark:border-nature-700 text-nature-900 dark:text-white bg-white dark:bg-nature-950 rounded-lg px-4 py-2 text-sm focus:outline-none focus:border-earth-500 focus:ring-1 focus:ring-earth-500 min-w-[180px] transition-colors"
  value={category}
  onChange={(e) => setCategory(e.target.value)}
  >
