@@ -54,6 +54,8 @@ export const AuthProvider = ({ children }) => {
   };
 
   const logout = () => {
+    localStorage.setItem('app-theme', 'light');
+    window.document.documentElement.classList.remove('dark');
     return supabase.auth.signOut();
   };
 

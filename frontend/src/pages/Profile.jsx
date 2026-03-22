@@ -1,215 +1,215 @@
 import React, { useState, useEffect } from 'react';
+import { useLiveTranslation } from '../hooks/useLiveTranslation';
 import { useAuth } from '../context/AuthContext';
 import { supabase } from '../supabaseClient';
 import { User, Phone, Mail, Hash, Loader2 } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 
 export default function Profile() {
-  const { user } = useAuth();
-  const [profile, setProfile] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [saving, setSaving] = useState(false);
-  
-  // Form fields
-  const [name, setName] = useState('');
-  const [phone, setPhone] = useState('+91');
-  const [errors, setErrors] = useState({});
+  const { tLive } = useLiveTranslation();
 
-  useEffect(() => {
-    if (user) {
-      fetchProfile();
-    }
-  }, [user]);
+ const { user } = useAuth();
+ const [profile, setProfile] = useState(null);
+ const [loading, setLoading] = useState(true);
+ const [saving, setSaving] = useState(false);
+ // Form fields
+ const [name, setName] = useState('');
+ const [phone, setPhone] = useState('+91');
+ const [errors, setErrors] = useState({});
 
-  const fetchProfile = async () => {
-    try {
-      const { data, error } = await supabase
-        .from('users')
-        .select('*')
-        .eq('id', user.id)
-        .single();
-        
-      if (error && error.code !== 'PGRST116') {
-        throw error;
-      }
-      
-      if (data) {
-        setProfile(data);
-        setName(data.name || user?.user_metadata?.name || '');
-        setPhone(data.phone || user?.user_metadata?.phone || '');
-      } else {
-        setName(user?.user_metadata?.name || '');
-        setPhone(user?.user_metadata?.phone || '');
-      }
-    } catch (error) {
-      console.error('Error fetching profile:', error);
-      toast.error('Failed to load profile');
-    } finally {
-      setLoading(false);
-    }
-  };
+ useEffect(() => {
+ if (user) {
+ fetchProfile();
+ }
+ }, [user]);
 
-  const generateFarmerId = async (firstName) => {
-    const prefix = firstName.split(' ')[0].toUpperCase();
-    const { count, error } = await supabase
-      .from('users')
-      .select('*', { count: 'exact', head: true })
-      .ilike('name', `${prefix}%`);
-      
-    if (error) throw error;
-    return `${prefix}${String((count || 0) + 1).padStart(3, '0')}`;
-  };
+ const fetchProfile = async () => {
+ try {
+ const { data, error } = await supabase
+ .from('users')
+ .select('*')
+ .eq('id', user.id)
+ .single();
+ if (error && error.code !== 'PGRST116') {
+ throw error;
+ }
+ if (data) {
+ setProfile(data);
+ setName(data.name || user?.user_metadata?.name || '');
+ setPhone(data.phone || user?.user_metadata?.phone || '');
+ } else {
+ setName(user?.user_metadata?.name || '');
+ setPhone(user?.user_metadata?.phone || '');
+ }
+ } catch (error) {
+ console.error('Error fetching profile:', error);
+ toast.error('Failed to load profile');
+ } finally {
+ setLoading(false);
+ }
+ };
 
-  const handleSave = async (e) => {
-    e.preventDefault();
-    const newErrors = {};
-    if (!name || !name.trim()) newErrors.name = 'Full Name is required';
-    if (!phone || phone.trim() === '+91' || phone.replace(/\D/g,'').length < 10) newErrors.phone = 'Please enter a valid 10-digit mobile number';
+ const generateFarmerId = async (firstName) => {
+ const prefix = firstName.split(' ')[0].toUpperCase();
+ const { count, error } = await supabase
+ .from('users')
+ .select('*', { count: 'exact', head: true })
+ .ilike('name', `${prefix}%`);
+ if (error) throw error;
+ return `${prefix}${String((count || 0) + 1).padStart(3, '0')}`;
+ };
 
-    if (Object.keys(newErrors).length > 0) {
-      setErrors(newErrors);
-      return;
-    }
-    setErrors({});
-    
-    setSaving(true);
-    try {
-      let currentFarmerId = profile?.farmer_id;
-      if (!currentFarmerId) {
-        currentFarmerId = await generateFarmerId(name);
-      }
+ const handleSave = async (e) => {
+ e.preventDefault();
+ const newErrors = {};
+ if (!name || !name.trim()) newErrors.name = 'Full Name is required';
+ if (!phone || phone.trim() === '+91' || phone.replace(/\D/g,'').length < 10) newErrors.phone = 'Please enter a valid 10-digit mobile number';
 
-      const updates = {
-        id: user.id,
-        email: user.email,
-        name,
-        phone,
-        farmer_id: currentFarmerId
-      };
+ if (Object.keys(newErrors).length > 0) {
+ setErrors(newErrors);
+ return;
+ }
+ setErrors({});
+ setSaving(true);
+ try {
+ let currentFarmerId = profile?.farmer_id;
+ if (!currentFarmerId) {
+ currentFarmerId = await generateFarmerId(name);
+ }
 
-      const { error } = await supabase
-        .from('users')
-        .upsert(updates);
+ const updates = {
+ id: user.id,
+ email: user.email,
+ name,
+ phone,
+ farmer_id: currentFarmerId
+ };
 
-      if (error) throw error;
+ const { error } = await supabase
+ .from('users')
+ .upsert(updates);
 
-      toast.success('Profile saved successfully');
-      fetchProfile();
-    } catch (error) {
-      console.error('Error saving profile:', error);
-      toast.error(error.message || 'Failed to save profile');
-    } finally {
-      setSaving(false);
-    }
-  };
+ if (error) throw error;
 
-  if (loading) {
-    return (
-      <div className="flex justify-center items-center h-full">
-        <Loader2 className="w-8 h-8 animate-spin text-earth-500" />
-      </div>
-    );
-  }
+ toast.success('Profile saved successfully');
+ fetchProfile();
+ } catch (error) {
+ console.error('Error saving profile:', error);
+ toast.error(error.message || 'Failed to save profile');
+ } finally {
+ setSaving(false);
+ }
+ };
 
-  const isProfileComplete = profile && profile.name && profile.farmer_id;
+ if (loading) {
+ return (
+ <div className="flex justify-center items-center h-full">
+ <Loader2 className="w-8 h-8 animate-spin text-earth-500" />
+ </div>
+ );
+ }
 
-  return (
-    <div className="max-w-3xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
-      <div className="bg-white dark:bg-nature-950 shadow rounded-lg overflow-hidden">
-        <div className="px-4 py-5 sm:px-6 bg-nature-50 dark:bg-nature-900 border-b border-nature-200 dark:border-nature-800 flex justify-between items-center">
-          <div>
-            <h3 className="text-lg leading-6 font-medium text-nature-900 dark:text-white">
-              {isProfileComplete ? 'Farmer Profile' : 'Complete Your Profile'}
-            </h3>
-            <p className="mt-1 max-w-2xl text-sm text-nature-500">
-              Personal details and system identifiers.
-            </p>
-          </div>
-          {isProfileComplete && profile.farmer_id && (
-            <div className="bg-earth-100 px-3 py-1 rounded-full text-earth-800 text-sm font-semibold flex items-center gap-1">
-              <Hash className="w-4 h-4" />
-              {profile.farmer_id}
-            </div>
-          )}
-        </div>
-        
-        <div className="px-4 py-5 sm:p-6">
-          {!isProfileComplete && (
-            <div className="mb-6 bg-yellow-50 border-l-4 border-yellow-400 p-4">
-              <div className="flex">
-                <div className="ml-3">
-                  <p className="text-sm text-yellow-700">
-                    Your profile is incomplete. Please provide your Name and Mobile Number to generate your unique Farmer ID and access all features.
-                  </p>
-                </div>
-              </div>
-            </div>
-          )}
+ const isProfileComplete = profile && profile.name && profile.farmer_id;
 
-          <form onSubmit={handleSave} className="space-y-6">
-            <div>
-              <label className="block text-sm font-medium text-nature-700 dark:text-nature-200">Email (from secure login)</label>
-              <div className="mt-1 flex rounded-md shadow-sm">
-                <span className="inline-flex items-center px-3 rounded-l-md border border-r-0 border-nature-300 bg-nature-50 dark:bg-nature-900 text-nature-500 sm:text-sm">
-                  <Mail className="h-4 w-4" />
-                </span>
-                <input
-                  type="email"
-                  disabled
-                  value={user.email || 'N/A (Phone Login)'}
-                  className="flex-1 min-w-0 block w-full px-3 py-2 rounded-none rounded-r-md border border-nature-300 bg-nature-50 dark:bg-nature-900 text-gray-500 sm:text-sm"
-                />
-              </div>
-            </div>
+ return (
+ <div className="max-w-3xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
+ <div className="bg-white dark:bg-nature-950 shadow rounded-lg overflow-hidden">
+ <div className="px-4 py-5 sm:px-6 bg-nature-50 dark:bg-nature-900 border-b border-nature-200 dark:border-nature-800 flex justify-between items-center">
+ <div>
+ <h3 className="text-lg leading-6 font-medium text-nature-900 dark:text-white">
+ {isProfileComplete ? 'Farmer Profile' : 'Complete Your Profile'}
+ </h3>
+ <p className="mt-1 max-w-2xl text-sm text-nature-500 dark:text-white">
+ {tLive("Personal details and system identifiers.")}
+ </p>
+ </div>
+ {isProfileComplete && profile.farmer_id && (
+ <div className="bg-earth-100 px-3 py-1 rounded-full text-earth-800 text-sm font-semibold flex items-center gap-1">
+ <Hash className="w-4 h-4" />
+ {profile.farmer_id}
+ </div>
+ )}
+ </div>
+ <div className="px-4 py-5 sm:p-6">
+ {!isProfileComplete && (
+ <div className="mb-6 bg-yellow-50 border-l-4 border-yellow-400 p-4">
+ <div className="flex">
+ <div className="ml-3">
+ <p className="text-sm text-yellow-700">
+ {tLive("Your profile is incomplete. Please provide your Name and Mobile Number to generate your unique Farmer ID and access all features.")}
+ </p>
+ </div>
+ </div>
+ </div>
+ )}
 
-            <div>
-              <label className="block text-sm font-medium text-nature-700 dark:text-nature-200">Full Name <span className="text-red-500">*</span></label>
-              <div className="mt-1 flex rounded-md shadow-sm">
-                <span className="inline-flex items-center px-3 rounded-l-md border border-r-0 border-nature-300 bg-nature-50 dark:bg-nature-900 text-nature-500 sm:text-sm">
-                  <User className="h-4 w-4" />
-                </span>
-                <input
-                  type="text"
-                  required
-                  value={name}
-                  onChange={(e) => { setName(e.target.value); setErrors({...errors, name: ''}); }}
-                  className={`flex-1 min-w-0 block w-full px-3 py-2 rounded-none rounded-r-md border focus:ring-earth-500 sm:text-sm ${errors.name ? 'border-red-500 focus:border-red-500' : 'border-nature-300 focus:border-earth-500'}`}
-                  placeholder="Rahul Kumar"
-                />
-              </div>
-              {errors.name && <p className="text-red-500 text-xs mt-1.5">{errors.name}</p>}
-            </div>
+ <form onSubmit={handleSave} className="space-y-6">
+ <div>
+ <label className="block text-sm font-medium text-nature-700 dark:text-white ">{tLive("Email (from secure login)")}</label>
+ <div className="mt-1 flex rounded-md shadow-sm">
+ <span className="inline-flex items-center px-3 rounded-l-md border border-r-0 border-nature-300 bg-nature-50 dark:bg-nature-900 text-nature-500 dark:text-white sm:text-sm">
+ <Mail className="h-4 w-4" />
+ </span>
+ <input
+ type="email"
+ disabled
+ value={user.email || 'N/A (Phone Login)'}
+ className="flex-1 min-w-0 block w-full px-3 py-2 rounded-none rounded-r-md border border-nature-300 bg-nature-50 dark:bg-nature-900 text-gray-500 sm:text-sm"
+ />
+ </div>
+ </div>
 
-            <div>
-              <label className="block text-sm font-medium text-nature-700 dark:text-nature-200">Mobile Number <span className="text-red-500">*</span></label>
-              <div className="mt-1 flex rounded-md shadow-sm">
-                <span className="inline-flex items-center px-3 rounded-l-md border border-r-0 border-nature-300 bg-nature-50 dark:bg-nature-900 text-nature-500 sm:text-sm">
-                  <Phone className="h-4 w-4" />
-                </span>
-                <input
-                  type="tel"
-                  required
-                  value={phone}
-                  onChange={(e) => { setPhone(e.target.value); setErrors({...errors, phone: ''}); }}
-                  className={`flex-1 min-w-0 block w-full px-3 py-2 rounded-none rounded-r-md border focus:ring-earth-500 sm:text-sm ${errors.phone ? 'border-red-500 focus:border-red-500' : 'border-nature-300 focus:border-earth-500'}`}
-                  placeholder="+919876543210"
-                />
-              </div>
-              {errors.phone && <p className="text-red-500 text-xs mt-1.5">{errors.phone}</p>}
-            </div>
+ <div>
+ <label className="block text-sm font-medium text-nature-700 dark:text-white ">{tLive("Full Name")} <span className="text-red-500">*</span></label>
+ <div className="mt-1 flex rounded-md shadow-sm">
+ <span className="inline-flex items-center px-3 rounded-l-md border border-r-0 border-nature-300 bg-nature-50 dark:bg-nature-900 text-nature-500 dark:text-white sm:text-sm">
+ <User className="h-4 w-4" />
+ </span>
+ <input
+ type="text"
+ required
+ value={name}
+ onChange={(e) => { setName(e.target.value); setErrors({...errors, name: ''}); }}
+ className={`flex-1 min-w-0 block w-full px-3 py-2 rounded-none rounded-r-md border focus:ring-earth-500 sm:text-sm ${errors.name ? 'border-red-500 focus:border-red-500' : 'border-nature-300 focus:border-earth-500'}`}
+ placeholder="Rahul Kumar"
+ />
+ </div>
+ {errors.name && <p className="text-red-500 text-xs mt-1.5">{errors.name}</p>}
+ </div>
 
-            <div className="pt-4 flex justify-end">
-              <button
-                type="submit"
-                disabled={saving}
-                className="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-earth-600 hover:bg-earth-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-earth-500 disabled:opacity-50"
-              >
-                {saving ? 'Saving...' : (isProfileComplete ? 'Update Details' : 'Complete Setup')}
-              </button>
-            </div>
-          </form>
-        </div>
-      </div>
-    </div>
-  );
+ <div>
+ <label className="block text-sm font-medium text-nature-700 dark:text-white ">{tLive("Mobile Number")} <span className="text-red-500">*</span></label>
+ <div className="mt-1 flex rounded-md shadow-sm">
+ <span className="inline-flex items-center px-3 rounded-l-md border border-r-0 border-nature-300 bg-nature-50 dark:bg-nature-900 text-nature-500 dark:text-white sm:text-sm gap-2">
+ <Phone className="h-4 w-4" />
+ +91
+ </span>
+ <input
+ type="tel"
+ required
+ value={phone?.startsWith('+91') ? phone.slice(3) : (phone || '')}
+ onChange={(e) => { const val = e.target.value.replace(/\D/g, '').slice(0, 10);
+ setPhone('+91' + val); setErrors({...errors, phone: ''}); }}
+ className={`flex-1 min-w-0 block w-full px-3 py-2 rounded-none rounded-r-md border focus:ring-earth-500 sm:text-sm ${errors.phone ? 'border-red-500 focus:border-red-500' : 'border-nature-300 focus:border-earth-500'}`}
+ placeholder="9876543210"
+ maxLength={10}
+ />
+ </div>
+ {errors.phone && <p className="text-red-500 text-xs mt-1.5">{errors.phone}</p>}
+ </div>
+
+ <div className="pt-4 flex justify-end">
+ <button
+ type="submit"
+ disabled={saving}
+ className="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-earth-600 hover:bg-earth-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-earth-500 disabled:opacity-50"
+ >
+ {saving ? 'Saving...' : (isProfileComplete ? 'Update Details' : 'Complete Setup')}
+ </button>
+ </div>
+ </form>
+ </div>
+ </div>
+ </div>
+ );
 }

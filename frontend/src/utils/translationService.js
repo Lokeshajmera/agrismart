@@ -5,7 +5,7 @@ const translationCache = {};
 const pendingRequests = {};
 const requestQueue = [];
 let activeRequests = 0;
-const MAX_CONCURRENT = 3;
+const MAX_CONCURRENT = 10; // Boosted concurrency since it's local
 
 const processQueue = () => {
     if (requestQueue.length === 0 || activeRequests >= MAX_CONCURRENT) return;
@@ -13,7 +13,7 @@ const processQueue = () => {
     const nextTask = requestQueue.shift();
     nextTask().finally(() => {
         activeRequests--;
-        setTimeout(processQueue, 300); // Small 300ms delay between batch requests
+        setTimeout(processQueue, 10); // Minimal delay instead of 300ms since we run it locally!
     });
 };
 
@@ -37,27 +37,21 @@ export const translateText = async (text, targetLang) => {
     const promise = new Promise((resolve) => {
         const task = async () => {
             try {
-                // MyMemory API (Free Tier limit: 500 words/day, strict rate limits)
-                const response = await axios.get(`https://api.mymemory.translated.net/get`, {
-                    params: {
-                        q: text,
-                        langpair: `en|${targetLang}`
-                    }
+                // Pointing to your fast local HuggingFace Python API!
+                const response = await axios.post(`http://127.0.0.1:5001/translate`, {
+                    text: text,
+                    target_lang: targetLang
                 });
 
-                if (response.data && response.data.responseData) {
-                    const translated = response.data.responseData.translatedText;
-                    
-                    // Don't cache API warnings
-                    if (translated && !translated.includes("MYMEMORY WARNING")) {
-                        translationCache[cacheKey] = translated;
-                        resolve(translated);
-                        return;
-                    }
+                if (response.data && response.data.translatedText) {
+                    const translated = response.data.translatedText;
+                    translationCache[cacheKey] = translated;
+                    resolve(translated);
+                    return;
                 }
                 resolve(text);
             } catch (error) {
-                console.error('Translation error:', error);
+                console.error('Local Translation Server error. Ensure python translation_server.py is running on port 5001:', error);
                 resolve(text); // Fallback to english
             } finally {
                 delete pendingRequests[cacheKey];

@@ -120,7 +120,23 @@ const resources = {
       "drone_status_online": "ड्रोन की स्थिति: ऑनलाइन",
       "automated_drone_mission": "स्वचालित ड्रोन मिशन 09",
       "today_at": "आज",
-      "ndvi_vegetation_map": "NDVI वनस्पति मानचित्र"
+      "ndvi_vegetation_map": "NDVI वनस्पति मानचित्र",
+      "Welcome Farmer": "नमस्ते किसान",
+      "Humidity": "नमी",
+      "Online": "ऑनलाइन",
+      "Offline": "ऑफ़लाइन",
+      "Optimal Moisture": "अनुकूल नमी",
+      "Active": "सक्रिय",
+      "Root Zone": "रूट ज़ोन",
+      "Soil Health Indicator": "मिट्टी स्वास्थ्य संकेतक",
+      "Soil moisture indicates water availability in soil. Optimal range is": "मिट्टी की नमी पानी की उपलब्धता दर्शाती है। अनुकूल सीमा है",
+      "for healthy crop growth.": "स्वस्थ फसल वृद्धि के लिए।",
+      "Pump Status": "पंप स्थिति",
+      "Valve Status": "वाल्व स्थिति",
+      "Optimal Flow": "अनुकूल प्रवाह",
+      "Today at": "आज",
+      "Drone Status: Online": "ड्रोन की स्थिति: ऑनलाइन",
+      "Automated Drone Mission 09": "स्वचालित ड्रोन मिशन 09"
     }
   },
   mr: {
@@ -180,7 +196,23 @@ const resources = {
       "drone_status_online": "ड्रोन स्थिती: ऑनलाइन",
       "automated_drone_mission": "स्वयंचलित ड्रोन मोहीम 09",
       "today_at": "आज",
-      "ndvi_vegetation_map": "NDVI वनस्पती नकाशा"
+      "ndvi_vegetation_map": "NDVI वनस्पती नकाशा",
+      "Welcome Farmer": "नमस्कार शेतकरी",
+      "Humidity": "आर्द्रता",
+      "Online": "ऑनलाइन",
+      "Offline": "ऑफलाइन",
+      "Optimal Moisture": "इष्टतम ओलावा",
+      "Active": "सक्रिय",
+      "Root Zone": "रूट झोन",
+      "Soil Health Indicator": "माती आरोग्य दर्शक",
+      "Soil moisture indicates water availability in soil. Optimal range is": "मातीतील ओलावा पाण्याची उपलब्धता दर्शवितो. इष्टतम श्रेणी आहे",
+      "for healthy crop growth.": "निरोगी पीक वाढीसाठी.",
+      "Pump Status": "पंप स्थिती",
+      "Valve Status": "वाल्व स्थिती",
+      "Optimal Flow": "इष्टतम प्रवाह",
+      "Today at": "आज",
+      "Drone Status: Online": "ड्रोन स्थिती: ऑनलाइन",
+      "Automated Drone Mission 09": "स्वयंचलित ड्रोन मोहीम 09"
     }
   }
 };
