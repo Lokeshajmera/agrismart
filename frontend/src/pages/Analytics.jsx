@@ -8,6 +8,24 @@ import AnalyticsReport from '../components/AnalyticsReport';
 
 export default function Analytics() {
   const { t } = useTranslation();
+  const [liveData, setLiveData] = useState([]);
+
+  useEffect(() => {
+    const fetchLiveData = async () => {
+      const { data, error } = await supabase
+        .from('sensor_data')
+        .select('*')
+        .order('created_at', { ascending: true })
+        .limit(60);
+      if (data) {
+        setLiveData(data);
+      }
+    };
+    fetchLiveData();
+    const interval = setInterval(fetchLiveData, 10000);
+    return () => clearInterval(interval);
+  }, []);
+
   const chartData = useMemo(() => {
     if (liveData.length === 0) return [];
     const grouped = [];

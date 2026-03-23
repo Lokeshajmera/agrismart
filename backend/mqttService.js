@@ -24,17 +24,19 @@ if (fs.existsSync(STATE_FILE)) {
 }
 
 const persistState = () => {
-    try { fs.writeFileSync(STATE_FILE, JSON.stringify(farmState), 'utf8'); } catch(e) {}
+    try { fs.writeFileSync(STATE_FILE, JSON.stringify(farmState), 'utf8'); } catch (e) { }
 };
 
 // -------- MQTT CONFIG --------
-const brokerUrl = process.env.MQTT_BROKER_URL || 'mqtts://cb000c23aae44005a66f846d40e3f716.s1.eu.hivemq.cloud:8883';
+const brokerUrl = process.env.MQTT_BROKER_URL || 'wss://q5117576.ala.asia-southeast1.emqxsl.com:8084/mqtt';
 
 const options = {
-    username: process.env.MQTT_USERNAME || 'esp32',
+    username: process.env.MQTT_USERNAME || 'espnew',
     password: process.env.MQTT_PASSWORD || 'Pratham@123',
     clientId: `agrismart_backend_${Math.random().toString(16).slice(2)}`,
     rejectUnauthorized: true,
+    connectTimeout: 10000,
+    reconnectPeriod: 3000,
 };
 
 // -------- MQTT CONNECT --------
@@ -217,7 +219,7 @@ const overridePump = async ({ areaId, mode, pump }) => {
     } else if (areaId === 'global') {
         farmState.mode1 = mode;
         farmState.mode2 = mode;
-    
+
         // CRITICAL FIX: If switching from Manual to Auto, we must re-evaluate right now!
         // Otherwise, if you turned it ON in manual mode, and switch to Auto, it will stay ON 
         // indefinitely because the 5-sec heartbeat hasn't natively intercepted it yet.
@@ -229,7 +231,7 @@ const overridePump = async ({ areaId, mode, pump }) => {
                     const moisture = row.moisture || 0;
                     const avg1 = ((row.soil1 != null ? row.soil1 : moisture) + (row.soil2 != null ? row.soil2 : moisture)) / 2;
                     const avg2 = ((row.soil3 != null ? row.soil3 : moisture) + (row.soil4 != null ? row.soil4 : moisture)) / 2;
-                    const temp = row.temperature || ((row.temp1 || row.temp2) ? ((row.temp1||0) + (row.temp2||0)) / 2 : 0);
+                    const temp = row.temperature || ((row.temp1 || row.temp2) ? ((row.temp1 || 0) + (row.temp2 || 0)) / 2 : 0);
 
                     // Re-run Matrix logic locally
                     if (avg1 > 60) farmState.pump1 = false;
