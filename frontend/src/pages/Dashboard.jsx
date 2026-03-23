@@ -139,6 +139,29 @@ export default function Dashboard() {
         const data = await response.json();
 
         if (data.main) {
+          let aqi = 50; // Default Good
+          if (data.coord) {
+             try {
+                const aqiRes = await fetch(`https://api.openweathermap.org/data/2.5/air_pollution?lat=${data.coord.lat}&lon=${data.coord.lon}&appid=${API_KEY}`);
+                const aqiData = await aqiRes.json();
+                
+                if (aqiData?.list?.[0]?.components?.pm2_5 !== undefined) {
+                   const pm25 = aqiData.list[0].components.pm2_5;
+                   // standard US EPA PM2.5 to AQI conversion
+                   if (pm25 <= 12.0) aqi = Math.round((50 / 12.0) * pm25);
+                   else if (pm25 <= 35.4) aqi = Math.round(((100 - 51) / (35.4 - 12.1)) * (pm25 - 12.1) + 51);
+                   else if (pm25 <= 55.4) aqi = Math.round(((150 - 101) / (55.4 - 35.5)) * (pm25 - 35.5) + 101);
+                   else if (pm25 <= 150.4) aqi = Math.round(((200 - 151) / (150.4 - 55.5)) * (pm25 - 55.5) + 151);
+                   else if (pm25 <= 250.4) aqi = Math.round(((300 - 201) / (250.4 - 150.5)) * (pm25 - 150.5) + 201);
+                   else if (pm25 <= 350.4) aqi = Math.round(((400 - 301) / (350.4 - 250.5)) * (pm25 - 250.5) + 301);
+                   else aqi = Math.round(((500 - 401) / (500.4 - 350.5)) * (pm25 - 350.5) + 401);
+                } else if (aqiData?.list?.[0]?.main?.aqi) {
+                   // fallback to euro scale mult
+                   aqi = aqiData.list[0].main.aqi * 20;
+                }
+             } catch(e) {}
+          }
+
           setLiveData(prev => ({
             ...prev,
             temp: Math.round(data.main.temp),
@@ -146,7 +169,8 @@ export default function Dashboard() {
             wind: data.wind.speed,
             soilTemp: Math.round(data.main.temp - 2), // Approximate soil temp
             lat: data.coord?.lat,
-            lon: data.coord?.lon
+            lon: data.coord?.lon,
+            aqi: aqi
           }));
         }
       } catch (err) {
@@ -172,6 +196,7 @@ export default function Dashboard() {
 
       if (data && data.length > 0) {
         const latest = data[0];
+        const sHumidity = latest.humidity != null ? latest.humidity : 45;
 
         if (farmSetup) {
           const { a1Moisture, a2Moisture } = calculateAreaAverages(latest, farmSetup);
@@ -179,6 +204,7 @@ export default function Dashboard() {
             ...prev,
             moisture: Math.round((a1Moisture + a2Moisture) / (a1Moisture > 0 && a2Moisture > 0 ? 2 : 1)),
             ph: 6.5,
+            sensorHumidity: sHumidity,
             area1Moisture: a1Moisture,
             area2Moisture: a2Moisture
           }));
@@ -191,7 +217,8 @@ export default function Dashboard() {
           setLiveData(prev => ({
             ...prev,
             moisture: mCount > 0 ? Math.round(mSum / mCount) : prev.moisture,
-            ph: 6.5
+            ph: 6.5,
+            sensorHumidity: sHumidity
           }));
         }
       }
@@ -406,16 +433,27 @@ export default function Dashboard() {
 
             <div className="flex justify-around items-center w-full gap-2">
               <CircularProgress value={liveData.moisture} label={t('Soil Moisture')} subLabel={t('Moderate')} color="#3b82f6" bgColor="#e1efe6" size={96} strokeWidth={6} />
-              <CircularProgress value={liveData.soilTemp} label={t('Soil Temp')} subLabel={t('Normal')} color="#f59e0b" bgColor="#e1efe6" size={96} strokeWidth={6} />
+              
+              <CircularProgress value={liveData.sensorHumidity || 45} label={t('Humidity')} subLabel={t('Normal')} color="#0ea5e9" bgColor="#e1efe6" size={96} strokeWidth={6} />
               <div className="flex flex-col items-center justify-center relative" style={{ width: 96, height: 96 }}>
                 <svg width="96" height="96" className="transform -rotate-90 overflow-visible">
                   <circle cx="48" cy="48" r="45" stroke="#e1efe6" strokeWidth="6" fill="none" />
-                  <circle cx="48" cy="48" r="45" stroke="#22c55e" strokeWidth="6" fill="none" strokeDasharray="282.7" strokeDashoffset="100" strokeLinecap="round" className="transition-all duration-1000" />
+                  <circle 
+                     cx="48" cy="48" r="45" 
+                     stroke={Math.round((liveData.wind || 0) * 3.6) <= 15 ? '#22c55e' : Math.round((liveData.wind || 0) * 3.6) <= 30 ? '#eab308' : '#ef4444'} 
+                     strokeWidth="6" fill="none" strokeDasharray="282.7" 
+                     strokeDashoffset={282.7 - (Math.min(Math.round((liveData.wind || 0) * 3.6), 100) / 100) * 282.7} 
+                     strokeLinecap="round" className="transition-all duration-1000" 
+                  />
                 </svg>
                 <div className="absolute flex flex-col items-center justify-center text-center px-1 w-full">
-                  <span className="text-xl font-bold text-nature-900 dark:text-white transition-all leading-none">{liveData.ph}</span>
-                  <span className="text-[9px] text-nature-500 dark:text-white uppercase tracking-tighter mt-1 leading-tight break-words w-full">{t('pH Level')}</span>
-                  <span className="text-[9px] text-green-600 mt-0.5">{t('Optimal')}</span>
+                  <span className="text-[22px] font-black tracking-tighter text-nature-900 dark:text-white transition-all leading-none mt-1 flex items-baseline gap-0.5">
+                    {Math.round((liveData.wind || 0) * 3.6)} <span className="text-[10px] font-bold text-nature-400">km/h</span>
+                  </span>
+                  <span className="text-[9px] text-nature-500 dark:text-white uppercase font-bold tracking-tighter mt-1 leading-tight break-words w-full">{t('Wind Speed')}</span>
+                  <span className={`text-[8.5px] font-bold mt-0.5 ${Math.round((liveData.wind || 0) * 3.6) <= 15 ? 'text-green-600' : Math.round((liveData.wind || 0) * 3.6) <= 30 ? 'text-yellow-600' : 'text-red-500'}`}>
+                    {Math.round((liveData.wind || 0) * 3.6) <= 5 ? 'Calm' : Math.round((liveData.wind || 0) * 3.6) <= 15 ? 'Light Breeze' : Math.round((liveData.wind || 0) * 3.6) <= 30 ? 'Windy' : 'Stormy'}
+                  </span>
                 </div>
               </div>
             </div>
