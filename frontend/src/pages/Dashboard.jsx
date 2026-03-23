@@ -7,7 +7,7 @@ import {
   Wheat, IndianRupee, Activity
 } from 'lucide-react';
 
-import { MapContainer, TileLayer, Polygon, Marker, useMap } from 'react-leaflet';
+import { MapContainer, TileLayer, Polygon, Marker, useMap, Popup, Circle } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 import L from 'leaflet';
 
@@ -22,7 +22,7 @@ function MapController({ center, zoom }) {
   const map = useMap();
   useEffect(() => {
     if (center && center.length === 2 && !isNaN(center[0]) && !isNaN(center[1])) {
-       map.setView(center, zoom || 15, { animate: false });
+      map.setView(center, zoom || 15, { animate: false });
     }
   }, [center, map, zoom]);
   return null;
@@ -141,25 +141,25 @@ export default function Dashboard() {
         if (data.main) {
           let aqi = 50; // Default Good
           if (data.coord) {
-             try {
-                const aqiRes = await fetch(`https://api.openweathermap.org/data/2.5/air_pollution?lat=${data.coord.lat}&lon=${data.coord.lon}&appid=${API_KEY}`);
-                const aqiData = await aqiRes.json();
-                
-                if (aqiData?.list?.[0]?.components?.pm2_5 !== undefined) {
-                   const pm25 = aqiData.list[0].components.pm2_5;
-                   // standard US EPA PM2.5 to AQI conversion
-                   if (pm25 <= 12.0) aqi = Math.round((50 / 12.0) * pm25);
-                   else if (pm25 <= 35.4) aqi = Math.round(((100 - 51) / (35.4 - 12.1)) * (pm25 - 12.1) + 51);
-                   else if (pm25 <= 55.4) aqi = Math.round(((150 - 101) / (55.4 - 35.5)) * (pm25 - 35.5) + 101);
-                   else if (pm25 <= 150.4) aqi = Math.round(((200 - 151) / (150.4 - 55.5)) * (pm25 - 55.5) + 151);
-                   else if (pm25 <= 250.4) aqi = Math.round(((300 - 201) / (250.4 - 150.5)) * (pm25 - 150.5) + 201);
-                   else if (pm25 <= 350.4) aqi = Math.round(((400 - 301) / (350.4 - 250.5)) * (pm25 - 250.5) + 301);
-                   else aqi = Math.round(((500 - 401) / (500.4 - 350.5)) * (pm25 - 350.5) + 401);
-                } else if (aqiData?.list?.[0]?.main?.aqi) {
-                   // fallback to euro scale mult
-                   aqi = aqiData.list[0].main.aqi * 20;
-                }
-             } catch(e) {}
+            try {
+              const aqiRes = await fetch(`https://api.openweathermap.org/data/2.5/air_pollution?lat=${data.coord.lat}&lon=${data.coord.lon}&appid=${API_KEY}`);
+              const aqiData = await aqiRes.json();
+
+              if (aqiData?.list?.[0]?.components?.pm2_5 !== undefined) {
+                const pm25 = aqiData.list[0].components.pm2_5;
+                // standard US EPA PM2.5 to AQI conversion
+                if (pm25 <= 12.0) aqi = Math.round((50 / 12.0) * pm25);
+                else if (pm25 <= 35.4) aqi = Math.round(((100 - 51) / (35.4 - 12.1)) * (pm25 - 12.1) + 51);
+                else if (pm25 <= 55.4) aqi = Math.round(((150 - 101) / (55.4 - 35.5)) * (pm25 - 35.5) + 101);
+                else if (pm25 <= 150.4) aqi = Math.round(((200 - 151) / (150.4 - 55.5)) * (pm25 - 55.5) + 151);
+                else if (pm25 <= 250.4) aqi = Math.round(((300 - 201) / (250.4 - 150.5)) * (pm25 - 150.5) + 201);
+                else if (pm25 <= 350.4) aqi = Math.round(((400 - 301) / (350.4 - 250.5)) * (pm25 - 250.5) + 301);
+                else aqi = Math.round(((500 - 401) / (500.4 - 350.5)) * (pm25 - 350.5) + 401);
+              } else if (aqiData?.list?.[0]?.main?.aqi) {
+                // fallback to euro scale mult
+                aqi = aqiData.list[0].main.aqi * 20;
+              }
+            } catch (e) { }
           }
 
           setLiveData(prev => ({
@@ -206,7 +206,15 @@ export default function Dashboard() {
             ph: 6.5,
             sensorHumidity: sHumidity,
             area1Moisture: a1Moisture,
-            area2Moisture: a2Moisture
+            area2Moisture: a2Moisture,
+            avg1: a1Moisture,
+            avg2: a2Moisture,
+            s1: latest.soil1,
+            s2: latest.soil2,
+            s3: latest.soil3,
+            s4: latest.soil4,
+            dispIrr1: latest.irrigation1 || false,
+            dispIrr2: latest.irrigation2 || false
           }));
         } else {
           let mSum = 0, mCount = 0;
@@ -218,7 +226,15 @@ export default function Dashboard() {
             ...prev,
             moisture: mCount > 0 ? Math.round(mSum / mCount) : prev.moisture,
             ph: 6.5,
-            sensorHumidity: sHumidity
+            sensorHumidity: sHumidity,
+            avg1: latest.soil1 || 0,
+            avg2: latest.soil3 || 0,
+            s1: latest.soil1,
+            s2: latest.soil2,
+            s3: latest.soil3,
+            s4: latest.soil4,
+            dispIrr1: latest.irrigation1 || false,
+            dispIrr2: latest.irrigation2 || false
           }));
         }
       }
@@ -246,39 +262,39 @@ export default function Dashboard() {
   // Default map settings
   let mapCenter = [18.2324, 73.8567];
   let mapBoundary = [
-      [18.2350, 73.8500], [18.2350, 73.8650], [18.2250, 73.8650], [18.2250, 73.8500]
+    [18.2350, 73.8500], [18.2350, 73.8650], [18.2250, 73.8650], [18.2250, 73.8500]
   ];
   let mapSensors = [];
   let mapZoom = 14;
 
   if (farmSetup && farmSetup.coordinates && Array.isArray(farmSetup.coordinates) && farmSetup.coordinates.length > 0) {
-      const coords = farmSetup.coordinates;
-      const validCoords = coords.filter(c => Array.isArray(c) && c.length === 2 && !isNaN(c[0]) && !isNaN(c[1]));
-      
-      if (validCoords.length > 0) {
-          const centerLat = validCoords.reduce((sum, c) => sum + c[0], 0) / validCoords.length;
-          const centerLng = validCoords.reduce((sum, c) => sum + c[1], 0) / validCoords.length;
-          mapCenter = [centerLat, centerLng];
-          mapBoundary = validCoords;
-          mapZoom = 17; // little zoomed in as requested
-          
-          // Auto generate sensors
-          validCoords.forEach((pos, i) => {
-             mapSensors.push({ id: i + 1, pos });
-          });
-      }
+    const coords = farmSetup.coordinates;
+    const validCoords = coords.filter(c => Array.isArray(c) && c.length === 2 && !isNaN(c[0]) && !isNaN(c[1]));
+
+    if (validCoords.length > 0) {
+      const centerLat = validCoords.reduce((sum, c) => sum + c[0], 0) / validCoords.length;
+      const centerLng = validCoords.reduce((sum, c) => sum + c[1], 0) / validCoords.length;
+      mapCenter = [centerLat, centerLng];
+      mapBoundary = validCoords;
+      mapZoom = 17; // little zoomed in as requested
+
+      // Auto generate sensors
+      validCoords.forEach((pos, i) => {
+        mapSensors.push({ id: i + 1, pos });
+      });
+    }
   } else if (profile.district) {
-       // if we have weather coord fallback
-       if (liveData.lat && liveData.lon && !isNaN(liveData.lat) && !isNaN(liveData.lon)) {
-          mapCenter = [liveData.lat, liveData.lon];
-          mapBoundary = [
-              [liveData.lat + 0.005, liveData.lon - 0.005],
-              [liveData.lat + 0.005, liveData.lon + 0.005],
-              [liveData.lat - 0.005, liveData.lon + 0.005],
-              [liveData.lat - 0.005, liveData.lon - 0.005]
-          ];
-          mapZoom = 15;
-       }
+    // if we have weather coord fallback
+    if (liveData.lat && liveData.lon && !isNaN(liveData.lat) && !isNaN(liveData.lon)) {
+      mapCenter = [liveData.lat, liveData.lon];
+      mapBoundary = [
+        [liveData.lat + 0.005, liveData.lon - 0.005],
+        [liveData.lat + 0.005, liveData.lon + 0.005],
+        [liveData.lat - 0.005, liveData.lon + 0.005],
+        [liveData.lat - 0.005, liveData.lon - 0.005]
+      ];
+      mapZoom = 15;
+    }
   }
 
   return (
@@ -433,17 +449,17 @@ export default function Dashboard() {
 
             <div className="flex justify-around items-center w-full gap-2">
               <CircularProgress value={liveData.moisture} label={t('Soil Moisture')} subLabel={t('Moderate')} color="#3b82f6" bgColor="#e1efe6" size={96} strokeWidth={6} />
-              
+
               <CircularProgress value={liveData.sensorHumidity || 45} label={t('Humidity')} subLabel={t('Normal')} color="#0ea5e9" bgColor="#e1efe6" size={96} strokeWidth={6} />
               <div className="flex flex-col items-center justify-center relative" style={{ width: 96, height: 96 }}>
                 <svg width="96" height="96" className="transform -rotate-90 overflow-visible">
                   <circle cx="48" cy="48" r="45" stroke="#e1efe6" strokeWidth="6" fill="none" />
-                  <circle 
-                     cx="48" cy="48" r="45" 
-                     stroke={Math.round((liveData.wind || 0) * 3.6) <= 15 ? '#22c55e' : Math.round((liveData.wind || 0) * 3.6) <= 30 ? '#eab308' : '#ef4444'} 
-                     strokeWidth="6" fill="none" strokeDasharray="282.7" 
-                     strokeDashoffset={282.7 - (Math.min(Math.round((liveData.wind || 0) * 3.6), 100) / 100) * 282.7} 
-                     strokeLinecap="round" className="transition-all duration-1000" 
+                  <circle
+                    cx="48" cy="48" r="45"
+                    stroke={Math.round((liveData.wind || 0) * 3.6) <= 15 ? '#22c55e' : Math.round((liveData.wind || 0) * 3.6) <= 30 ? '#eab308' : '#ef4444'}
+                    strokeWidth="6" fill="none" strokeDasharray="282.7"
+                    strokeDashoffset={282.7 - (Math.min(Math.round((liveData.wind || 0) * 3.6), 100) / 100) * 282.7}
+                    strokeLinecap="round" className="transition-all duration-1000"
                   />
                 </svg>
                 <div className="absolute flex flex-col items-center justify-center text-center px-1 w-full">
@@ -503,33 +519,33 @@ export default function Dashboard() {
             </div>
 
             <div className="w-full h-[220px] rounded-xl overflow-hidden relative border border-nature-200 dark:border-nature-800 bg-nature-100 dark:bg-nature-900 shadow-inner">
-               <div className="absolute inset-0 z-10 block pointer-events-none">
-                  {mapBoundary && mapCenter && (
-                    <MapContainer 
-                       center={mapCenter} 
-                       zoom={mapZoom} 
-                       className="h-full w-full pointer-events-none" 
-                       zoomControl={false}
-                       dragging={false}
-                       scrollWheelZoom={false}
-                       doubleClickZoom={false}
-                       touchZoom={false}
-                    >
-                        <MapController center={mapCenter} zoom={mapZoom} />
-                        <TileLayer url="https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}" />
-                        <Polygon positions={mapBoundary} pathOptions={{ color: '#10b981', fillColor: '#10b981', fillOpacity: 0.3 }} />
-                        {mapSensors.map((s) => (
-                           <Marker key={`sensor-${s.id}`} position={s.pos}></Marker>
-                        ))}
-                    </MapContainer>
-                  )}
-               </div>
-               
+              <div className="absolute inset-0 z-10 block pointer-events-none">
+                {mapBoundary && mapCenter && (
+                  <MapContainer
+                    center={mapCenter}
+                    zoom={mapZoom}
+                    className="h-full w-full pointer-events-none"
+                    zoomControl={false}
+                    dragging={false}
+                    scrollWheelZoom={false}
+                    doubleClickZoom={false}
+                    touchZoom={false}
+                  >
+                    <MapController center={mapCenter} zoom={mapZoom} />
+                    <TileLayer url="https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}" />
+                    <Polygon positions={mapBoundary} pathOptions={{ color: '#10b981', fillColor: '#10b981', fillOpacity: 0.3 }} />
+                    {mapSensors.map((s) => (
+                      <Marker key={`sensor-${s.id}`} position={s.pos}></Marker>
+                    ))}
+                  </MapContainer>
+                )}
+              </div>
+
               {/* Overlay Gradient to give it a Card feel */}
               <div className="absolute inset-0 bg-gradient-to-t from-nature-900/60 via-transparent to-transparent z-20 pointer-events-none"></div>
-              
+
               <div className="absolute bottom-3 left-3 z-30 flex items-center gap-2 bg-black/60 backdrop-blur-md px-3 py-1.5 rounded-lg text-white text-xs font-bold pointer-events-none group-hover:bg-earth-600 transition-colors shadow-lg border border-white/10">
-                 <MapIcon className="w-4 h-4" /> {t('Expand Map')}
+                <MapIcon className="w-4 h-4" /> {t('Expand Map')}
               </div>
             </div>
           </Link>
@@ -551,17 +567,74 @@ export default function Dashboard() {
             </div>
           </Link>
 
-          {/* NDVI Vegetation Map (Small View) */}
-          <div className="bg-white dark:bg-nature-950/80 backdrop-blur-md rounded-2xl border border-nature-200 dark:border-nature-800 p-4 shadow-sm flex-1 flex flex-col">
-            <h3 className="text-base font-bold text-nature-900 dark:text-white mb-3 group-hover:text-earth-600 transition-colors">{t('NDVI Vegetation Map')}</h3>
-            <div className="w-full flex-1 rounded-xl overflow-hidden relative border border-nature-200 dark:border-nature-800 min-h-[140px] max-h-[220px]">
-              <img src="/images/ndvi-map.png" alt="NDVI" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" />
-              <div className="absolute inset-x-2 bottom-2 bg-white dark:bg-nature-950/90 backdrop-blur-sm border border-nature-200 dark:border-nature-800 rounded-lg p-1.5 flex gap-1 justify-center sm:justify-between overflow-x-auto scrollbar-hide flex-wrap pointer-events-none">
-                <button className="px-3 py-1 text-[10px] font-bold bg-earth-500 text-white rounded-md">NDVI</button>
-                <button className="px-3 py-1 text-[10px] font-semibold text-nature-700 dark:text-white hover:text-nature-900 dark:text-white whitespace-nowrap">{t('Topography')}</button>
-                <button className="px-3 py-1 text-[10px] font-semibold text-nature-700 dark:text-white hover:text-nature-900 dark:text-white whitespace-nowrap">{t('Crop Zones')}</button>
+          {/* Irrigation Zone Status Map */}
+          <div className="bg-white dark:bg-nature-950/80 backdrop-blur-md rounded-2xl border border-nature-200 dark:border-nature-800 p-3 sm:p-4 shadow-sm flex-1 flex flex-col min-h-[300px]">
+            <h3 className="text-[13px] sm:text-[15px] font-bold text-nature-900 dark:text-white mb-3 flex items-center gap-2">
+              <Droplets className="w-4 h-4 text-blue-500" /> {t('Irrigation Zone Status Map')}
+            </h3>
+
+            {!mapCenter || !mapBoundary || mapBoundary.length < 2 ? (
+              <div className="flex-1 flex items-center justify-center text-sm text-nature-500 font-medium bg-nature-50 dark:bg-nature-900/40 rounded-xl">
+                {t('Configure your farm boundary first')}
               </div>
-            </div>
+            ) : (() => {
+              // Compute bounding box from actual boundary coordinates
+              const minLat = mapBoundary.reduce((mn, c) => Math.min(mn, c[0]), Infinity);
+              const maxLat = mapBoundary.reduce((mx, c) => Math.max(mx, c[0]), -Infinity);
+              const minLon = mapBoundary.reduce((mn, c) => Math.min(mn, c[1]), Infinity);
+              const maxLon = mapBoundary.reduce((mx, c) => Math.max(mx, c[1]), -Infinity);
+              const midLat = (minLat + maxLat) / 2;
+              const gap = (maxLat - minLat) * 0.02; // tiny visual gap between zones
+              const pad = (maxLat - minLat) * 0.03; // small inset padding
+
+              // Zone A = top half rectangle, Zone B = bottom half rectangle
+              const zoneARect = [
+                [maxLat - pad, minLon + pad], [maxLat - pad, maxLon - pad],
+                [midLat + gap, maxLon - pad], [midLat + gap, minLon + pad]
+              ];
+              const zoneBRect = [
+                [midLat - gap, minLon + pad], [midLat - gap, maxLon - pad],
+                [minLat + pad, maxLon - pad], [minLat + pad, minLon + pad]
+              ];
+
+              const sensorPts = [
+                { n: 1, v: mapBoundary[0], val: liveData.s1, zone: 'Area 1' },
+                { n: 2, v: mapBoundary[Math.floor((mapBoundary.length - 1) * 0.33)] || mapBoundary[1], val: liveData.s2, zone: 'Area 1' },
+                { n: 3, v: mapBoundary[Math.floor((mapBoundary.length - 1) * 0.66)] || mapBoundary[2], val: liveData.s3, zone: 'Area 2' },
+                { n: 4, v: mapBoundary[mapBoundary.length - 1], val: liveData.s4, zone: 'Area 2' },
+              ].filter(s => s.v && !isNaN(s.v[0]));
+
+              const zoneAColor = liveData.dispIrr1 ? '#ef4444' : ((liveData.avg1 ?? 0) >= 35 && (liveData.avg1 ?? 0) <= 60) ? '#22c55e' : '#eab308';
+              const zoneBColor = liveData.dispIrr2 ? '#ef4444' : ((liveData.avg2 ?? 0) >= 35 && (liveData.avg2 ?? 0) <= 60) ? '#22c55e' : '#eab308';
+
+              return (
+                <div className="w-full flex-1 rounded-xl overflow-hidden border border-nature-200 dark:border-nature-800 relative shadow-inner">
+                  <MapContainer center={mapCenter} zoom={mapZoom} className="h-full w-full z-0" zoomControl={false} scrollWheelZoom={false} doubleClickZoom={false}>
+                    <MapController center={mapCenter} zoom={mapZoom} />
+                    <TileLayer url="https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}" maxZoom={20} attribution="Tiles &copy; Esri" />
+                    {/* Farm boundary outline */}
+                    <Polygon positions={mapBoundary} pathOptions={{ color: '#10b981', fillColor: '#10b981', fillOpacity: 0.08, weight: 2, dashArray: '5' }} />
+                    {/* Zone A rectangle (top half) */}
+                    <Polygon positions={zoneARect} pathOptions={{ color: zoneAColor, fillColor: zoneAColor, fillOpacity: 0.35, weight: 2 }}>
+                      <Popup><div className="p-1.5 min-w-[140px]"><h4 className="font-black text-[11px] border-b pb-1 mb-2 uppercase">{t('Zone A (Area 1)')}</h4><p className="text-xs mb-1">{t('Moisture:')} <b>{(liveData.avg1 ?? 0).toFixed(1)}%</b></p><p className="text-xs mb-2">{t('Temp:')} <b>{liveData.temp}°C</b></p><span className={`text-[10px] font-bold px-2 py-0.5 rounded-full border ${liveData.dispIrr1 ? 'bg-red-100 text-red-600 border-red-200' : ((liveData.avg1 ?? 0) >= 35 && (liveData.avg1 ?? 0) <= 60) ? 'bg-green-100 text-green-700 border-green-200' : 'bg-orange-100 text-orange-600 border-orange-200'}`}>{liveData.dispIrr1 ? '🔴 PUMP ON' : ((liveData.avg1 ?? 0) >= 35 && (liveData.avg1 ?? 0) <= 60) ? '🟢 OPTIMAL' : '🟡 DRY/WARNING'}</span></div></Popup>
+                    </Polygon>
+                    {/* Zone B rectangle (bottom half) */}
+                    <Polygon positions={zoneBRect} pathOptions={{ color: zoneBColor, fillColor: zoneBColor, fillOpacity: 0.35, weight: 2 }}>
+                      <Popup><div className="p-1.5 min-w-[140px]"><h4 className="font-black text-[11px] border-b pb-1 mb-2 uppercase">{t('Zone B (Area 2)')}</h4><p className="text-xs mb-1">{t('Moisture:')} <b>{(liveData.avg2 ?? 0).toFixed(1)}%</b></p><p className="text-xs mb-2">{t('Temp:')} <b>{liveData.temp}°C</b></p><span className={`text-[10px] font-bold px-2 py-0.5 rounded-full border ${liveData.dispIrr2 ? 'bg-red-100 text-red-600 border-red-200' : ((liveData.avg2 ?? 0) >= 35 && (liveData.avg2 ?? 0) <= 60) ? 'bg-green-100 text-green-700 border-green-200' : 'bg-orange-100 text-orange-600 border-orange-200'}`}>{liveData.dispIrr2 ? '🔴 PUMP ON' : ((liveData.avg2 ?? 0) >= 35 && (liveData.avg2 ?? 0) <= 60) ? '🟢 OPTIMAL' : '🟡 DRY/WARNING'}</span></div></Popup>
+                    </Polygon>
+                    {/* Sensor markers on actual boundary vertices */}
+                    {sensorPts.map(s => (
+                      <Marker key={s.n} position={s.v}>
+                        <Popup><span className="text-[10px] uppercase font-bold block mb-1">Sensor {s.n} ({s.zone})</span>{t('Moisture:')} <span className={`font-black ${((s.val ?? 0) < 35) ? 'text-orange-500' : 'text-green-600'}`}>{s.val ?? 0}%</span></Popup>
+                      </Marker>
+                    ))}
+                  </MapContainer>
+                  <Link to="/app/map" onClick={e => e.stopPropagation()} className="absolute bottom-3 right-3 z-[400] flex items-center gap-1.5 bg-black/70 hover:bg-earth-600 backdrop-blur-md px-3 py-1.5 rounded-lg text-white text-[11px] font-bold transition-colors shadow-lg border border-white/10">
+                    <MapIcon className="w-3.5 h-3.5" /> {t('Expand Map')}
+                  </Link>
+                </div>
+              );
+            })()}
           </div>
 
         </div>

@@ -5,7 +5,7 @@ import 'leaflet/dist/leaflet.css';
 import L from 'leaflet';
 import { useAuth } from '../context/AuthContext';
 import { supabase } from '../supabaseClient';
-import { MapPin, Sprout } from 'lucide-react';
+import { MapPin, Sprout, Droplets } from 'lucide-react';
 
 // Fix for default Leaflet markers
 delete L.Icon.Default.prototype._getIconUrl;
@@ -88,6 +88,39 @@ export default function FarmMap() {
   const [regions, setRegions] = useState(defaultRegions);
   const [selectedRegionKey, setSelectedRegionKey] = useState('mh');
   const [isMapLocating, setIsMapLocating] = useState(true);
+  const [mapType, setMapType] = useState('satellite');
+  const [sensorData, setSensorData] = useState(null);
+
+  // Real-time sensor polling from Supabase
+  useEffect(() => {
+    if (!user) return;
+    const fetchSensors = async () => {
+      try {
+        const { data } = await supabase
+          .from('sensor_data')
+          .select('soil1, soil2, soil3, soil4, irrigation1, irrigation2, temp1, created_at')
+          .order('created_at', { ascending: false })
+          .limit(1);
+        if (data && data.length > 0) {
+          const d = data[0];
+          const avg1 = [d.soil1, d.soil2].filter(v => v != null);
+          const avg2 = [d.soil3, d.soil4].filter(v => v != null);
+          setSensorData({
+            s1: d.soil1, s2: d.soil2, s3: d.soil3, s4: d.soil4,
+            avg1: avg1.length > 0 ? avg1.reduce((a, b) => a + b, 0) / avg1.length : 0,
+            avg2: avg2.length > 0 ? avg2.reduce((a, b) => a + b, 0) / avg2.length : 0,
+            irr1: d.irrigation1 || false,
+            irr2: d.irrigation2 || false,
+            temp: d.temp1 || 28,
+            updatedAt: d.created_at
+          });
+        }
+      } catch (e) {}
+    };
+    fetchSensors();
+    const iv = setInterval(fetchSensors, 10000);
+    return () => clearInterval(iv);
+  }, [user]);
 
   useEffect(() => {
     const fetchUserLocation = async () => {
@@ -187,10 +220,21 @@ export default function FarmMap() {
    <MapPin className="w-4 h-4 text-earth-600" />
    {region.name}
  </div>
- <div className="hidden sm:block w-px h-6 bg-nature-200 mx-1"></div>
- <button className="bg-earth-500 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-earth-600 transition-colors shadow-sm whitespace-nowrap cursor-pointer">
- {t("NDVI Layer")}
- </button>
+ <div className="hidden sm:block w-px h-6 bg-nature-200 dark:bg-nature-700 mx-1"></div>
+ <div className="flex bg-nature-100 dark:bg-nature-800 rounded-lg p-1 border border-nature-200 dark:border-nature-700">
+   <button 
+     onClick={() => setMapType('street')}
+     className={`px-3 py-1.5 rounded-md text-[11px] sm:text-xs font-bold transition-all ${mapType === 'street' ? 'bg-white dark:bg-nature-700 text-nature-900 dark:text-white shadow-[0_2px_8px_rgba(0,0,0,0.05)]' : 'text-nature-500 hover:text-nature-700 dark:hover:text-nature-300'}`}
+   >
+     🗺️ {t("Map View")}
+   </button>
+   <button 
+     onClick={() => setMapType('satellite')}
+     className={`px-3 py-1.5 rounded-md text-[11px] sm:text-xs font-bold transition-all ${mapType === 'satellite' ? 'bg-earth-600 text-white shadow-[0_2px_10px_rgba(217,119,6,0.3)]' : 'text-nature-500 hover:text-nature-700 dark:hover:text-nature-300'}`}
+   >
+     🛰️ {t("Satellite View")}
+   </button>
+ </div>
  </div>
  </div>
 
@@ -201,8 +245,16 @@ export default function FarmMap() {
  <span className="text-sm font-bold text-white tracking-wide">{t("Farm Boundary")}</span>
  </div>
  <div className="flex items-center gap-3">
- <div className="w-4 h-4 bg-orange-500/40 border-2 border-orange-500 rounded-full shadow-[0_0_10px_rgba(249,115,22,0.5)]"></div>
- <span className="text-sm font-bold text-white tracking-wide">{t("Dry Zone Detected")}</span>
+ <div className="w-4 h-4 bg-yellow-500/40 border-2 border-yellow-500 rounded"></div>
+ <span className="text-sm font-bold text-white tracking-wide">{t("Zone A (Area 1)")}</span>
+ </div>
+ <div className="flex items-center gap-3">
+ <div className="w-4 h-4 bg-blue-500/40 border-2 border-blue-500 rounded"></div>
+ <span className="text-sm font-bold text-white tracking-wide">{t("Zone B (Area 2)")}</span>
+ </div>
+ <div className="flex items-center gap-3">
+ <div className="w-4 h-4 bg-red-500/40 border-2 border-red-500 rounded-full shadow-[0_0_10px_rgba(239,68,68,0.5)]"></div>
+ <span className="text-sm font-bold text-white tracking-wide">{t("Irrigation ON")}</span>
  </div>
  <div className="flex items-center gap-3">
  <img src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon.png" className="h-5 filter brightness-110 drop-shadow-md" alt="marker" />
@@ -215,11 +267,65 @@ export default function FarmMap() {
  <MapController center={region.center} />
  <MapInvalidator />
  <TileLayer
- attribution='&copy; <a href="https://www.openstreetmap.org/copyright">{t("OpenStreetMap")}</a> contributors'
- url="https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}"
+ key={mapType}
+ attribution={mapType === 'satellite' ? "Tiles &copy; Esri &mdash; Source: Esri, Maxar, Earthstar Geographics" : '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'}
+ url={mapType === 'satellite' ? "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}" : "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"}
+ maxZoom={19}
  />
 
- <Polygon positions={region.boundary} pathOptions={{ color: '#10b981', fillColor: '#10b981', fillOpacity: 0.2 }} />
+ <Polygon positions={region.boundary} pathOptions={{ color: '#10b981', fillColor: '#10b981', fillOpacity: 0.15, weight: 2, dashArray: '6' }} />
+
+ {/* Irrigation Zone Rectangles */}
+ {(() => {
+   const b = region.boundary;
+   if (!b || b.length < 3) return null;
+   const minLat = b.reduce((mn, c) => Math.min(mn, c[0]), Infinity);
+   const maxLat = b.reduce((mx, c) => Math.max(mx, c[0]), -Infinity);
+   const minLon = b.reduce((mn, c) => Math.min(mn, c[1]), Infinity);
+   const maxLon = b.reduce((mx, c) => Math.max(mx, c[1]), -Infinity);
+   const midLat = (minLat + maxLat) / 2;
+   const gap = (maxLat - minLat) * 0.02;
+   const pad = (maxLat - minLat) * 0.03;
+   const zoneARect = [[maxLat - pad, minLon + pad], [maxLat - pad, maxLon - pad], [midLat + gap, maxLon - pad], [midLat + gap, minLon + pad]];
+   const zoneBRect = [[midLat - gap, minLon + pad], [midLat - gap, maxLon - pad], [minLat + pad, maxLon - pad], [minLat + pad, minLon + pad]];
+
+   const sd = sensorData;
+   const zoneAColor = sd?.irr1 ? '#ef4444' : ((sd?.avg1 ?? 0) >= 35 && (sd?.avg1 ?? 0) <= 60) ? '#22c55e' : '#eab308';
+   const zoneBColor = sd?.irr2 ? '#ef4444' : ((sd?.avg2 ?? 0) >= 35 && (sd?.avg2 ?? 0) <= 60) ? '#22c55e' : '#eab308';
+
+   return (
+     <>
+       <Polygon positions={zoneARect} pathOptions={{ color: zoneAColor, fillColor: zoneAColor, fillOpacity: 0.35, weight: 2 }}>
+         <Popup><div className="p-2 min-w-[160px]"><h4 className="font-black text-xs border-b pb-1 mb-2 uppercase">{t('Zone A (Area 1)')}</h4><p className="text-xs mb-1">{t('Avg Moisture:')} <b>{(sd?.avg1 ?? 0).toFixed(1)}%</b></p><p className="text-xs mb-1">{t('Temp:')} <b>{sd?.temp ?? 28}°C</b></p><p className="text-xs mb-2">{t('Soil 1:')} <b>{sd?.s1 ?? '--'}%</b> &bull; {t('Soil 2:')} <b>{sd?.s2 ?? '--'}%</b></p><span className={`text-[10px] font-bold px-2 py-0.5 rounded-full border ${sd?.irr1 ? 'bg-red-100 text-red-600 border-red-200' : ((sd?.avg1 ?? 0) >= 35 && (sd?.avg1 ?? 0) <= 60) ? 'bg-green-100 text-green-700 border-green-200' : 'bg-orange-100 text-orange-600 border-orange-200'}`}>{sd?.irr1 ? '🔴 PUMP ON' : ((sd?.avg1 ?? 0) >= 35 && (sd?.avg1 ?? 0) <= 60) ? '🟢 OPTIMAL' : '🟡 DRY/WARNING'}</span>{sd?.updatedAt && <p className="text-[9px] text-gray-400 mt-2">{t('Updated:')} {new Date(sd.updatedAt).toLocaleTimeString()}</p>}</div></Popup>
+       </Polygon>
+       <Polygon positions={zoneBRect} pathOptions={{ color: zoneBColor, fillColor: zoneBColor, fillOpacity: 0.35, weight: 2 }}>
+         <Popup><div className="p-2 min-w-[160px]"><h4 className="font-black text-xs border-b pb-1 mb-2 uppercase">{t('Zone B (Area 2)')}</h4><p className="text-xs mb-1">{t('Avg Moisture:')} <b>{(sd?.avg2 ?? 0).toFixed(1)}%</b></p><p className="text-xs mb-1">{t('Temp:')} <b>{sd?.temp ?? 28}°C</b></p><p className="text-xs mb-2">{t('Soil 3:')} <b>{sd?.s3 ?? '--'}%</b> &bull; {t('Soil 4:')} <b>{sd?.s4 ?? '--'}%</b></p><span className={`text-[10px] font-bold px-2 py-0.5 rounded-full border ${sd?.irr2 ? 'bg-red-100 text-red-600 border-red-200' : ((sd?.avg2 ?? 0) >= 35 && (sd?.avg2 ?? 0) <= 60) ? 'bg-green-100 text-green-700 border-green-200' : 'bg-orange-100 text-orange-600 border-orange-200'}`}>{sd?.irr2 ? '🔴 PUMP ON' : ((sd?.avg2 ?? 0) >= 35 && (sd?.avg2 ?? 0) <= 60) ? '🟢 OPTIMAL' : '🟡 DRY/WARNING'}</span>{sd?.updatedAt && <p className="text-[9px] text-gray-400 mt-2">{t('Updated:')} {new Date(sd.updatedAt).toLocaleTimeString()}</p>}</div></Popup>
+       </Polygon>
+     </>
+   );
+ })()}
+
+ {/* Sensor markers with live data */}
+ {region.sensors.map((sensor, idx) => {
+   const liveVal = sensorData ? [sensorData.s1, sensorData.s2, sensorData.s3, sensorData.s4][idx] : null;
+   const displayVal = liveVal != null ? `${liveVal}%` : sensor.val;
+   const isLow = liveVal != null && liveVal < 35;
+   return (
+   <Marker key={sensor.id} position={sensor.pos}>
+   <Tooltip permanent direction="top" className="font-bold bg-white text-nature-900 shadow-md border-0 rounded text-xs px-2 py-0.5">
+   {t("Sensor")} {sensor.id}
+   </Tooltip>
+   <Popup className="rounded-xl overflow-hidden shadow-lg border-none">
+   <div className="p-1">
+    <h4 className="font-bold text-nature-900 border-b pb-1 mb-2">{t("Sensor")} #{sensor.id}</h4>
+   <p className="text-sm">{t("Type:")} <span className="font-medium">{sensor.type}</span></p>
+   <p className="text-sm">{t("Value:")} <span className={`font-bold ${isLow ? 'text-orange-500' : 'text-green-600'}`}>{displayVal}</span></p>
+   {sensorData?.updatedAt && <p className="text-xs text-nature-400 mt-2">{t('Updated:')} {new Date(sensorData.updatedAt).toLocaleTimeString()}</p>}
+   </div>
+   </Popup>
+   </Marker>
+   );
+ })}
 
  {/* Highlight dry zone */}
  {region.dryZone && (
@@ -233,22 +339,6 @@ export default function FarmMap() {
  }}
  />
  )}
-
- {region.sensors.map(sensor => (
- <Marker key={sensor.id} position={sensor.pos}>
- <Tooltip permanent direction="top" className="font-bold bg-white text-nature-900 shadow-md border-0 rounded text-xs px-2 py-0.5">
- {t("Sensor")} {sensor.id}
- </Tooltip>
- <Popup className="rounded-xl overflow-hidden shadow-lg border-none">
- <div className="p-1">
-  <h4 className="font-bold text-nature-900 dark:text-white border-b pb-1 mb-2">{t("Sensor")} #{sensor.id}</h4>
- <p className="text-sm">{t("Type:")} <span className="font-medium">{sensor.type}</span></p>
- <p className="text-sm">{t("Value:")} <span className={`font-bold ${sensor.status === 'warning' ? 'text-orange-500' : sensor.status === 'critical' ? 'text-red-600' : 'text-green-600'}`}>{sensor.val}</span></p>
- <p className="text-xs text-nature-400 dark:text-white mt-2">{t("Last updated: Just now")}</p>
- </div>
- </Popup>
- </Marker>
- ))}
  </MapContainer>
  </div>
  </div>
