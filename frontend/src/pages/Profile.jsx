@@ -50,12 +50,19 @@ export default function Profile() {
          setDistrictsAvailable(INDIA_STATES_DISTRICTS[data.state]);
       }
     } else {
- setName(user?.user_metadata?.name || '');
- setPhone(user?.user_metadata?.phone || '');
- }
+  setName(user?.user_metadata?.name || '');
+  setPhone(user?.user_metadata?.phone || '');
+  
+  const metaState = user?.user_metadata?.state || '';
+  setState(metaState);
+  if (metaState && INDIA_STATES_DISTRICTS[metaState]) {
+      setDistrictsAvailable(INDIA_STATES_DISTRICTS[metaState]);
+  }
+  setDistrict(user?.user_metadata?.district || '');
+  }
  } catch (error) {
  console.error('Error fetching profile:', error);
- toast.error('Failed to load profile');
+ toast.error(`Load Error: ${error.message || error.details || 'Unknown error'}`);
  } finally {
  setLoading(false);
  }
@@ -144,9 +151,9 @@ export default function Profile() {
  district
  };
 
- const { error } = await supabase
- .from('users')
- .upsert(updates);
+  const { error } = await supabase
+  .from('users')
+  .upsert(updates);
 
  if (error) throw error;
 
