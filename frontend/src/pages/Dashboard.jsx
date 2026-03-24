@@ -299,9 +299,9 @@ export default function Dashboard() {
 
   const handleSatelliteAnalyze = async (type) => {
     if (!farmSetup?.coordinates || farmSetup.coordinates.length < 3) return;
-    setIsAnalyzing(true);
+    const SATELLITE_API = import.meta.env.VITE_SATELLITE_API_URL || 'http://localhost:5001';
     try {
-      const response = await fetch('http://localhost:5001/api/satellite/analyze', {
+      const response = await fetch(`${SATELLITE_API}/api/satellite/analyze`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ coordinates: farmSetup.coordinates, type })
