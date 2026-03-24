@@ -172,7 +172,8 @@ export default function Dashboard() {
           setLiveData(prev => ({
             ...prev,
             temp: Math.round(data.main.temp),
-            humidity: data.main.humidity,
+            humidity: prev.sensorHumidity || data.main.humidity,
+            weatherHumidity: data.main.humidity,
             wind: data.wind.speed,
             soilTemp: Math.round(data.main.temp - 2), // Approximate soil temp
             lat: data.coord?.lat,
@@ -264,24 +265,28 @@ export default function Dashboard() {
         ? Math.round(dailyHumidityAvgs.reduce((s, v) => s + v, 0) / dailyHumidityAvgs.length)
         : null;
 
-      setLiveData(prev => ({
-        ...prev,
-        moisture: rollingMoisture,
-        ph: 6.5,
-        sensorHumidity: rollingHumidity || sHumidity || prev.sensorHumidity,
-        area1Moisture: rollingA1,
-        area2Moisture: rollingA2,
-        avg1: rollingA1,
-        avg2: rollingA2,
-        s1: latest.soil1,
-        s2: latest.soil2,
-        s3: latest.soil3,
-        s4: latest.soil4,
-        dispIrr1: latest.irrigation1 || false,
-        dispIrr2: latest.irrigation2 || false,
-        totalReadings: allRows.length,
-        daysOfData: Object.keys(dayMap).length
-      }));
+      setLiveData(prev => {
+        const sensorHumAvg = rollingHumidity || sHumidity;
+        return {
+          ...prev,
+          moisture: rollingMoisture,
+          ph: 6.5,
+          sensorHumidity: sensorHumAvg,
+          humidity: sensorHumAvg || prev.weatherHumidity || prev.humidity,
+          area1Moisture: rollingA1,
+          area2Moisture: rollingA2,
+          avg1: rollingA1,
+          avg2: rollingA2,
+          s1: latest.soil1,
+          s2: latest.soil2,
+          s3: latest.soil3,
+          s4: latest.soil4,
+          dispIrr1: latest.irrigation1 || false,
+          dispIrr2: latest.irrigation2 || false,
+          totalReadings: allRows.length,
+          daysOfData: Object.keys(dayMap).length
+        };
+      });
     };
 
     fetchTelemetry();

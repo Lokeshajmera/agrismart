@@ -106,12 +106,12 @@ export default function FarmMap() {
     return () => clearInterval(iv);
   }, [user]);
 
-  // Auto-trigger satellite analysis on load
+  // Auto-trigger satellite analysis when region changes IF a layer is already active
   useEffect(() => {
-    if (region.boundary && activeSatelliteLayer) {
+    if (region.boundary && activeSatelliteLayer && !isAnalyzing) {
       handleSatelliteAnalyze(activeSatelliteLayer);
     }
-  }, [selectedRegionKey, activeSatelliteLayer === 'ndvi']);
+  }, [selectedRegionKey]);
 
 
   useEffect(() => {
@@ -160,6 +160,8 @@ export default function FarmMap() {
 
   const handleSatelliteAnalyze = async (type) => {
     if (!region.boundary || region.boundary.length < 3) return;
+    setIsAnalyzing(true);
+    setMapType('satellite'); // Force satellite imagery for analysis
     const SATELLITE_API = import.meta.env.VITE_SATELLITE_API_URL || 'http://localhost:5001';
     try {
       const response = await fetch(`${SATELLITE_API}/api/satellite/analyze`, {
@@ -203,13 +205,13 @@ export default function FarmMap() {
           <div className="flex bg-nature-100 dark:bg-nature-800 rounded-lg p-1 border border-nature-200 dark:border-nature-700">
             <button 
               onClick={() => { setMapType('street'); setActiveSatelliteLayer(null); }}
-              className={`px-3 py-1.5 rounded-md text-[11px] sm:text-xs font-bold transition-all ${mapType === 'street' ? 'bg-white dark:bg-nature-700 text-nature-900 dark:text-white shadow-sm' : 'text-nature-500'}`}
+              className={`px-3 py-1.5 rounded-md text-[11px] sm:text-xs font-bold transition-all ${mapType === 'street' ? 'bg-white dark:bg-nature-700 text-nature-900 dark:text-white shadow-sm' : 'text-nature-500 hover:bg-white/50 dark:hover:bg-nature-700/50'}`}
             >
               🗺️ {t("Map View")}
             </button>
             <button 
-              onClick={() => setMapType('satellite')}
-              className={`px-3 py-1.5 rounded-md text-[11px] sm:text-xs font-bold transition-all ${mapType === 'satellite' ? 'bg-earth-600 text-white' : 'text-nature-500'}`}
+              onClick={() => { setMapType('satellite'); setActiveSatelliteLayer(null); }}
+              className={`px-3 py-1.5 rounded-md text-[11px] sm:text-xs font-bold transition-all ${mapType === 'satellite' && !activeSatelliteLayer ? 'bg-earth-600 text-white shadow-sm' : 'text-nature-500 hover:bg-earth-600/20'}`}
             >
               🛰️ {t("Satellite View")}
             </button>
