@@ -290,16 +290,26 @@ export default function FarmMap() {
    const zoneBRect = [[midLat - gap, minLon + pad], [midLat - gap, maxLon - pad], [minLat + pad, maxLon - pad], [minLat + pad, minLon + pad]];
 
    const sd = sensorData;
-   const zoneAColor = sd?.irr1 ? '#ef4444' : ((sd?.avg1 ?? 0) >= 35 && (sd?.avg1 ?? 0) <= 60) ? '#22c55e' : '#eab308';
-   const zoneBColor = sd?.irr2 ? '#ef4444' : ((sd?.avg2 ?? 0) >= 35 && (sd?.avg2 ?? 0) <= 60) ? '#22c55e' : '#eab308';
+   const getZoneColor = (m, irr) => irr ? '#ef4444' : m > 80 ? '#3b82f6' : m >= 35 ? '#22c55e' : m >= 20 ? '#eab308' : '#ef4444';
+   const getBadge = (m, irr) => {
+     if (irr) return { cls: 'bg-red-100 text-red-600 border-red-200', lbl: '🔴 PUMP ON' };
+     if (m > 80) return { cls: 'bg-blue-100 text-blue-600 border-blue-200', lbl: '🔵 SATURATED' };
+     if (m >= 35) return { cls: 'bg-green-100 text-green-700 border-green-200', lbl: '🟢 OPTIMAL' };
+     if (m >= 20) return { cls: 'bg-orange-100 text-orange-600 border-orange-200', lbl: '🟡 DRY/WARNING' };
+     return { cls: 'bg-red-100 text-red-600 border-red-200', lbl: '🔴 CRITICAL' };
+   };
+   const zoneAColor = getZoneColor(sd?.avg1 ?? 0, sd?.irr1);
+   const zoneBColor = getZoneColor(sd?.avg2 ?? 0, sd?.irr2);
+   const badgeA = getBadge(sd?.avg1 ?? 0, sd?.irr1);
+   const badgeB = getBadge(sd?.avg2 ?? 0, sd?.irr2);
 
    return (
      <>
        <Polygon positions={zoneARect} pathOptions={{ color: zoneAColor, fillColor: zoneAColor, fillOpacity: 0.35, weight: 2 }}>
-         <Popup><div className="p-2 min-w-[160px]"><h4 className="font-black text-xs border-b pb-1 mb-2 uppercase">{t('Zone A (Area 1)')}</h4><p className="text-xs mb-1">{t('Avg Moisture:')} <b>{(sd?.avg1 ?? 0).toFixed(1)}%</b></p><p className="text-xs mb-1">{t('Temp:')} <b>{sd?.temp ?? 28}°C</b></p><p className="text-xs mb-2">{t('Soil 1:')} <b>{sd?.s1 ?? '--'}%</b> &bull; {t('Soil 2:')} <b>{sd?.s2 ?? '--'}%</b></p><span className={`text-[10px] font-bold px-2 py-0.5 rounded-full border ${sd?.irr1 ? 'bg-red-100 text-red-600 border-red-200' : ((sd?.avg1 ?? 0) >= 35 && (sd?.avg1 ?? 0) <= 60) ? 'bg-green-100 text-green-700 border-green-200' : 'bg-orange-100 text-orange-600 border-orange-200'}`}>{sd?.irr1 ? '🔴 PUMP ON' : ((sd?.avg1 ?? 0) >= 35 && (sd?.avg1 ?? 0) <= 60) ? '🟢 OPTIMAL' : '🟡 DRY/WARNING'}</span>{sd?.updatedAt && <p className="text-[9px] text-gray-400 mt-2">{t('Updated:')} {new Date(sd.updatedAt).toLocaleTimeString()}</p>}</div></Popup>
+         <Popup><div className="p-2 min-w-[160px]"><h4 className="font-black text-xs border-b pb-1 mb-2 uppercase">{t('Zone A (Area 1)')}</h4><p className="text-xs mb-1">{t('Avg Moisture:')} <b>{(sd?.avg1 ?? 0).toFixed(1)}%</b></p><p className="text-xs mb-1">{t('Temp:')} <b>{sd?.temp ?? 28}°C</b></p><p className="text-xs mb-2">{t('Soil 1:')} <b>{sd?.s1 ?? '--'}%</b> &bull; {t('Soil 2:')} <b>{sd?.s2 ?? '--'}%</b></p><span className={`text-[10px] font-bold px-2 py-0.5 rounded-full border ${badgeA.cls}`}>{badgeA.lbl}</span>{sd?.updatedAt && <p className="text-[9px] text-gray-400 mt-2">{t('Updated:')} {new Date(sd.updatedAt).toLocaleTimeString()}</p>}</div></Popup>
        </Polygon>
        <Polygon positions={zoneBRect} pathOptions={{ color: zoneBColor, fillColor: zoneBColor, fillOpacity: 0.35, weight: 2 }}>
-         <Popup><div className="p-2 min-w-[160px]"><h4 className="font-black text-xs border-b pb-1 mb-2 uppercase">{t('Zone B (Area 2)')}</h4><p className="text-xs mb-1">{t('Avg Moisture:')} <b>{(sd?.avg2 ?? 0).toFixed(1)}%</b></p><p className="text-xs mb-1">{t('Temp:')} <b>{sd?.temp ?? 28}°C</b></p><p className="text-xs mb-2">{t('Soil 3:')} <b>{sd?.s3 ?? '--'}%</b> &bull; {t('Soil 4:')} <b>{sd?.s4 ?? '--'}%</b></p><span className={`text-[10px] font-bold px-2 py-0.5 rounded-full border ${sd?.irr2 ? 'bg-red-100 text-red-600 border-red-200' : ((sd?.avg2 ?? 0) >= 35 && (sd?.avg2 ?? 0) <= 60) ? 'bg-green-100 text-green-700 border-green-200' : 'bg-orange-100 text-orange-600 border-orange-200'}`}>{sd?.irr2 ? '🔴 PUMP ON' : ((sd?.avg2 ?? 0) >= 35 && (sd?.avg2 ?? 0) <= 60) ? '🟢 OPTIMAL' : '🟡 DRY/WARNING'}</span>{sd?.updatedAt && <p className="text-[9px] text-gray-400 mt-2">{t('Updated:')} {new Date(sd.updatedAt).toLocaleTimeString()}</p>}</div></Popup>
+         <Popup><div className="p-2 min-w-[160px]"><h4 className="font-black text-xs border-b pb-1 mb-2 uppercase">{t('Zone B (Area 2)')}</h4><p className="text-xs mb-1">{t('Avg Moisture:')} <b>{(sd?.avg2 ?? 0).toFixed(1)}%</b></p><p className="text-xs mb-1">{t('Temp:')} <b>{sd?.temp ?? 28}°C</b></p><p className="text-xs mb-2">{t('Soil 3:')} <b>{sd?.s3 ?? '--'}%</b> &bull; {t('Soil 4:')} <b>{sd?.s4 ?? '--'}%</b></p><span className={`text-[10px] font-bold px-2 py-0.5 rounded-full border ${badgeB.cls}`}>{badgeB.lbl}</span>{sd?.updatedAt && <p className="text-[9px] text-gray-400 mt-2">{t('Updated:')} {new Date(sd.updatedAt).toLocaleTimeString()}</p>}</div></Popup>
        </Polygon>
      </>
    );

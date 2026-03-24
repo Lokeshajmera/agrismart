@@ -2,7 +2,7 @@ require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
 const supabase = require('./supabase');
-const { startEngine, overridePump } = require('./mqttService');
+const { startEngine, overridePump, processLatestUnprocessed, farmState } = require('./mqttService');
 
 const app = express();
 
@@ -12,16 +12,22 @@ app.use(express.json());
 
 // Auth Middleware
 const authenticateUser = async (req, res, next) => {
-    const authHeader = req.headers.authorization;
-    if (!authHeader) return res.status(401).json({ error: 'No token provided' });
+    try {
+        const authHeader = req.headers.authorization;
+        if (!authHeader) return res.status(401).json({ error: 'No token provided' });
 
-    const token = authHeader.split(' ')[1];
-    const { data: { user }, error } = await supabase.auth.getUser(token);
+        const token = authHeader.split(' ')[1];
+        const { data, error } = await supabase.auth.getUser(token);
+        const user = data?.user;
 
-    if (error || !user) return res.status(401).json({ error: 'Invalid token' });
+        if (error || !user) return res.status(401).json({ error: 'Invalid token' });
 
-    req.user = user;
-    next();
+        req.user = user;
+        next();
+    } catch (err) {
+        console.error('Auth Error (likely network):', err.message);
+        res.status(503).json({ error: 'Authentication service temporarily unavailable' });
+    }
 };
 
 const isAdmin = async (req, res, next) => {
@@ -51,6 +57,12 @@ app.post('/api/pump', authenticateUser, async (req, res) => {
         res.status(500).json({ error: err.message });
     }
 });
+
+// NEW: Real-time State Synchronization (Decoupled from Supabase Rows)
+app.get('/api/farm-state', authenticateUser, (req, res) => {
+    res.json(farmState || {});
+});
+
 
 // Authentication
 app.post('/api/auth/signup', async (req, res) => {
@@ -215,7 +227,7 @@ app.get('/api/owner/users', async (req, res) => {
 // IoT Hardware Endpoint (ESP32 / Simulator)
 app.post('/api/sensor-data', async (req, res) => {
     const { farmer_id, moisture, temperature, ph, water_level } = req.body;
-    
+
     if (!farmer_id) {
         return res.status(400).json({ error: 'farmer_id is required to log hardware metrics' });
     }
@@ -223,19 +235,41 @@ app.post('/api/sensor-data', async (req, res) => {
     // Direct insertion using bypass/anon key for hardware ingest
     const { error } = await supabase
         .from('sensor_data')
-        .insert([{ 
-            farmer_id, 
-            moisture, 
-            temperature, 
-            ph, 
-            water_level 
+        .insert([{
+            farmer_id,
+            moisture,
+            temperature,
+            ph,
+            water_level,
+            // irrigation_mode1: farmState.mode1, // DECOUPLED
+            // irrigation_mode2: farmState.mode2, // DECOUPLED
+            irrigation1: farmState.pump1,
+            irrigation2: farmState.pump2,
+            processed: false // Will be processed by Engine immediately
         }]);
 
     if (error) {
         return res.status(400).json({ error: error.message });
     }
-    
-    res.status(201).json({ success: true, message: 'Sensor data logged locally and broadcast to Supabase Realtime' });
+
+    // Trigger AI evaluation immediately (Reactive)
+    processLatestUnprocessed().catch(e => console.error("Engine Trigger Failed:", e.message));
+
+    res.status(201).json({ success: true, message: 'Sensor data logged and reactive engine triggered' });
+});
+
+// Error Handling Middleware
+app.use((err, req, res, next) => {
+    console.error('Unhandled Server Error:', err);
+    res.status(500).json({ error: 'Internal Server Error', details: err.message });
+});
+
+// Global Process Error Handlers
+process.on('unhandledRejection', (reason, promise) => {
+    console.error('⚠️ Unhandled Rejection at:', promise, 'reason:', reason);
+});
+process.on('uncaughtException', (err) => {
+    console.error('⚠️ Uncaught Exception:', err);
 });
 
 const PORT = process.env.PORT || 5000;

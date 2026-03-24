@@ -183,61 +183,98 @@ export default function Dashboard() {
     return () => clearInterval(interval);
   }, [profile.district, farmSetup?.district]);
 
-  // 2. Fetch Real Sensor Data (Moisture, pH)
+  // 2. Fetch Real Sensor Data — rolling daily avg moisture + latest live values
   useEffect(() => {
     const fetchTelemetry = async () => {
       if (!user) return;
-      const { data, error } = await supabase
+
+      // Get last 7 days of data for rolling average
+      const sevenDaysAgo = new Date();
+      sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+
+      const { data: allRows } = await supabase
         .from('sensor_data')
-        .select('*')
-        .eq('farmer_id', profile.farmer_id) // Use actual farmer_id
-        .order('created_at', { ascending: false })
-        .limit(1);
+        .select('soil1, soil2, soil3, soil4, hum1, hum2, irrigation1, irrigation2, created_at')
+        .gte('created_at', sevenDaysAgo.toISOString())
+        .order('created_at', { ascending: false });
 
-      if (data && data.length > 0) {
-        const latest = data[0];
-        const sHumidity = latest.humidity != null ? latest.humidity : 45;
+      if (!allRows || allRows.length === 0) return;
 
-        if (farmSetup) {
-          const { a1Moisture, a2Moisture } = calculateAreaAverages(latest, farmSetup);
-          setLiveData(prev => ({
-            ...prev,
-            moisture: Math.round((a1Moisture + a2Moisture) / (a1Moisture > 0 && a2Moisture > 0 ? 2 : 1)),
-            ph: 6.5,
-            sensorHumidity: sHumidity,
-            area1Moisture: a1Moisture,
-            area2Moisture: a2Moisture,
-            avg1: a1Moisture,
-            avg2: a2Moisture,
-            s1: latest.soil1,
-            s2: latest.soil2,
-            s3: latest.soil3,
-            s4: latest.soil4,
-            dispIrr1: latest.irrigation1 || false,
-            dispIrr2: latest.irrigation2 || false
-          }));
-        } else {
-          let mSum = 0, mCount = 0;
-          [latest.soil1, latest.soil2, latest.soil3, latest.soil4].forEach(v => {
-            if (v != null) { mSum += v; mCount++; }
+      // Latest row for real-time zone status & individual sensor values
+      const latest = allRows[0];
+      const sHumidity = (latest.hum1 != null || latest.hum2 != null)
+        ? Math.round(([latest.hum1, latest.hum2].filter(v => v != null).reduce((a, b) => a + b, 0)) / [latest.hum1, latest.hum2].filter(v => v != null).length)
+        : null;
+
+      // ── Group readings by calendar day ──
+      const dayMap = {};
+      allRows.forEach(row => {
+        const dayKey = row.created_at.slice(0, 10); // "YYYY-MM-DD"
+        if (!dayMap[dayKey]) dayMap[dayKey] = [];
+        dayMap[dayKey].push(row);
+      });
+
+      // ── Compute per-day average across all 4 soil sensors ──
+      const dailyAvgs = [];
+      const dailyA1Avgs = [];
+      const dailyA2Avgs = [];
+      const dailyHumidityAvgs = [];
+
+      Object.keys(dayMap).forEach(day => {
+        const rows = dayMap[day];
+        let totalSum = 0, totalCount = 0;
+        let a1Sum = 0, a1Count = 0;
+        let a2Sum = 0, a2Count = 0;
+        let hSum = 0, hCount = 0;
+
+        rows.forEach(r => {
+          [r.soil1, r.soil2, r.soil3, r.soil4].forEach(v => {
+            if (v != null) { totalSum += v; totalCount++; }
           });
+          // Area 1 = soil1 + soil2, Area 2 = soil3 + soil4
+          [r.soil1, r.soil2].forEach(v => { if (v != null) { a1Sum += v; a1Count++; } });
+          [r.soil3, r.soil4].forEach(v => { if (v != null) { a2Sum += v; a2Count++; } });
+          [r.hum1, r.hum2].forEach(v => { if (v != null) { hSum += v; hCount++; } });
+        });
 
-          setLiveData(prev => ({
-            ...prev,
-            moisture: mCount > 0 ? Math.round(mSum / mCount) : prev.moisture,
-            ph: 6.5,
-            sensorHumidity: sHumidity,
-            avg1: latest.soil1 || 0,
-            avg2: latest.soil3 || 0,
-            s1: latest.soil1,
-            s2: latest.soil2,
-            s3: latest.soil3,
-            s4: latest.soil4,
-            dispIrr1: latest.irrigation1 || false,
-            dispIrr2: latest.irrigation2 || false
-          }));
-        }
-      }
+        if (totalCount > 0) dailyAvgs.push(totalSum / totalCount);
+        if (a1Count > 0) dailyA1Avgs.push(a1Sum / a1Count);
+        if (a2Count > 0) dailyA2Avgs.push(a2Sum / a2Count);
+        if (hCount > 0) dailyHumidityAvgs.push(hSum / hCount);
+      });
+
+      // ── Rolling average = average of all daily averages ──
+      const rollingMoisture = dailyAvgs.length > 0
+        ? Math.round(dailyAvgs.reduce((s, v) => s + v, 0) / dailyAvgs.length)
+        : 0;
+      const rollingA1 = dailyA1Avgs.length > 0
+        ? Math.round(dailyA1Avgs.reduce((s, v) => s + v, 0) / dailyA1Avgs.length)
+        : 0;
+      const rollingA2 = dailyA2Avgs.length > 0
+        ? Math.round(dailyA2Avgs.reduce((s, v) => s + v, 0) / dailyA2Avgs.length)
+        : 0;
+      const rollingHumidity = dailyHumidityAvgs.length > 0
+        ? Math.round(dailyHumidityAvgs.reduce((s, v) => s + v, 0) / dailyHumidityAvgs.length)
+        : null;
+
+      setLiveData(prev => ({
+        ...prev,
+        moisture: rollingMoisture,
+        ph: 6.5,
+        sensorHumidity: rollingHumidity || sHumidity || prev.sensorHumidity,
+        area1Moisture: rollingA1,
+        area2Moisture: rollingA2,
+        avg1: rollingA1,
+        avg2: rollingA2,
+        s1: latest.soil1,
+        s2: latest.soil2,
+        s3: latest.soil3,
+        s4: latest.soil4,
+        dispIrr1: latest.irrigation1 || false,
+        dispIrr2: latest.irrigation2 || false,
+        totalReadings: allRows.length,
+        daysOfData: Object.keys(dayMap).length
+      }));
     };
 
     fetchTelemetry();
@@ -245,10 +282,12 @@ export default function Dashboard() {
     return () => clearInterval(interval);
   }, [user, farmSetup]);
 
-  const getZoneStatus = (moisture) => {
-    if (moisture < 20 || moisture > 80) return { color: 'bg-red-50 dark:bg-red-900/20 border-red-200 dark:border-red-800', text: 'text-red-600', status: 'Irrigation ON' };
-    if (moisture < 35 || moisture > 65) return { color: 'bg-yellow-50 dark:bg-yellow-900/20 border-yellow-200 dark:border-yellow-800', text: 'text-yellow-600', status: 'Warning' };
-    return { color: 'bg-green-50 dark:bg-green-900/20 border-green-200 dark:border-green-800', text: 'text-green-600', status: 'Optimal' };
+  const getZoneStatus = (moisture, isIrrOn) => {
+    if (isIrrOn) return { color: 'bg-red-50 dark:bg-red-900/20 border-red-200 dark:border-red-800', text: 'text-red-600', status: 'Irrigation ON' };
+    if (moisture > 80) return { color: 'bg-blue-50 dark:bg-blue-900/20 border-blue-200 dark:border-blue-800', text: 'text-blue-600', status: 'Saturated' };
+    if (moisture >= 35) return { color: 'bg-green-50 dark:bg-green-900/20 border-green-200 dark:border-green-800', text: 'text-green-600', status: 'Optimal' };
+    if (moisture >= 20) return { color: 'bg-yellow-50 dark:bg-yellow-900/20 border-yellow-200 dark:border-yellow-800', text: 'text-yellow-600', status: 'Warning' };
+    return { color: 'bg-red-50 dark:bg-red-900/20 border-red-200 dark:border-red-800', text: 'text-red-600', status: 'Critical' };
   };
 
   if (setupLoading) {
@@ -405,7 +444,8 @@ export default function Dashboard() {
               { name: farmSetup?.area1_name || 'Zone A', moisture: liveData.area1Moisture, active: farmSetup?.area1_sensors > 0 },
               { name: farmSetup?.area2_name || 'Zone B', moisture: liveData.area2Moisture, active: farmSetup?.area2_sensors > 0 }
             ].filter(z => z.active).map((zone, i) => {
-              const stat = getZoneStatus(zone.moisture || 0);
+              const isIrrOn = i === 0 ? liveData.dispIrr1 : liveData.dispIrr2;
+              const stat = getZoneStatus(zone.moisture || 0, isIrrOn);
               return (
                 <div key={i} className={`bg-white dark:bg-nature-950/80 backdrop-blur-md rounded-2xl p-4 border shadow-sm ${stat.color} transition-all`}>
                   <div className="flex justify-between items-center mb-2">
@@ -448,7 +488,7 @@ export default function Dashboard() {
             </div>
 
             <div className="flex justify-around items-center w-full gap-2">
-              <CircularProgress value={liveData.moisture} label={t('Soil Moisture')} subLabel={t('Moderate')} color="#3b82f6" bgColor="#e1efe6" size={96} strokeWidth={6} />
+              <CircularProgress value={liveData.moisture} label={t('Soil Moisture')} subLabel={t(liveData.moisture > 80 ? 'Saturated' : liveData.moisture >= 35 ? 'Optimal' : liveData.moisture >= 20 ? 'Warning' : 'Critical')} color="#3b82f6" bgColor="#e1efe6" size={96} strokeWidth={6} />
 
               <CircularProgress value={liveData.sensorHumidity || 45} label={t('Humidity')} subLabel={t('Normal')} color="#0ea5e9" bgColor="#e1efe6" size={96} strokeWidth={6} />
               <div className="flex flex-col items-center justify-center relative" style={{ width: 96, height: 96 }}>
@@ -604,8 +644,25 @@ export default function Dashboard() {
                 { n: 4, v: mapBoundary[mapBoundary.length - 1], val: liveData.s4, zone: 'Area 2' },
               ].filter(s => s.v && !isNaN(s.v[0]));
 
-              const zoneAColor = liveData.dispIrr1 ? '#ef4444' : ((liveData.avg1 ?? 0) >= 35 && (liveData.avg1 ?? 0) <= 60) ? '#22c55e' : '#eab308';
-              const zoneBColor = liveData.dispIrr2 ? '#ef4444' : ((liveData.avg2 ?? 0) >= 35 && (liveData.avg2 ?? 0) <= 60) ? '#22c55e' : '#eab308';
+              const getZoneColor = (moisture, isIrrOn) => {
+                if (isIrrOn) return '#ef4444';
+                if (moisture > 80) return '#3b82f6';
+                if (moisture >= 35) return '#22c55e';
+                if (moisture >= 20) return '#eab308';
+                return '#ef4444';
+              };
+              const getPopupBadge = (moisture, isIrrOn) => {
+                if (isIrrOn) return { cls: 'bg-red-100 text-red-600 border-red-200', lbl: '🔴 PUMP ON' };
+                if (moisture > 80) return { cls: 'bg-blue-100 text-blue-600 border-blue-200', lbl: '🔵 SATURATED' };
+                if (moisture >= 35) return { cls: 'bg-green-100 text-green-700 border-green-200', lbl: '🟢 OPTIMAL' };
+                if (moisture >= 20) return { cls: 'bg-orange-100 text-orange-600 border-orange-200', lbl: '🟡 DRY/WARNING' };
+                return { cls: 'bg-red-100 text-red-600 border-red-200', lbl: '🔴 CRITICAL' };
+              };
+
+              const zoneAColor = getZoneColor(liveData.avg1 ?? 0, liveData.dispIrr1);
+              const zoneBColor = getZoneColor(liveData.avg2 ?? 0, liveData.dispIrr2);
+              const badgeA = getPopupBadge(liveData.avg1 ?? 0, liveData.dispIrr1);
+              const badgeB = getPopupBadge(liveData.avg2 ?? 0, liveData.dispIrr2);
 
               return (
                 <div className="w-full flex-1 rounded-xl overflow-hidden border border-nature-200 dark:border-nature-800 relative shadow-inner">
@@ -616,11 +673,11 @@ export default function Dashboard() {
                     <Polygon positions={mapBoundary} pathOptions={{ color: '#10b981', fillColor: '#10b981', fillOpacity: 0.08, weight: 2, dashArray: '5' }} />
                     {/* Zone A rectangle (top half) */}
                     <Polygon positions={zoneARect} pathOptions={{ color: zoneAColor, fillColor: zoneAColor, fillOpacity: 0.35, weight: 2 }}>
-                      <Popup><div className="p-1.5 min-w-[140px]"><h4 className="font-black text-[11px] border-b pb-1 mb-2 uppercase">{t('Zone A (Area 1)')}</h4><p className="text-xs mb-1">{t('Moisture:')} <b>{(liveData.avg1 ?? 0).toFixed(1)}%</b></p><p className="text-xs mb-2">{t('Temp:')} <b>{liveData.temp}°C</b></p><span className={`text-[10px] font-bold px-2 py-0.5 rounded-full border ${liveData.dispIrr1 ? 'bg-red-100 text-red-600 border-red-200' : ((liveData.avg1 ?? 0) >= 35 && (liveData.avg1 ?? 0) <= 60) ? 'bg-green-100 text-green-700 border-green-200' : 'bg-orange-100 text-orange-600 border-orange-200'}`}>{liveData.dispIrr1 ? '🔴 PUMP ON' : ((liveData.avg1 ?? 0) >= 35 && (liveData.avg1 ?? 0) <= 60) ? '🟢 OPTIMAL' : '🟡 DRY/WARNING'}</span></div></Popup>
+                      <Popup><div className="p-1.5 min-w-[140px]"><h4 className="font-black text-[11px] border-b pb-1 mb-2 uppercase">{t('Zone A (Area 1)')}</h4><p className="text-xs mb-1">{t('Moisture:')} <b>{(liveData.avg1 ?? 0).toFixed(1)}%</b></p><p className="text-xs mb-2">{t('Temp:')} <b>{liveData.temp}°C</b></p><span className={`text-[10px] font-bold px-2 py-0.5 rounded-full border ${badgeA.cls}`}>{badgeA.lbl}</span></div></Popup>
                     </Polygon>
                     {/* Zone B rectangle (bottom half) */}
                     <Polygon positions={zoneBRect} pathOptions={{ color: zoneBColor, fillColor: zoneBColor, fillOpacity: 0.35, weight: 2 }}>
-                      <Popup><div className="p-1.5 min-w-[140px]"><h4 className="font-black text-[11px] border-b pb-1 mb-2 uppercase">{t('Zone B (Area 2)')}</h4><p className="text-xs mb-1">{t('Moisture:')} <b>{(liveData.avg2 ?? 0).toFixed(1)}%</b></p><p className="text-xs mb-2">{t('Temp:')} <b>{liveData.temp}°C</b></p><span className={`text-[10px] font-bold px-2 py-0.5 rounded-full border ${liveData.dispIrr2 ? 'bg-red-100 text-red-600 border-red-200' : ((liveData.avg2 ?? 0) >= 35 && (liveData.avg2 ?? 0) <= 60) ? 'bg-green-100 text-green-700 border-green-200' : 'bg-orange-100 text-orange-600 border-orange-200'}`}>{liveData.dispIrr2 ? '🔴 PUMP ON' : ((liveData.avg2 ?? 0) >= 35 && (liveData.avg2 ?? 0) <= 60) ? '🟢 OPTIMAL' : '🟡 DRY/WARNING'}</span></div></Popup>
+                      <Popup><div className="p-1.5 min-w-[140px]"><h4 className="font-black text-[11px] border-b pb-1 mb-2 uppercase">{t('Zone B (Area 2)')}</h4><p className="text-xs mb-1">{t('Moisture:')} <b>{(liveData.avg2 ?? 0).toFixed(1)}%</b></p><p className="text-xs mb-2">{t('Temp:')} <b>{liveData.temp}°C</b></p><span className={`text-[10px] font-bold px-2 py-0.5 rounded-full border ${badgeB.cls}`}>{badgeB.lbl}</span></div></Popup>
                     </Polygon>
                     {/* Sensor markers on actual boundary vertices */}
                     {sensorPts.map(s => (

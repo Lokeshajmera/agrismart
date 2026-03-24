@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useRef } from 'react';
 import {
  Droplets, Settings2, Power, AlertCircle, Clock,
  Play, Pause, RefreshCcw, Activity, ThermometerSun,
@@ -18,18 +18,32 @@ import { useTranslation } from 'react-i18next';
 export default function IrrigationControl() {
  const { t } = useTranslation();
  const { user } = useAuth();
+ const [backendState, setBackendState] = useState(null);
 
  // Live Data State
  const [liveData, setLiveData] = useState([]);
  const [isLoading, setIsLoading] = useState(true);
+ const [farmerId, setFarmerId] = useState(null);
+
+ useEffect(() => {
+     const initUser = async () => {
+         if (user) {
+             const { data } = await supabase.from('users').select('farmer_id').eq('id', user.id).single();
+             if (data) setFarmerId(data.farmer_id);
+         }
+     }
+     initUser();
+ }, [user]);
 
  // AI Logic Local States (Replaces DB columns as requested)
- const [mode1, setMode1] = useState('auto');
- const [mode2, setMode2] = useState('auto');
+ const [optimisticMode1, setOptimisticMode1] = useState(null);
+ const [optimisticMode2, setOptimisticMode2] = useState(null);
 
  // Strict Optimistic UI Locks to bypass polling jitter
  const [optimisticPump1, setOptimisticPump1] = useState(null);
  const [optimisticPump2, setOptimisticPump2] = useState(null);
+ const toggleLock = useRef({ 1: false, 2: false });
+ const optTimeout = useRef({ 1: null, 2: null });
 
  // External Data State (Weather Fallback)
  const [weather, setWeather] = useState({ temp: 28, humidity: 60, rain: 0, city: 'Pune' });
@@ -55,6 +69,26 @@ export default function IrrigationControl() {
  fetchLiveStream();
  const interval = setInterval(fetchLiveStream, 5000); // 5s deep polling
  return () => clearInterval(interval);
+ }, [farmerId]);
+
+ // 1.1 NEW: Instant Backend State Sync (Modes & Pumps)
+ useEffect(() => {
+   const fetchBackendState = async () => {
+       try {
+           const session = await supabase.auth.getSession();
+           const token = session.data.session?.access_token;
+           if (!token) return;
+
+           const res = await fetch('http://localhost:5000/api/farm-state', {
+               headers: { 'Authorization': `Bearer ${token}` }
+           });
+           const data = await res.json();
+           if (data && data.mode1) setBackendState(data);
+       } catch (err) { console.error("Sync Error:", err); }
+   };
+   fetchBackendState();
+   const interval = setInterval(fetchBackendState, 3000); // 3s fast-sync for modes
+   return () => clearInterval(interval);
  }, []);
 
  // 2. Fetch Live Weather Intelligence
@@ -116,8 +150,12 @@ export default function IrrigationControl() {
 
  // Database Sync Actions
  const handleModeChange = async (areaId, newMode) => {
-    if (areaId === 1) setMode1(newMode);
-    if (areaId === 2) setMode2(newMode);
+    if (areaId === 1) setOptimisticMode1(newMode);
+    if (areaId === 2) setOptimisticMode2(newMode);
+    setTimeout(() => {
+        if (areaId === 1) setOptimisticMode1(null);
+        if (areaId === 2) setOptimisticMode2(null);
+    }, 8000);
     
     try {
         console.log(`[DEBUG UI] Fast-path routing Area ${areaId} to Mode: ${newMode}...`);
@@ -134,7 +172,12 @@ export default function IrrigationControl() {
  };
 
  const handleTogglePump = async (areaId) => {
- if (!currentData) return;
+ if (!currentData || toggleLock.current[areaId]) return;
+
+ // Physical double-click debounce
+ toggleLock.current[areaId] = true;
+ setTimeout(() => { toggleLock.current[areaId] = false; }, 1000);
+
  const currentMode = areaId === 1 ? mode1 : mode2;
  const irrCol = areaId === 1 ? 'irrigation1' : 'irrigation2';
 
@@ -149,9 +192,11 @@ export default function IrrigationControl() {
  const newState = !currentUIState;
 
  // Instantly hard-lock the UI for exactly 8 seconds (covers 1.5 complete polling cycles)
+ if (optTimeout.current[areaId]) clearTimeout(optTimeout.current[areaId]);
  if (areaId === 1) setOptimisticPump1(newState);
  if (areaId === 2) setOptimisticPump2(newState);
- setTimeout(() => {
+ 
+ optTimeout.current[areaId] = setTimeout(() => {
      if (areaId === 1) setOptimisticPump1(null);
      if (areaId === 2) setOptimisticPump2(null);
  }, 8000);
@@ -211,15 +256,27 @@ export default function IrrigationControl() {
  const rawDispIrr1 = activeData.processed === true ? activeData.irrigation1 : lastStable1;
  const rawDispIrr2 = activeData.processed === true ? activeData.irrigation2 : lastStable2;
 
- // Apply UX strict locks: Prioritize optimistic state if it exists
- const dispIrr1 = optimisticPump1 !== null ? optimisticPump1 : rawDispIrr1;
- const dispIrr2 = optimisticPump2 !== null ? optimisticPump2 : rawDispIrr2;
+ // NEW: Hierarchy of Truth: [Optimistic UI] > [Backend RAM State] > [Supabase Records]
+ const mode1 = optimisticMode1 !== null ? optimisticMode1 : (backendState?.mode1 || 'auto');
+ const mode2 = optimisticMode2 !== null ? optimisticMode2 : (backendState?.mode2 || 'auto');
 
+ const dispIrr1 = optimisticPump1 !== null ? optimisticPump1 : (backendState ? backendState.pump1 : rawDispIrr1);
+ const dispIrr2 = optimisticPump2 !== null ? optimisticPump2 : (backendState ? backendState.pump2 : rawDispIrr2);
+
+  // Updated: Global mode is ONLY 'auto' if BOTH areas are 'auto'
   const isAutoMode = mode1 === 'auto' && mode2 === 'auto';
+  
   const toggleGlobalMode = async () => {
+    // If we are in Auto, switch to Manual. 
+    // If EITHER is already in Manual, clicking this button switches both back to Auto.
     const newMode = isAutoMode ? 'manual' : 'auto';
-    setMode1(newMode);
-    setMode2(newMode);
+    setOptimisticMode1(newMode);
+    setOptimisticMode2(newMode);
+
+    setTimeout(() => {
+        setOptimisticMode1(null);
+        setOptimisticMode2(null);
+    }, 8000);
     
     // CRITICAL FIX: Immediately release manual locks so AI state pushes instantly
     if (newMode === 'auto') {

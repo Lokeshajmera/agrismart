@@ -25,20 +25,45 @@ export default function Sidebar({ isMobileMenuOpen, setIsMobileMenuOpen }) {
  const { t } = useTranslation();
  const { user } = useAuth();
  const [role, setRole] = useState('user');
+ const [farmerId, setFarmerId] = useState(null);
+ const [avgMoisture, setAvgMoisture] = useState(null);
 
  useEffect(() => {
  const fetchRole = async () => {
  if (user) {
  const { data, error } = await supabase
  .from('users')
- .select('role')
+ .select('role, farmer_id')
  .eq('id', user.id)
  .single();
- if (!error && data) setRole(data.role);
+ if (!error && data) {
+    setRole(data.role);
+    setFarmerId(data.farmer_id);
+  }
  }
  };
  fetchRole();
  }, [user]);
+
+ // Live Avg Soil Moisture from Supabase
+ useEffect(() => {
+ const fetchMoisture = async () => {
+    if (!farmerId) return;
+   const { data } = await supabase
+     .from('sensor_data')
+     .select('soil1, soil2, soil3, soil4')
+     .order('created_at', { ascending: false })
+     .limit(1);
+   if (data && data.length > 0) {
+     const r = data[0];
+     const vals = [r.soil1, r.soil2, r.soil3, r.soil4].filter(v => v != null);
+     if (vals.length > 0) setAvgMoisture(Math.round(vals.reduce((a, b) => a + b, 0) / vals.length));
+   }
+ };
+ fetchMoisture();
+ const iv = setInterval(fetchMoisture, 15000);
+ return () => clearInterval(iv);
+ }, [farmerId]);
 
  const navItems = [
  { icon: LayoutDashboard, label: t('Dashboard'), path: '/app/dashboard' },
@@ -58,6 +83,10 @@ export default function Sidebar({ isMobileMenuOpen, setIsMobileMenuOpen }) {
  if (role === 'admin') {
  navItems.push({ icon: ShieldCheck, label: t('Admin'), path: '/admin' });
  }
+
+ const moistureVal = avgMoisture ?? 0;
+ const moistureColor = moistureVal > 80 ? 'text-blue-400' : moistureVal >= 35 ? 'text-green-400' : moistureVal > 0 ? 'text-yellow-400' : 'text-white';
+ const barColor = moistureVal > 80 ? 'bg-blue-400' : moistureVal >= 35 ? 'bg-green-400' : 'bg-yellow-400';
 
  return (
  <>
@@ -105,11 +134,11 @@ export default function Sidebar({ isMobileMenuOpen, setIsMobileMenuOpen }) {
  <div className="p-6">
  <div className="bg-nature-800/50 rounded-xl p-4 border border-nature-700/50 backdrop-blur-sm">
  <div className="flex items-baseline gap-2 mb-1">
- <span className="text-2xl font-bold text-white">31%</span>
+ <span className={`text-2xl font-bold ${moistureColor}`}>{avgMoisture != null ? `${avgMoisture}%` : '—'}</span>
  </div>
  <p className="text-xs text-nature-300 dark:text-white mb-3">{t('Avg Soil Moisture')}</p>
  <div className="w-full bg-nature-700 rounded-full h-1.5 mb-1">
- <div className="bg-earth-400 h-1.5 rounded-full" style={{ width: '31%' }}></div>
+ <div className={`${barColor} h-1.5 rounded-full transition-all duration-500`} style={{ width: `${Math.min(moistureVal, 100)}%` }}></div>
  </div>
  </div>
  </div>

@@ -24,7 +24,7 @@ export const useRealtimeSensor = () => {
     }, [user]);
 
     useEffect(() => {
-        if (!farmerId) return;
+        if (!user || !farmerId) return;
 
         let isMounted = true;
 
@@ -35,7 +35,6 @@ export const useRealtimeSensor = () => {
                 const { data, error } = await supabase
                     .from('sensor_data')
                     .select('*')
-                    .eq('farmer_id', farmerId)
                     .order('created_at', { ascending: false })
                     .limit(20);
 
@@ -57,19 +56,23 @@ export const useRealtimeSensor = () => {
         // Establish WebSockets for Supabase Realtime
         // ==========================================
         const channel = supabase
-            .channel(`public:sensor_data:farmer_id=eq.${farmerId}`)
+            .channel('public:sensor_data')
             .on('postgres_changes', {
-                event: 'INSERT',
+                event: 'UPDATE', // Listen for AI/Manual Engine evaluations, not raw ESP32 inserts
                 schema: 'public',
-                table: 'sensor_data',
-                filter: `farmer_id=eq.${farmerId}`
+                table: 'sensor_data'
             }, (payload) => {
                 if (isMounted) {
                     setSensorData(prev => {
-                        const newData = [...prev, payload.new];
-                        // Slide window to maximum 20 points
-                        if (newData.length > 20) newData.shift();
-                        return newData;
+                        const newArray = [...prev];
+                        const idx = newArray.findIndex(r => r.id === payload.new.id);
+                        if (idx !== -1) {
+                            newArray[idx] = payload.new;
+                        } else {
+                            newArray.push(payload.new);
+                            if (newArray.length > 20) newArray.shift();
+                        }
+                        return newArray;
                     });
                     setLastPing(new Date());
                 }
@@ -80,7 +83,7 @@ export const useRealtimeSensor = () => {
             isMounted = false;
             supabase.removeChannel(channel);
         };
-    }, [farmerId]);
+    }, [user, farmerId]); // Watch farmerId
 
     // Merge offline data if disconnected or there is remaining offline data
     const combinedData = [...sensorData, ...offlineData].sort((a, b) => new Date(a.created_at) - new Date(b.created_at)).slice(-20);

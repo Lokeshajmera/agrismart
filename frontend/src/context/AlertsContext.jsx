@@ -432,9 +432,15 @@ export function AlertsProvider({ children }) {
             const forecast = await forecastRes.json();
             setWeatherData(current);
 
-            // Fetch soil moisture dynamically for the district
+            // Fetch soil moisture — rolling 7-day daily average
             let moisture = 45;
-            let query = supabase.from('sensor_data').select('soil1, soil2, soil3, soil4').order('created_at', { ascending: false }).limit(20);
+            const sevenDaysAgo = new Date();
+            sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+
+            let query = supabase.from('sensor_data')
+              .select('soil1, soil2, soil3, soil4, created_at')
+              .gte('created_at', sevenDaysAgo.toISOString())
+              .order('created_at', { ascending: false });
             
             if (userProfile?.district) {
                const { data: usersData } = await supabase.from('users').select('farmer_id').eq('district', userProfile.district);
@@ -449,12 +455,28 @@ export function AlertsProvider({ children }) {
             const { data } = await query;
 
             if (data && data.length > 0) {
-                const s = data[0];
-                let mSum = 0, mCount = 0;
-                [s.soil1, s.soil2, s.soil3, s.soil4].forEach(v => {
-                    if (v != null) { mSum += v; mCount++; }
+                // Group by day and compute daily averages
+                const dayMap = {};
+                data.forEach(row => {
+                  const dayKey = row.created_at.slice(0, 10);
+                  if (!dayMap[dayKey]) dayMap[dayKey] = [];
+                  dayMap[dayKey].push(row);
                 });
-                if (mCount > 0) moisture = Math.round(mSum / mCount);
+
+                const dailyAvgs = [];
+                Object.values(dayMap).forEach(rows => {
+                  let sum = 0, count = 0;
+                  rows.forEach(r => {
+                    [r.soil1, r.soil2, r.soil3, r.soil4].forEach(v => {
+                      if (v != null) { sum += v; count++; }
+                    });
+                  });
+                  if (count > 0) dailyAvgs.push(sum / count);
+                });
+
+                if (dailyAvgs.length > 0) {
+                  moisture = Math.round(dailyAvgs.reduce((s, v) => s + v, 0) / dailyAvgs.length);
+                }
             }
 
             setAlerts(generateAlerts(current, forecast));
