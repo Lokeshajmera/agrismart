@@ -760,7 +760,7 @@ export default function Dashboard() {
                       </Marker>
                     ))}
                   </MapContainer>
-                  <Link to="/app/map" onClick={e => e.stopPropagation()} className="absolute bottom-3 right-3 z-[400] flex items-center gap-1.5 bg-black/70 hover:bg-earth-600 backdrop-blur-md px-3 py-1.5 rounded-lg text-white text-[11px] font-bold transition-colors shadow-lg border border-white/10">
+                  <Link to="/app/map?layer=ndvi" onClick={e => e.stopPropagation()} className="absolute bottom-3 right-3 z-[400] flex items-center gap-1.5 bg-black/70 hover:bg-earth-600 backdrop-blur-md px-3 py-1.5 rounded-lg text-white text-[11px] font-bold transition-colors shadow-lg border border-white/10">
                     <MapIcon className="w-3.5 h-3.5" /> {t('Expand Map')}
                   </Link>
                 </div>

@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
+import { useSearchParams } from 'react-router-dom';
 import { MapContainer, TileLayer, Polygon, Marker, Popup, Circle, useMap, Tooltip, ImageOverlay } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 import L from 'leaflet';
@@ -64,6 +65,7 @@ function MapInvalidator() {
 export default function FarmMap() {
   const { t } = useTranslation();
   const { userProfile, user } = useAuth();
+  const [searchParams] = useSearchParams();
   
   const [regions, setRegions] = useState(defaultRegions);
   const [selectedRegionKey, setSelectedRegionKey] = useState('mh');
@@ -73,6 +75,29 @@ export default function FarmMap() {
   const [satelliteData, setSatelliteData] = useState(null);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [activeSatelliteLayer, setActiveSatelliteLayer] = useState('ndvi');
+
+  const region = regions[selectedRegionKey] || defaultRegions['mh'];
+
+  const handleSatelliteAnalyze = async (type) => {
+    if (!region.boundary || region.boundary.length < 3) return;
+    setIsAnalyzing(true);
+    setMapType('satellite'); // Force satellite imagery for analysis
+    const SATELLITE_API = import.meta.env.VITE_SATELLITE_API_URL || 'http://localhost:5001';
+    try {
+      const response = await fetch(`${SATELLITE_API}/api/satellite/analyze`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ coordinates: region.boundary, type })
+      });
+      const data = await response.json();
+      setSatelliteData(data);
+      setActiveSatelliteLayer(type);
+    } catch (e) {
+      console.error("Satellite analysis failed", e);
+    } finally {
+      setIsAnalyzing(false);
+    }
+  };
 
 
   // Real-time sensor polling
@@ -105,6 +130,14 @@ export default function FarmMap() {
     const iv = setInterval(fetchSensors, 10000);
     return () => clearInterval(iv);
   }, [user]);
+
+  // Handle URL parameters for auto-layer activation (e.g., from Dashboard)
+  useEffect(() => {
+    const layer = searchParams.get('layer');
+    if (layer === 'ndvi' || layer === 'ndwi') {
+      handleSatelliteAnalyze(layer);
+    }
+  }, [searchParams, !!region.boundary]);
 
   // Auto-trigger satellite analysis when region changes IF a layer is already active
   useEffect(() => {
@@ -158,28 +191,6 @@ export default function FarmMap() {
     fetchUserLocation();
   }, [userProfile, user]);
 
-  const handleSatelliteAnalyze = async (type) => {
-    if (!region.boundary || region.boundary.length < 3) return;
-    setIsAnalyzing(true);
-    setMapType('satellite'); // Force satellite imagery for analysis
-    const SATELLITE_API = import.meta.env.VITE_SATELLITE_API_URL || 'http://localhost:5001';
-    try {
-      const response = await fetch(`${SATELLITE_API}/api/satellite/analyze`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ coordinates: region.boundary, type })
-      });
-      const data = await response.json();
-      setSatelliteData(data);
-      setActiveSatelliteLayer(type);
-    } catch (e) {
-      console.error("Satellite analysis failed", e);
-    } finally {
-      setIsAnalyzing(false);
-    }
-  };
-
-  const region = regions[selectedRegionKey] || defaultRegions['mh'];
 
   if (isMapLocating) {
     return (
