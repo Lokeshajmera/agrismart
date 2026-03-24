@@ -7,7 +7,8 @@ import {
   Wheat, IndianRupee, Activity
 } from 'lucide-react';
 
-import { MapContainer, TileLayer, Polygon, Marker, useMap, Popup, Circle } from 'react-leaflet';
+import { MapContainer, TileLayer, Polygon, Marker, useMap, Popup, Circle, ImageOverlay } from 'react-leaflet';
+
 import 'leaflet/dist/leaflet.css';
 import L from 'leaflet';
 
@@ -108,6 +109,12 @@ export default function Dashboard() {
     area1Moisture: 31,
     area2Moisture: 31
   });
+
+  const [satelliteData, setSatelliteData] = useState(null);
+  const [activeSatelliteLayer, setActiveSatelliteLayer] = useState('ndvi');
+  const [isAnalyzing, setIsAnalyzing] = useState(false);
+
+
 
   const calculateAreaAverages = (latest, setup) => {
     const soilVals = [latest.soil1, latest.soil2, latest.soil3, latest.soil4];
@@ -281,6 +288,34 @@ export default function Dashboard() {
     const interval = setInterval(fetchTelemetry, 10000); // Poll every 10 seconds
     return () => clearInterval(interval);
   }, [user, farmSetup]);
+
+  // Auto-trigger satellite analysis on load
+  useEffect(() => {
+    if (farmSetup && activeSatelliteLayer) {
+      handleSatelliteAnalyze(activeSatelliteLayer);
+    }
+  }, [farmSetup]);
+
+
+  const handleSatelliteAnalyze = async (type) => {
+    if (!farmSetup?.coordinates || farmSetup.coordinates.length < 3) return;
+    setIsAnalyzing(true);
+    try {
+      const response = await fetch('http://localhost:5001/api/satellite/analyze', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ coordinates: farmSetup.coordinates, type })
+      });
+      const data = await response.json();
+      setSatelliteData(data);
+      setActiveSatelliteLayer(type);
+    } catch (e) {
+      console.error("Satellite analysis failed", e);
+    } finally {
+      setIsAnalyzing(false);
+    }
+  };
+
 
   const getZoneStatus = (moisture, isIrrOn) => {
     if (isIrrOn) return { color: 'bg-red-50 dark:bg-red-900/20 border-red-200 dark:border-red-800', text: 'text-red-600', status: 'Irrigation ON' };
@@ -607,11 +642,31 @@ export default function Dashboard() {
             </div>
           </Link>
 
-          {/* Irrigation Zone Status Map */}
-          <div className="bg-white dark:bg-nature-950/80 backdrop-blur-md rounded-2xl border border-nature-200 dark:border-nature-800 p-3 sm:p-4 shadow-sm flex-1 flex flex-col min-h-[300px]">
-            <h3 className="text-[13px] sm:text-[15px] font-bold text-nature-900 dark:text-white mb-3 flex items-center gap-2">
-              <Droplets className="w-4 h-4 text-blue-500" /> {t('Irrigation Zone Status Map')}
-            </h3>
+      <div className="bg-white dark:bg-nature-950/80 backdrop-blur-md rounded-2xl border border-nature-200 dark:border-nature-800 p-3 sm:p-4 shadow-sm flex-1 flex flex-col min-h-[300px]">
+        <div className="flex justify-between items-center mb-3">
+          <h3 className="text-[13px] sm:text-[15px] font-bold text-nature-900 dark:text-white flex items-center gap-2">
+            <Sprout className="w-4 h-4 text-green-500" /> {t('NDVI Vegetation Analysis')}
+          </h3>
+
+              <div className="flex bg-nature-100 dark:bg-nature-800 rounded-lg p-1 border border-nature-200 dark:border-nature-700">
+                <button 
+                  onClick={() => activeSatelliteLayer === 'ndvi' ? setActiveSatelliteLayer(null) : handleSatelliteAnalyze('ndvi')}
+                  disabled={isAnalyzing}
+                  className={`px-2 py-1 rounded text-[10px] font-bold transition-all ${activeSatelliteLayer === 'ndvi' ? 'bg-green-600 text-white shadow-md' : 'text-nature-500 hover:bg-nature-200'}`}
+                >
+                  {isAnalyzing && activeSatelliteLayer === 'ndvi' ? '...' : '🌱 NDVI'}
+                </button>
+                <div className="w-px h-4 bg-nature-300 mx-1 self-center"></div>
+                <button 
+                  onClick={() => activeSatelliteLayer === 'ndwi' ? setActiveSatelliteLayer(null) : handleSatelliteAnalyze('ndwi')}
+                  disabled={isAnalyzing}
+                  className={`px-2 py-1 rounded text-[10px] font-bold transition-all ${activeSatelliteLayer === 'ndwi' ? 'bg-blue-600 text-white shadow-md' : 'text-nature-500 hover:bg-nature-200'}`}
+                >
+                  {isAnalyzing && activeSatelliteLayer === 'ndwi' ? '...' : '💧 NDWI'}
+                </button>
+              </div>
+            </div>
+
 
             {!mapCenter || !mapBoundary || mapBoundary.length < 2 ? (
               <div className="flex-1 flex items-center justify-center text-sm text-nature-500 font-medium bg-nature-50 dark:bg-nature-900/40 rounded-xl">
@@ -637,12 +692,13 @@ export default function Dashboard() {
                 [minLat + pad, maxLon - pad], [minLat + pad, minLon + pad]
               ];
 
-              const sensorPts = [
-                { n: 1, v: mapBoundary[0], val: liveData.s1, zone: 'Area 1' },
-                { n: 2, v: mapBoundary[Math.floor((mapBoundary.length - 1) * 0.33)] || mapBoundary[1], val: liveData.s2, zone: 'Area 1' },
-                { n: 3, v: mapBoundary[Math.floor((mapBoundary.length - 1) * 0.66)] || mapBoundary[2], val: liveData.s3, zone: 'Area 2' },
-                { n: 4, v: mapBoundary[mapBoundary.length - 1], val: liveData.s4, zone: 'Area 2' },
-              ].filter(s => s.v && !isNaN(s.v[0]));
+              const sensorPts = mapBoundary.slice(0, 4).map((v, i) => ({
+                n: i + 1,
+                v,
+                val: i === 0 ? liveData.s1 : i === 1 ? liveData.s2 : i === 2 ? liveData.s3 : liveData.s4,
+                zone: i < 2 ? 'Area 1' : 'Area 2'
+              })).filter(s => s.v && !isNaN(s.v[0]));
+
 
               const getZoneColor = (moisture, isIrrOn) => {
                 if (isIrrOn) return '#ef4444';
@@ -669,16 +725,29 @@ export default function Dashboard() {
                   <MapContainer center={mapCenter} zoom={mapZoom} className="h-full w-full z-0" zoomControl={false} scrollWheelZoom={false} doubleClickZoom={false}>
                     <MapController center={mapCenter} zoom={mapZoom} />
                     <TileLayer url="https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}" maxZoom={20} attribution="Tiles &copy; Esri" />
-                    {/* Farm boundary outline */}
-                    <Polygon positions={mapBoundary} pathOptions={{ color: '#10b981', fillColor: '#10b981', fillOpacity: 0.08, weight: 2, dashArray: '5' }} />
-                    {/* Zone A rectangle (top half) */}
-                    <Polygon positions={zoneARect} pathOptions={{ color: zoneAColor, fillColor: zoneAColor, fillOpacity: 0.35, weight: 2 }}>
-                      <Popup><div className="p-1.5 min-w-[140px]"><h4 className="font-black text-[11px] border-b pb-1 mb-2 uppercase">{t('Zone A (Area 1)')}</h4><p className="text-xs mb-1">{t('Moisture:')} <b>{(liveData.avg1 ?? 0).toFixed(1)}%</b></p><p className="text-xs mb-2">{t('Temp:')} <b>{liveData.temp}°C</b></p><span className={`text-[10px] font-bold px-2 py-0.5 rounded-full border ${badgeA.cls}`}>{badgeA.lbl}</span></div></Popup>
-                    </Polygon>
-                    {/* Zone B rectangle (bottom half) */}
-                    <Polygon positions={zoneBRect} pathOptions={{ color: zoneBColor, fillColor: zoneBColor, fillOpacity: 0.35, weight: 2 }}>
-                      <Popup><div className="p-1.5 min-w-[140px]"><h4 className="font-black text-[11px] border-b pb-1 mb-2 uppercase">{t('Zone B (Area 2)')}</h4><p className="text-xs mb-1">{t('Moisture:')} <b>{(liveData.avg2 ?? 0).toFixed(1)}%</b></p><p className="text-xs mb-2">{t('Temp:')} <b>{liveData.temp}°C</b></p><span className={`text-[10px] font-bold px-2 py-0.5 rounded-full border ${badgeB.cls}`}>{badgeB.lbl}</span></div></Popup>
-                    </Polygon>
+                    
+                    {satelliteData && activeSatelliteLayer && (
+                      <ImageOverlay 
+                        url={satelliteData.image}
+                        bounds={[[satelliteData.bbox[0], satelliteData.bbox[1]], [satelliteData.bbox[2], satelliteData.bbox[3]]]}
+                        opacity={0.8}
+                        zIndex={100}
+                      />
+                    )}
+
+                    {/* Only show boundaries and zone rectangles if NO satellite layer is active */}
+                    {!activeSatelliteLayer && (
+                      <>
+                        <Polygon positions={mapBoundary} pathOptions={{ color: '#10b981', fillColor: '#10b981', fillOpacity: 0.08, weight: 2, dashArray: '5' }} />
+                        <Polygon positions={zoneARect} pathOptions={{ color: zoneAColor, fillColor: zoneAColor, fillOpacity: 0.35, weight: 2 }}>
+                          <Popup><div className="p-1.5 min-w-[140px]"><h4 className="font-black text-[11px] border-b pb-1 mb-2 uppercase">{t('Zone A (Area 1)')}</h4><p className="text-xs mb-1">{t('Moisture:')} <b>{(liveData.avg1 ?? 0).toFixed(1)}%</b></p><p className="text-xs mb-2">{t('Temp:')} <b>{liveData.temp}°C</b></p><span className={`text-[10px] font-bold px-2 py-0.5 rounded-full border ${badgeA.cls}`}>{badgeA.lbl}</span></div></Popup>
+                        </Polygon>
+                        <Polygon positions={zoneBRect} pathOptions={{ color: zoneBColor, fillColor: zoneBColor, fillOpacity: 0.35, weight: 2 }}>
+                          <Popup><div className="p-1.5 min-w-[140px]"><h4 className="font-black text-[11px] border-b pb-1 mb-2 uppercase">{t('Zone B (Area 2)')}</h4><p className="text-xs mb-1">{t('Moisture:')} <b>{(liveData.avg2 ?? 0).toFixed(1)}%</b></p><p className="text-xs mb-2">{t('Temp:')} <b>{liveData.temp}°C</b></p><span className={`text-[10px] font-bold px-2 py-0.5 rounded-full border ${badgeB.cls}`}>{badgeB.lbl}</span></div></Popup>
+                        </Polygon>
+                      </>
+                    )}
+
                     {/* Sensor markers on actual boundary vertices */}
                     {sensorPts.map(s => (
                       <Marker key={s.n} position={s.v}>
