@@ -5,7 +5,10 @@ import { toast } from 'react-hot-toast';
 import { useTranslation } from 'react-i18next';
 import { supabase } from '../supabaseClient';
 
-const API_URL = `http://${window.location.hostname}:5000/api`;
+import API_URL from '../config';
+
+const API_BASE_URL = `${API_URL}/api`;
+
 
 const SuggestionForm = () => {
   const { t } = useTranslation();

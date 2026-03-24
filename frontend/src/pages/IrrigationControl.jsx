@@ -14,6 +14,8 @@ import toast from 'react-hot-toast';
 import { supabase } from '../supabaseClient';
 import { useAuth } from '../context/AuthContext';
 import { useTranslation } from 'react-i18next';
+import API_URL from '../config';
+
 
 export default function IrrigationControl() {
  const { t } = useTranslation();
@@ -160,7 +162,8 @@ export default function IrrigationControl() {
     try {
         console.log(`[DEBUG UI] Fast-path routing Area ${areaId} to Mode: ${newMode}...`);
         const token = (await supabase.auth.getSession()).data.session?.access_token;
-        await fetch('http://localhost:5000/api/pump', {
+        await fetch(`${API_URL}/api/pump`, {
+
             method: 'POST',
             headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
             body: JSON.stringify({ areaId, mode: newMode })
@@ -287,7 +290,8 @@ export default function IrrigationControl() {
     try {
         console.log(`[DEBUG UI] Fast-path firing Global Swap: ${newMode}`);
         const token = (await supabase.auth.getSession()).data.session?.access_token;
-        await fetch('http://localhost:5000/api/pump', {
+        await fetch(`${API_URL}/api/pump`, {
+
             method: 'POST',
             headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
             body: JSON.stringify({ areaId: 'global', mode: newMode })

@@ -5,8 +5,12 @@ import axios from 'axios';
 import { toast } from 'react-hot-toast';
 import { useTranslation } from 'react-i18next';
 import { supabase } from '../supabaseClient';
+import API_URL from '../config';
 
-const API_URL = `http://${window.location.hostname}:5000/api`;
+
+
+const API_BASE_URL = `${API_URL}/api`;
+
 
 const ComplaintForm = () => {
  const { t } = useTranslation();

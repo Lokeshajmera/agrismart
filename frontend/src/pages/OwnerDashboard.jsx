@@ -19,7 +19,10 @@ L.Icon.Default.mergeOptions({
  shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png',
 });
 
-const API_URL = `http://${window.location.hostname}:5000/api`;
+import API_URL from '../config';
+
+const API_BASE_URL = `${API_URL}/api`;
+
 
 const MapAutoPan = ({ center }) => {
   const map = useMap();
