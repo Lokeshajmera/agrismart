@@ -81,7 +81,7 @@ export default function IrrigationControl() {
            const token = session.data.session?.access_token;
            if (!token) return;
 
-           const res = await fetch('http://localhost:5000/api/farm-state', {
+           const res = await fetch(`${API_URL}/api/farm-state`, {
                headers: { 'Authorization': `Bearer ${token}` }
            });
            const data = await res.json();
