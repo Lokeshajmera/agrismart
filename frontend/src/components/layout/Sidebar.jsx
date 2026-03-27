@@ -45,23 +45,29 @@ export default function Sidebar({ isMobileMenuOpen, setIsMobileMenuOpen }) {
  fetchRole();
  }, [user]);
 
- // Live Avg Soil Moisture from Supabase
+ // Live Avg Soil Moisture (7-day rolling average to match Dashboard)
  useEffect(() => {
  const fetchMoisture = async () => {
     if (!farmerId) return;
-   const { data } = await supabase
-     .from('sensor_data')
-     .select('soil1, soil2, soil3, soil4')
-     .order('created_at', { ascending: false })
-     .limit(1);
-   if (data && data.length > 0) {
-     const r = data[0];
-     const vals = [r.soil1, r.soil2, r.soil3, r.soil4].filter(v => v != null);
-     if (vals.length > 0) setAvgMoisture(Math.round(vals.reduce((a, b) => a + b, 0) / vals.length));
-   }
+    const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
+    const { data } = await supabase
+      .from('sensor_data')
+      .select('soil1, soil2, soil3, soil4')
+      .gte('created_at', sevenDaysAgo);
+
+    if (data && data.length > 0) {
+      const allVals = [];
+      data.forEach(r => {
+        const rowVals = [r.soil1, r.soil2, r.soil3, r.soil4].filter(v => v != null);
+        allVals.push(...rowVals);
+      });
+      if (allVals.length > 0) {
+        setAvgMoisture(Math.min(100, Math.round(allVals.reduce((a, b) => a + b, 0) / allVals.length)));
+      }
+    }
  };
  fetchMoisture();
- const iv = setInterval(fetchMoisture, 15000);
+ const iv = setInterval(fetchMoisture, 30000);
  return () => clearInterval(iv);
  }, [farmerId]);
 

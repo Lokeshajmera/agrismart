@@ -31,15 +31,15 @@ def generate_ndvi_raster(width, height, polygon):
     # NDVI > 0.5: Deep Green (Healthy)
     
     img_array = np.zeros((height, width, 4), dtype=np.uint8)
-    for i in range(height):
-        for j in range(width):
-            val = raster[i, j]
-            if val < 0.2:
-                img_array[i, j] = [200, 50, 50, 255] # Reddish
-            elif val < 0.5:
-                img_array[i, j] = [230, 230, 50, 255] # Yellowish
-            else:
-                img_array[i, j] = [34, 139, 34, 255] # Forest Green
+    
+    # Define masks for vectorized assignment
+    red_mask = (raster < 0.2)
+    yellow_mask = (raster >= 0.2) & (raster < 0.5)
+    green_mask = (raster >= 0.5)
+    
+    img_array[red_mask] = [200, 50, 50, 255]
+    img_array[yellow_mask] = [230, 230, 50, 255]
+    img_array[green_mask] = [34, 139, 34, 255]
                 
     return img_array
 
@@ -56,12 +56,15 @@ def generate_ndwi_raster(width, height, polygon):
     raster = np.clip(raster, -1, 1)
     
     img_array = np.zeros((height, width, 4), dtype=np.uint8)
-    for i in range(height):
-        for j in range(width):
-            val = raster[i, j]
-            # NDWI Color mapping: Blue scale
-            blue_intensity = int(max(0, min(255, (val + 1) * 127)))
-            img_array[i, j] = [50, 100, blue_intensity, 255]
+    
+    # Vectorized NDWI Color mapping: Blue scale
+    # Normalize val + 1 (ranges 0-2) to 0-255
+    blue_intensity = ((raster + 1) * 127.5).clip(0, 255).astype(np.uint8)
+    
+    img_array[:, :, 0] = 50   # Red
+    img_array[:, :, 1] = 100  # Green
+    img_array[:, :, 2] = blue_intensity # Blue
+    img_array[:, :, 3] = 255  # Alpha
             
     return img_array
 

@@ -74,14 +74,14 @@ export default function FarmMap() {
   const [sensorData, setSensorData] = useState(null);
   const [satelliteData, setSatelliteData] = useState(null);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
-  const [activeSatelliteLayer, setActiveSatelliteLayer] = useState('ndvi');
+  const [activeSatelliteLayer, setActiveSatelliteLayer] = useState(null);
 
   const region = regions[selectedRegionKey] || defaultRegions['mh'];
 
   const handleSatelliteAnalyze = async (type) => {
-    if (!region.boundary || region.boundary.length < 3) return;
+    if (!region.boundary || region.boundary.length < 3 || !type) return;
     setIsAnalyzing(true);
-    setMapType('satellite'); // Force satellite imagery for analysis
+    setMapType('satellite');
     const SATELLITE_API = import.meta.env.VITE_SATELLITE_API_URL || 'http://localhost:5001';
     try {
       const response = await fetch(`${SATELLITE_API}/api/satellite/analyze`, {
@@ -91,7 +91,7 @@ export default function FarmMap() {
       });
       const data = await response.json();
       setSatelliteData(data);
-      setActiveSatelliteLayer(type);
+      // We don't set activeSatelliteLayer here anymore, the effect that triggers this already knows the type.
     } catch (e) {
       console.error("Satellite analysis failed", e);
     } finally {
@@ -131,20 +131,21 @@ export default function FarmMap() {
     return () => clearInterval(iv);
   }, [user]);
 
-  // Handle URL parameters for auto-layer activation (e.g., from Dashboard)
+  // Handle URL parameters for auto-layer activation
   useEffect(() => {
     const layer = searchParams.get('layer');
     if (layer === 'ndvi' || layer === 'ndwi') {
-      handleSatelliteAnalyze(layer);
+      setActiveSatelliteLayer(layer);
     }
-  }, [searchParams, !!region.boundary]);
+  }, [searchParams]);
 
-  // Auto-trigger satellite analysis when region changes IF a layer is already active
+  // Centralized trigger for satellite analysis
+  // Triggers when: layer changes, region changes, OR map finishes initial locating
   useEffect(() => {
-    if (region.boundary && activeSatelliteLayer && !isAnalyzing) {
+    if (!isMapLocating && activeSatelliteLayer && region.boundary && !isAnalyzing) {
       handleSatelliteAnalyze(activeSatelliteLayer);
     }
-  }, [selectedRegionKey]);
+  }, [activeSatelliteLayer, selectedRegionKey, isMapLocating]);
 
 
   useEffect(() => {
@@ -230,14 +231,14 @@ export default function FarmMap() {
 
           <div className="flex bg-nature-950/20 rounded-lg p-1 border border-nature-200 dark:border-nature-800">
             <button 
-              onClick={() => activeSatelliteLayer === 'ndvi' ? setActiveSatelliteLayer(null) : handleSatelliteAnalyze('ndvi')}
+              onClick={() => activeSatelliteLayer === 'ndvi' ? setActiveSatelliteLayer(null) : setActiveSatelliteLayer('ndvi')}
               disabled={isAnalyzing}
               className={`px-3 py-1.5 rounded-md text-[10px] sm:text-xs font-bold transition-all ${activeSatelliteLayer === 'ndvi' ? 'bg-green-600 text-white shadow-lg' : 'text-nature-500'}`}
             >
               {isAnalyzing && activeSatelliteLayer === 'ndvi' ? '...' : '🌱 NDVI (Health)'}
             </button>
             <button 
-              onClick={() => activeSatelliteLayer === 'ndwi' ? setActiveSatelliteLayer(null) : handleSatelliteAnalyze('ndwi')}
+              onClick={() => activeSatelliteLayer === 'ndwi' ? setActiveSatelliteLayer(null) : setActiveSatelliteLayer('ndwi')}
               disabled={isAnalyzing}
               className={`px-3 py-1.5 rounded-md text-[10px] sm:text-xs font-bold transition-all ${activeSatelliteLayer === 'ndwi' ? 'bg-blue-600 text-white shadow-lg' : 'text-nature-500'}`}
             >

@@ -4,7 +4,7 @@ import {
   CloudSun, Droplets, MapPin, AlertTriangle, Bug, Navigation,
   ChevronDown, Wind, Map as MapIcon, Plane, ThermometerSun, Leaf, Info,
   CheckCircle2, AlertCircle, ArrowRight, ChevronRight, ShieldAlert, CloudRain, Settings,
-  Wheat, IndianRupee, Activity
+  Wheat, IndianRupee, Activity, Sparkles, BrainCircuit
 } from 'lucide-react';
 
 import { MapContainer, TileLayer, Polygon, Marker, useMap, Popup, Circle, ImageOverlay } from 'react-leaflet';
@@ -202,7 +202,7 @@ export default function Dashboard() {
 
       const { data: allRows } = await supabase
         .from('sensor_data')
-        .select('soil1, soil2, soil3, soil4, hum1, hum2, irrigation1, irrigation2, created_at')
+        .select('soil1, soil2, soil3, soil4, hum1, hum2, rain, irrigation1, irrigation2, created_at')
         .gte('created_at', sevenDaysAgo.toISOString())
         .order('created_at', { ascending: false });
 
@@ -253,16 +253,16 @@ export default function Dashboard() {
 
       // ── Rolling average = average of all daily averages ──
       const rollingMoisture = dailyAvgs.length > 0
-        ? Math.round(dailyAvgs.reduce((s, v) => s + v, 0) / dailyAvgs.length)
+        ? Math.min(100, Math.round(dailyAvgs.reduce((s, v) => s + v, 0) / dailyAvgs.length))
         : 0;
       const rollingA1 = dailyA1Avgs.length > 0
-        ? Math.round(dailyA1Avgs.reduce((s, v) => s + v, 0) / dailyA1Avgs.length)
+        ? Math.min(100, Math.round(dailyA1Avgs.reduce((s, v) => s + v, 0) / dailyA1Avgs.length))
         : 0;
       const rollingA2 = dailyA2Avgs.length > 0
-        ? Math.round(dailyA2Avgs.reduce((s, v) => s + v, 0) / dailyA2Avgs.length)
+        ? Math.min(100, Math.round(dailyA2Avgs.reduce((s, v) => s + v, 0) / dailyA2Avgs.length))
         : 0;
       const rollingHumidity = dailyHumidityAvgs.length > 0
-        ? Math.round(dailyHumidityAvgs.reduce((s, v) => s + v, 0) / dailyHumidityAvgs.length)
+        ? Math.min(100, Math.round(dailyHumidityAvgs.reduce((s, v) => s + v, 0) / dailyHumidityAvgs.length))
         : null;
 
       setLiveData(prev => {
@@ -277,12 +277,13 @@ export default function Dashboard() {
           area2Moisture: rollingA2,
           avg1: rollingA1,
           avg2: rollingA2,
-          s1: latest.soil1,
-          s2: latest.soil2,
-          s3: latest.soil3,
-          s4: latest.soil4,
+          s1: Math.min(100, latest.soil1 || 0),
+          s2: Math.min(100, latest.soil2 || 0),
+          s3: Math.min(100, latest.soil3 || 0),
+          s4: Math.min(100, latest.soil4 || 0),
           dispIrr1: latest.irrigation1 || false,
           dispIrr2: latest.irrigation2 || false,
+          isRaining: Boolean(latest.rain),
           totalReadings: allRows.length,
           daysOfData: Object.keys(dayMap).length
         };
@@ -634,16 +635,16 @@ export default function Dashboard() {
           <Link to="/app/insights" className="bg-white dark:bg-nature-950/80 backdrop-blur-md rounded-2xl border border-nature-200 dark:border-nature-800 p-4 flex items-center justify-between group cursor-pointer hover:bg-nature-50 dark:hover:bg-nature-800 dark:bg-nature-900 hover:shadow-md transition shadow-sm">
             <div className="flex items-center gap-4">
               <div className="w-10 h-10 rounded-xl bg-earth-50 dark:bg-earth-900/30 border border-earth-100 dark:border-earth-800/50 flex items-center justify-center group-hover:scale-110 transition-transform">
-                <Plane className="w-5 h-5 text-earth-500 group-hover:text-earth-600" />
+                <BrainCircuit className="w-5 h-5 text-earth-500 group-hover:text-earth-600" />
               </div>
               <div>
-                <h4 className="text-sm font-bold text-nature-900 dark:text-white group-hover:text-earth-600 transition-colors">{t('Automated Drone Mission 09')}</h4>
+                <h4 className="text-sm font-bold text-nature-900 dark:text-white group-hover:text-earth-600 transition-colors uppercase tracking-tight">{t('Vegetation Health Scan (AI)')}</h4>
                 <p className="text-xs text-nature-500 dark:text-white">{t('Today at')} 11:45 AM</p>
               </div>
             </div>
             <div className="bg-nature-50 dark:bg-nature-900 rounded-lg py-1.5 px-3 border border-nature-200 dark:border-nature-800 flex items-center gap-2 group-hover:bg-white dark:bg-nature-950 transition-colors">
-              <Plane className="w-3 h-3 text-nature-400 dark:text-white group-hover:text-earth-500" />
-              <span className="text-xs font-bold text-nature-700 dark:text-white group-hover:text-earth-600">18m 20s</span>
+              <Sparkles className="w-3 h-3 text-earth-400 group-hover:text-earth-500" />
+              <span className="text-xs font-bold text-nature-700 dark:text-white group-hover:text-earth-600">{t('Status: Completed')}</span>
             </div>
           </Link>
 
@@ -780,36 +781,38 @@ export default function Dashboard() {
               <button className="text-nature-400 dark:text-white hover:text-earth-500 p-1"><Settings className="w-4 h-4" /></button>
             </div>
 
-            <div className="flex justify-center mb-4 sm:mb-6 relative items-center py-4">
-              {/* Outer decorative ring */}
-              <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-                <div className="w-[140px] h-[140px] rounded-full border border-nature-100 dark:border-nature-700/50"></div>
+            <div className="flex items-center gap-6 py-4">
+              <div className="shrink-0 scale-110">
+                <CircularProgress value={liveData.moisture} color="#c38d4e" bgColor="#e1efe6" size={130} strokeWidth={9} />
               </div>
-              <CircularProgress value={liveData.moisture} color="#c38d4e" bgColor="#e1efe6" size={120} strokeWidth={8} />
-
-              <div className="absolute right-0 sm:right-0 top-0 bg-white dark:bg-nature-950/95 backdrop-blur-md border border-nature-200 dark:border-nature-800 shadow-md p-2 rounded-xl text-right z-10 hidden sm:block">
-                <span className="text-[10px] text-nature-500 dark:text-white uppercase tracking-wider block">{t('Next Irrigation')}</span>
-                <span className="text-xs font-bold text-nature-900 dark:text-white flex items-center gap-1 justify-end"><Droplets className="w-3 h-3 text-blue-500" /> 3 {t('Hours')}</span>
-              </div>
-              <div className="absolute right-0 sm:right-0 bottom-0 bg-white dark:bg-nature-950/95 backdrop-blur-md border border-nature-200 dark:border-nature-800 shadow-md p-2 rounded-xl text-right z-10 hidden sm:block">
-                <span className="text-[10px] text-nature-500 dark:text-white uppercase tracking-wider block">{t('Pump Status')}</span>
-                <span className="text-xs font-bold text-nature-900 dark:text-white flex items-center gap-1 justify-end text-green-600"><Activity className="w-3 h-3" /> {t('Active')}</span>
-              </div>
-            </div>
-
-            <div className="space-y-2 mt-auto">
-              <div className="flex justify-between items-center text-sm border-b border-nature-100 dark:border-nature-700/50 pb-2">
-                <span className="text-nature-500 dark:text-white">{t('Soil Moisture')}</span>
-                <span className="text-nature-900 dark:text-white font-semibold flex items-center gap-2">
-                  <Leaf className="w-4 h-4 text-green-500" /> 108 %
-                  <div className="w-16 h-2 bg-nature-100 dark:bg-nature-800 rounded-full overflow-hidden ml-2">
-                    <div className="bg-earth-500 h-full w-[31%]"></div>
+              <div className="flex-1 space-y-3">
+                <div className="bg-nature-50 dark:bg-nature-900/50 p-3 rounded-xl border border-nature-100 dark:border-nature-800 shadow-sm">
+                  <span className="text-[10px] text-nature-500 dark:text-nature-400 uppercase font-black tracking-widest">{t('Soil Moisture')}</span>
+                  <div className="text-3xl font-black text-nature-900 dark:text-white mt-1 flex items-baseline gap-1">
+                    {liveData.moisture}<span className="text-sm font-bold text-nature-400">%</span>
                   </div>
-                </span>
-              </div>
-              <div className="flex justify-between items-center text-sm">
-                <span className="text-nature-500 dark:text-white">{t('Valve Status')}</span>
-                <span className="text-nature-900 dark:text-white font-bold text-green-600">{t('Optimal Flow')}</span>
+                  <div className="flex items-center gap-1.5 mt-1.5">
+                    <span className={`w-2 h-2 rounded-full ${liveData.moisture > 80 ? 'bg-blue-500' : liveData.moisture >= 35 ? 'bg-green-500' : 'bg-red-500'}`}></span>
+                    <span className="text-[10px] font-bold text-nature-600 dark:text-nature-300 uppercase">
+                      {t(liveData.moisture > 80 ? 'Saturated' : liveData.moisture >= 35 ? 'Optimal' : 'Needs Water')}
+                    </span>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 gap-2">
+                  <div className="flex items-center justify-between px-2 text-[11px] font-bold">
+                    <span className="text-nature-400 uppercase tracking-tighter">{t('Pump')}</span>
+                    <span className={`${liveData.dispIrr1 || liveData.dispIrr2 ? 'text-green-600' : 'text-nature-500'} flex items-center gap-1`}>
+                      <Activity className="w-3 h-3" /> {liveData.dispIrr1 || liveData.dispIrr2 ? t('Active') : t('Off')}
+                    </span>
+                  </div>
+                  <div className="flex items-center justify-between px-2 text-[11px] font-bold">
+                    <span className="text-nature-400 uppercase tracking-tighter">{t('Trend')}</span>
+                    <span className="text-nature-600 dark:text-nature-300 flex items-center gap-1">
+                      <Sparkles className="w-3 h-3 text-earth-500" /> {liveData.moisture > 50 ? t('Stable') : t('Rising')}
+                    </span>
+                  </div>
+                </div>
               </div>
             </div>
 

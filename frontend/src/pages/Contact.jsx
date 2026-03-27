@@ -45,8 +45,8 @@ export default function Contact() {
  </div>
  <h3 className="text-lg font-bold mb-2">{t("Email Us")}</h3>
  <p className="text-nature-500 dark:text-white text-sm mb-4">{t("For general inquiries and technical support.")}</p>
- <a href="mailto:support@agrismart.com" className="font-semibold text-earth-600 dark:text-earth-400 hover:text-earth-700 transition-colors mt-auto">
- {t("support@agrismart.com")}
+ <a href="mailto:[EMAIL_ADDRESS]" className="font-semibold text-earth-600 dark:text-earth-400 hover:text-earth-700 transition-colors mt-auto">
+ {t("agrismart26@gmail.com")}
  </a>
  </div>
 
@@ -57,8 +57,8 @@ export default function Contact() {
  </div>
  <h3 className="text-lg font-bold mb-2">{t("Call Us")}</h3>
  <p className="text-nature-500 dark:text-white text-sm mb-4">{t("Mon-Fri from 9am to 6pm IST.")}</p>
- <a href="tel:+91XXXXXXXXXX" className="font-semibold text-earth-600 dark:text-earth-400 hover:text-earth-700 transition-colors mt-auto">
- {t("+91 XXXXX XXXXX")}
+ <a href="tel:+918263967306" className="font-semibold text-earth-600 dark:text-earth-400 hover:text-earth-700 transition-colors mt-auto">
+ {t("+91 8263967306")}
  </a>
  </div>
 
