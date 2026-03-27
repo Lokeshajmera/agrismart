@@ -132,8 +132,8 @@ export default function LandingPage() {
 
  {/* Contact Info Overview */}
  <div className="flex flex-col sm:flex-row justify-center items-center gap-6 md:gap-12 mb-12 text-sm">
- <div className="flex items-center gap-3"><div className="p-2 bg-earth-800 rounded-full"><Mail className="w-4 h-4 text-earth-400" /></div> {t("support@agrismart.com")}</div>
- <div className="flex items-center gap-3"><div className="p-2 bg-earth-800 rounded-full"><Phone className="w-4 h-4 text-earth-400" /></div> {t("+91 XXXXX XXXXX")}</div>
+ <div className="flex items-center gap-3"><div className="p-2 bg-earth-800 rounded-full"><Mail className="w-4 h-4 text-earth-400" /></div> {t("agrismart26@gmail.com")}</div>
+ <div className="flex items-center gap-3"><div className="p-2 bg-earth-800 rounded-full"><Phone className="w-4 h-4 text-earth-400" /></div> {t("+91 8263967306")}</div>
  <div className="flex items-center gap-3"><div className="p-2 bg-earth-800 rounded-full"><MapPin className="w-4 h-4 text-earth-400" /></div> {t("India")}</div>
  </div>
 

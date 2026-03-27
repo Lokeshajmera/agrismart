@@ -116,7 +116,7 @@ export default function Sidebar({ isMobileMenuOpen, setIsMobileMenuOpen }) {
  </Link>
  </div>
 
- <div className="flex-1 overflow-y-auto scrollbar-hide py-4">
+ <div className="flex-1 overflow-y-auto custom-scrollbar py-4">
  <div className="px-3 space-y-1">
  {navItems.map((item) => (
  <NavLink
